@@ -401,15 +401,19 @@ body[data-appearance="light"] .recipeScaleBar{background:#fffaf3}
 @media(max-width:650px){.voiceSessionBar .voiceTranscript{display:none}}
 </style>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* ============================================================
-   V8.16.1 GITHUB PAGES -> APPS SCRIPT BACKEND COMPATIBILITY BRIDGE
+   V8.16.3 GITHUB PAGES -> AUTHENTICATED APPS SCRIPT BRIDGE
    Fix: Apps Script HTML Service can place user HTML inside an
    additional Google-owned iframe. We remember the actual window
    that announces itself as the bridge and reply directly to it.
    ============================================================ */
 const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyg7NHXQNPKpZL6Ys4ZVZvrMCbhMsa41QbX6qxOQwWWO_iNhhx2QIzpPiveN4RCGPbKxQ/exec";
+const FAMILY_DASHBOARD_GOOGLE_CLIENT_ID = "506798395973-q1umcrb418h5hv6i0fssguc1ftnk746h.apps.googleusercontent.com";
+let familyDashboardIdToken = "";
+let familyDashboardTokenTimer = null;
 
 (function installAppsScriptBridge_(){
   const pending = new Map();
@@ -447,7 +451,7 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   }
 
   function flush_(){
-    while(bridgeReady && bridgePeer && queued.length){
+    while(bridgeReady && bridgePeer && familyDashboardIdToken && queued.length){
       post_(queued.shift());
     }
   }
@@ -487,7 +491,7 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
 
   function callBackend_(method, args, success, failure){
     const id = "fd-" + Date.now() + "-" + (++seq);
-    const payload = {type:"fd-api-call", id, method, args:Array.from(args || [])};
+    const payload = {type:"fd-api-call", id, method, args:Array.from(args || []), idToken:familyDashboardIdToken};
 
     const timer = setTimeout(function(){
       pending.delete(id);
@@ -498,7 +502,7 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
 
     pending.set(id, {success, failure, timer});
 
-    if(bridgeReady && bridgePeer) post_(payload);
+    if(bridgeReady && bridgePeer && familyDashboardIdToken) post_(payload);
     else queued.push(payload);
   }
 
@@ -536,15 +540,84 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
     get: makeRunner_
   });
 
+
+  function decodeJwtPayload_(token){
+    try{
+      const part=String(token||"").split(".")[1]||"";
+      const b64=part.replace(/-/g,"+").replace(/_/g,"/");
+      return JSON.parse(decodeURIComponent(atob(b64).split("").map(c=>"%"+("00"+c.charCodeAt(0).toString(16)).slice(-2)).join("")));
+    }catch(e){return {}}
+  }
+
+  function showAuthGate_(message){
+    let gate=document.getElementById("fdAuthGate");
+    if(!gate){
+      gate=document.createElement("div");
+      gate.id="fdAuthGate";
+      gate.style.cssText="position:fixed;inset:0;z-index:9999;background:#071018;display:grid;place-items:center;font-family:Arial,sans-serif;color:#f4f6f8";
+      gate.innerHTML='<div style="width:min(420px,90vw);text-align:center;padding:28px;border:1px solid #314152;border-radius:16px;background:#0d1822"><div style="font-size:30px;font-weight:800;margin-bottom:8px">🏠 Family Dashboard</div><div id="fdAuthMessage" style="color:#98a6b4;margin-bottom:18px">Sign in with an authorized family Google account.</div><div id="fdGoogleSignIn" style="display:flex;justify-content:center"></div></div>';
+      document.body.appendChild(gate);
+    }
+    const m=document.getElementById("fdAuthMessage");
+    if(m && message) m.textContent=message;
+    gate.style.display="grid";
+  }
+
+  function hideAuthGate_(){
+    const gate=document.getElementById("fdAuthGate");
+    if(gate) gate.style.display="none";
+  }
+
+  function handleGoogleCredential_(response){
+    const token=String(response?.credential||"");
+    if(!token){showAuthGate_("Google sign-in did not return a credential.");return}
+    familyDashboardIdToken=token;
+    hideAuthGate_();
+    flush_();
+    clearTimeout(familyDashboardTokenTimer);
+    const payload=decodeJwtPayload_(token);
+    const expiresAt=Number(payload.exp||0)*1000;
+    const refreshIn=Math.max(60000,expiresAt-Date.now()-5*60000);
+    familyDashboardTokenTimer=setTimeout(function(){
+      familyDashboardIdToken="";
+      showAuthGate_("Please refresh your Family Dashboard sign-in.");
+      try{google.accounts.id.prompt()}catch(e){}
+    },refreshIn);
+  }
+
+  function startGoogleSignIn_(){
+    if(!FAMILY_DASHBOARD_GOOGLE_CLIENT_ID || FAMILY_DASHBOARD_GOOGLE_CLIENT_ID.includes("PASTE_YOUR")){
+      showAuthGate_("Dashboard sign-in is not configured yet.");
+      return;
+    }
+    if(!window.google?.accounts?.id){
+      setTimeout(startGoogleSignIn_,150);
+      return;
+    }
+    showAuthGate_("Sign in with an authorized family Google account.");
+    google.accounts.id.initialize({
+      client_id:FAMILY_DASHBOARD_GOOGLE_CLIENT_ID,
+      callback:handleGoogleCredential_,
+      auto_select:true,
+      cancel_on_tap_outside:false
+    });
+    const target=document.getElementById("fdGoogleSignIn");
+    if(target){
+      google.accounts.id.renderButton(target,{theme:"outline",size:"large",shape:"pill",text:"signin_with"});
+    }
+    google.accounts.id.prompt();
+  }
+
   function mountBridge_(){
     bridge.src = bridgeUrl_();
     document.body.appendChild(bridge);
   }
 
   if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", mountBridge_, {once:true});
+    document.addEventListener("DOMContentLoaded", function(){ mountBridge_(); startGoogleSignIn_(); }, {once:true});
   }else{
     mountBridge_();
+    startGoogleSignIn_();
   }
 })();
 </script>
