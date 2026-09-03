@@ -446,9 +446,14 @@ let familyDashboardTokenTimer = null;
   }
 
   function post_(payload){
-    if(!bridgePeer) throw new Error("Family Dashboard backend bridge is not ready.");
-    bridgePeer.postMessage(payload, "*");
-  }
+  if(!bridgePeer) throw new Error("Family Dashboard backend bridge is not ready.");
+
+  payload = Object.assign({}, payload, {
+    idToken: familyDashboardIdToken
+  });
+
+  bridgePeer.postMessage(payload, "*");
+}
 
   function flush_(){
     while(bridgeReady && bridgePeer && familyDashboardIdToken && queued.length){
