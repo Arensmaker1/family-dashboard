@@ -403,12 +403,11 @@ body[data-appearance="light"] .recipeScaleBar{background:#fffaf3}
 
 <script>
 /* ============================================================
-   V8.16 GITHUB PAGES -> APPS SCRIPT BACKEND COMPATIBILITY BRIDGE
-   ============================================================
-
-   STEP AFTER DEPLOYING THE UPDATED APPS SCRIPT PROJECT:
-   Replace the placeholder below with the /exec web-app URL.
-*/
+   V8.16.1 GITHUB PAGES -> APPS SCRIPT BACKEND COMPATIBILITY BRIDGE
+   Fix: Apps Script HTML Service can place user HTML inside an
+   additional Google-owned iframe. We remember the actual window
+   that announces itself as the bridge and reply directly to it.
+   ============================================================ */
 const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyg7NHXQNPKpZL6Ys4ZVZvrMCbhMsa41QbX6qxOQwWWO_iNhhx2QIzpPiveN4RCGPbKxQ/exec";
 
@@ -416,6 +415,7 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   const pending = new Map();
   const queued = [];
   let bridgeReady = false;
+  let bridgePeer = null;
   let seq = 0;
 
   const bridge = document.createElement("iframe");
@@ -424,40 +424,48 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   bridge.style.cssText =
     "position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0;opacity:0;pointer-events:none;";
 
-  function backendConfigured_(){
-    return /^https:\/\/script\.google\.com\/.+\/exec(?:$|\?)/.test(FAMILY_DASHBOARD_APPS_SCRIPT_URL);
-  }
-
   function bridgeUrl_(){
     const join = FAMILY_DASHBOARD_APPS_SCRIPT_URL.includes("?") ? "&" : "?";
     return FAMILY_DASHBOARD_APPS_SCRIPT_URL + join + "bridge=1";
   }
 
+  function isGoogleBridgeOrigin_(origin){
+    try{
+      const u = new URL(origin);
+      return u.protocol === "https:" &&
+        (u.hostname === "script.google.com" ||
+         u.hostname.endsWith(".googleusercontent.com") ||
+         u.hostname === "googleusercontent.com");
+    }catch(e){
+      return false;
+    }
+  }
+
   function post_(payload){
-    if(!bridge.contentWindow) throw new Error("Family Dashboard backend bridge is not ready.");
-    // The Apps Script HTML page itself verifies that requests came from
-    // https://arensmaker1.github.io, so no secret is embedded in GitHub.
-    bridge.contentWindow.postMessage(payload, "*");
+    if(!bridgePeer) throw new Error("Family Dashboard backend bridge is not ready.");
+    bridgePeer.postMessage(payload, "*");
   }
 
   function flush_(){
-    while(bridgeReady && queued.length){
+    while(bridgeReady && bridgePeer && queued.length){
       post_(queued.shift());
     }
   }
 
   window.addEventListener("message", function(event){
-    if(event.source !== bridge.contentWindow) return;
-
     const msg = event.data || {};
+    if(msg.type !== "fd-bridge-ready" && msg.type !== "fd-api-result") return;
+    if(!isGoogleBridgeOrigin_(event.origin)) return;
+
     if(msg.type === "fd-bridge-ready"){
+      bridgePeer = event.source;
       bridgeReady = true;
+      console.log("Family Dashboard backend bridge ready:", event.origin);
       flush_();
       return;
     }
 
-    if(msg.type !== "fd-api-result" || !msg.id) return;
-
+    if(!msg.id) return;
     const job = pending.get(msg.id);
     if(!job) return;
     pending.delete(msg.id);
@@ -478,15 +486,6 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   });
 
   function callBackend_(method, args, success, failure){
-    if(!backendConfigured_()){
-      const err = new Error(
-        "V8.16 backend is not configured yet. Paste the Apps Script /exec URL into FAMILY_DASHBOARD_APPS_SCRIPT_URL."
-      );
-      if(failure) setTimeout(() => failure(err), 0);
-      else console.error(err);
-      return;
-    }
-
     const id = "fd-" + Date.now() + "-" + (++seq);
     const payload = {type:"fd-api-call", id, method, args:Array.from(args || [])};
 
@@ -499,7 +498,7 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
 
     pending.set(id, {success, failure, timer});
 
-    if(bridgeReady) post_(payload);
+    if(bridgeReady && bridgePeer) post_(payload);
     else queued.push(payload);
   }
 
@@ -517,8 +516,6 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
           return function(fn){ failure = fn; return proxy; };
         }
         if(prop === "withUserObject"){
-          // Current V8.15.2 does not use this, but retaining chain compatibility
-          // makes the shim safer for future Apps Script-style calls.
           return function(){ return proxy; };
         }
         if(typeof prop === "symbol") return undefined;
@@ -540,10 +537,6 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
   });
 
   function mountBridge_(){
-    if(!backendConfigured_()){
-      console.warn("Family Dashboard V8.16: Apps Script backend URL still needs to be configured.");
-      return;
-    }
     bridge.src = bridgeUrl_();
     document.body.appendChild(bridge);
   }
@@ -554,7 +547,6 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
     mountBridge_();
   }
 })();
-</script>
 
 </head><body><div id="themeDecor" class="themeDecor"></div>
 <div id="load">Loading Family Dashboard…</div><div id="app"><header><div class="brand" id="familyTitle">🏠 Family Dashboard</div><div class="controls"><button class="btn" onclick="move(-1)">‹</button><button class="btn" onclick="today()">Today</button><button id="appearanceToggle" class="btn appearanceToggle" onclick="toggleAppearance()" title="Switch light/dark appearance" aria-label="Switch light/dark appearance">🌙</button><div id="month" class="month"></div><button class="btn" onclick="move(1)">›</button></div><div class="clock"><span id="clock"></span><small id="mainWeather">Weather loading…</small><div id="weatherReaction" class="weatherReaction"></div><div id="fridayMode" class="fridayMode"></div><div id="countdowns" class="countdownStrip"></div><small id="sync"></small></div></header>
