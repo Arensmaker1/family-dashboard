@@ -1,10 +1,1183 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Family Dashboard V8.16</title>
-</head>
-<body>
-  <h1>Family Dashboard V8.16</h1>
-  <p>GitHub Pages is alive!</p>
-</body>
-</html>
+<!doctype html><!-- Family Dashboard V8.16 GitHub Pages migration build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<style>
+:root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
+#app{height:100vh;padding:12px;display:flex;flex-direction:column;gap:9px}header{height:62px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}.brand{font-size:25px;font-weight:700}.controls{display:flex;align-items:center;gap:7px}.btn{background:#111f2c;border:1px solid #314152;border-radius:9px;padding:8px 12px;cursor:pointer}.month{font-size:25px;min-width:235px;text-align:center}.clock{text-align:right;font-size:21px;font-weight:700}.clock small{display:block;color:var(--m);font-size:10px;font-weight:400;line-height:1.25}
+.main{min-height:0;flex:1;display:grid;grid-template-columns:1.15fr .85fr;gap:9px}.panel{background:linear-gradient(145deg,#0b1721,#0a141d);border:1px solid var(--l);border-radius:13px;padding:10px;min-height:0}.cal{display:flex;flex-direction:column}.week,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.week{margin-bottom:4px}.week div{text-align:center;color:var(--m);font-size:11px;font-weight:700;padding:4px}.grid{grid-template-rows:repeat(6,minmax(0,1fr));min-height:0;flex:1}.day{background:#0c1923;border:1px solid #21303d;border-radius:7px;padding:6px;cursor:pointer;overflow:hidden}.day.other{opacity:.32}.day.today{box-shadow:inset 0 0 0 1px var(--g)}.day.sel{border:2px solid var(--v);padding:5px}.num{font-size:14px;font-weight:700;margin-bottom:4px}.event{font-size:9.5px;padding:3px 4px;margin:2px 0;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.more{font-size:9px;color:var(--m)}.legend{display:flex;gap:11px;flex-wrap:wrap;margin-top:5px;color:var(--m);font-size:9.5px}.legend span{cursor:pointer}.legend .off{opacity:.3;text-decoration:line-through}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.detail{overflow:auto}.head{display:flex;justify-content:space-between}.detail h1{margin:0;font-size:27px}.sub,.note,.empty{color:var(--m)}.sub{margin:3px 0 11px}.weather{text-align:right}.temp{font-size:27px;font-weight:700}.wm{font-size:10px;color:var(--m)}.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{border:1px solid var(--l);border-radius:9px;padding:10px;background:#0c1822}.card h2{font-size:13px;margin:0 0 7px;color:var(--v);display:flex;justify-content:space-between}.mini{font-size:10px;color:var(--b);cursor:pointer}.row{display:flex;gap:6px;padding:6px 0;border-bottom:1px solid #1d2a35}.dot{width:8px;height:8px;border-radius:50%;margin-top:4px}.time{width:55px;color:var(--m);font-size:10px;flex:none}.title{font-size:12px}.note{font-size:10px}.chore{display:flex;gap:7px;align-items:center;padding:6px 0;border-bottom:1px solid #1d2a35}.chore input{width:16px;height:16px;accent-color:var(--g)}.done{text-decoration:line-through;color:#71808c}.who{margin-left:auto;color:var(--m);font-size:9px}.menuitem{padding:6px 0;border-bottom:1px solid #1d2a35;font-size:11px}.md{display:inline-block;width:34px;color:var(--o);font-weight:700}.notesbox{white-space:pre-wrap;font-size:12px;line-height:1.5}.progress{height:6px;background:#17232e;border-radius:5px;margin-top:7px;overflow:hidden}.progress div{height:100%;background:var(--g)}.quoteCard{grid-column:1/-1;text-align:center;padding:9px 14px}.quoteCard h2{justify-content:center;margin-bottom:5px}.quote{font-size:12px;font-style:italic;line-height:1.35;color:#dce5ec}
+footer{min-height:58px;color:var(--m);display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.nav{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.nav button{min-height:44px;background:#101e29;border:1px solid #314456;border-radius:11px;color:#dce5ec;cursor:pointer;padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap}.nav button:hover{background:#162837;border-color:#526b80}.nav button:active{transform:translateY(1px)}.nav .primaryAction{border-color:var(--g);box-shadow:0 0 0 1px #72e26b22 inset}.navIcon{font-size:16px;vertical-align:-1px;margin-right:3px}
+#load{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:20;font-size:22px}.modalbg{position:fixed;inset:0;background:#000b;display:none;place-items:center;z-index:50}.modal{width:min(650px,92vw);max-height:85vh;overflow:auto;background:#0c1822;border:1px solid #405163;border-radius:14px;padding:18px}.modal h2{margin-top:0}.field{margin:9px 0}.field label{display:block;color:var(--m);font-size:11px;margin-bottom:4px}.field input,.field textarea{width:100%;background:#071018;color:var(--t);border:1px solid #344657;border-radius:7px;padding:8px}.field textarea{min-height:110px}.editor{display:grid;grid-template-columns:1fr 90px 90px 34px;gap:6px;margin:6px 0}.editor input{min-width:0;background:#071018;color:var(--t);border:1px solid #344657;border-radius:6px;padding:6px}.choreEdit{border:1px solid #263747;border-radius:9px;padding:9px;margin:8px 0}.choreTop{display:grid;grid-template-columns:1fr 100px 34px;gap:6px}.choreTop input{min-width:0;background:#071018;color:var(--t);border:1px solid #344657;border-radius:6px;padding:7px}.daychecks{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.daycheck{font-size:10px;color:var(--m);background:#101e29;border:1px solid #2b3c4b;border-radius:6px;padding:5px 7px;cursor:pointer}.daycheck input{margin:0 4px 0 0;vertical-align:middle;accent-color:var(--g)}.x{background:#33151b;border:1px solid #6b2834;border-radius:6px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.saving{color:var(--g);font-size:10px}
+@media(max-width:900px){.main{grid-template-columns:1fr}.detail{display:none}.clock{display:none}}
+
+/* V4 FIRE TV */
+.main{grid-template-columns:1fr!important}
+.detail{display:none!important}
+#dayOverlay{position:fixed;inset:0;background:var(--bg);z-index:25;padding:14px;display:none;overflow:hidden}
+#dayOverlay.open{display:flex;flex-direction:column;gap:10px}
+.v4top{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.v4title h1{margin:0;font-size:30px}.v4title div{color:var(--m);font-size:11px}
+.v4body{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1.02fr) minmax(0,.88fr) 42px;gap:9px}
+.v4lower{grid-column:1/-1;display:grid;grid-template-columns:.9fr .9fr 1.35fr;gap:9px;min-height:0;overflow:hidden}.v4lower>.card{min-height:0;overflow:hidden}
+.v4forecast{min-height:0}.v4forecastrow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.v4fday{text-align:center;border:1px solid var(--l);border-radius:7px;padding:5px 2px;font-size:8.5px}
+.v4fday b{display:block;font-size:9.5px}.v4fi{font-size:17px;margin:2px 0}
+.v4quote{grid-column:1/-1;height:42px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid var(--l);border-radius:10px;padding:6px 14px;font-size:12px;font-style:italic;background:#0b1721;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.v4back{background:#111f2c;border:1px solid #51677b;border-radius:9px;padding:9px 13px;cursor:pointer}
+.day{font-size:inherit}.day:focus,.btn:focus,.v4back:focus{outline:3px solid white;outline-offset:2px}
+.quoteMain{font-size:13.5px;font-weight:500;font-style:italic;color:#dce5ec;text-align:right;max-width:100%;margin-left:auto;line-height:1.25}
+#mainWeather{display:block!important;margin-top:1px}
+#mainWeather .weatherPrimary{display:block;color:var(--t);font-size:21px;font-weight:700;line-height:1.05}
+#mainWeather .weatherSecondary{display:block;color:var(--m);font-size:10px;font-weight:400;line-height:1.25;margin-top:2px}
+.grid{touch-action:pan-y}.grid.swipeOutLeft{animation:swipeOutLeft .14s ease-in forwards}.grid.swipeOutRight{animation:swipeOutRight .14s ease-in forwards}
+.grid.swipeInLeft{animation:swipeInLeft .14s ease-out}.grid.swipeInRight{animation:swipeInRight .14s ease-out}
+@keyframes swipeOutLeft{to{transform:translateX(-8%);opacity:.15}}@keyframes swipeOutRight{to{transform:translateX(8%);opacity:.15}}
+@keyframes swipeInLeft{from{transform:translateX(-8%);opacity:.15}to{transform:none;opacity:1}}@keyframes swipeInRight{from{transform:translateX(8%);opacity:.15}to{transform:none;opacity:1}}
+.dailyCelebrate{position:fixed;inset:0;z-index:86;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,#16301dcc 0%,#07101833 42%,transparent 70%);animation:dailyFade 3.2s ease forwards}
+.dailyCelebrateBox{border:2px solid var(--g);background:#09161eee;border-radius:22px;padding:24px 34px;text-align:center;box-shadow:0 0 34px #72e26b55;animation:dailyPop .42s cubic-bezier(.2,1.4,.35,1)}
+.dailyCelebrateIcon{font-size:54px;line-height:1}.dailyCelebrateText{font-size:27px;font-weight:800;margin-top:8px}.dailyCelebrateSub{font-size:14px;color:#b8c7d4;margin-top:5px}
+@keyframes dailyPop{from{transform:scale(.55) rotate(-4deg);opacity:0}to{transform:scale(1);opacity:1}}@keyframes dailyFade{0%,76%{opacity:1}100%{opacity:0;visibility:hidden}}
+footer{min-height:58px;align-items:center}
+@media(min-width:901px){.num{font-size:17px}.event{font-size:11px}.week div{font-size:12px}}
+
+/* V5.1 FUN PACK */
+body{--theme1:#55a8ff;--theme2:#a970ff;--themeGlow:rgba(85,168,255,.20);background:radial-gradient(circle at 15% 10%,var(--themeGlow),transparent 28%),radial-gradient(circle at 85% 85%,var(--themeGlow),transparent 30%),var(--bg)}
+.themeDecor{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}.decor{position:absolute;opacity:.18;animation:drift 14s linear infinite}@keyframes drift{from{transform:translateY(-15vh) rotate(0)}to{transform:translateY(115vh) rotate(360deg)}}
+.countdownStrip{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:3px}.countdownChip{font-size:9px;border:1px solid var(--theme1);border-radius:999px;padding:3px 7px;background:#0d1a25}.weatherReaction,.fridayMode{font-size:9px;color:#ffd84a;font-weight:700}
+.specialBanner{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:80;background:#09141dee;border:1px solid var(--theme1);border-radius:14px;padding:14px 20px;font-size:21px;font-weight:800}.confetti{position:fixed;top:-20px;z-index:75;pointer-events:none;animation:confettiFall 4s linear forwards}@keyframes confettiFall{to{transform:translateY(110vh) rotate(720deg);opacity:.1}}
+.ufo,.bigfoot{position:fixed;z-index:70;pointer-events:none}.bigfoot{width:112px;height:188px;bottom:30px;filter:drop-shadow(0 7px 6px #0009);animation:bigfootCross var(--bfDur,12s) linear forwards}.bigfoot.reverse{animation-name:bigfootCrossReverse}.bigfoot svg{width:100%;height:100%;overflow:visible}.bfBody{fill:#17120f}.bfFur{fill:#211914}.bfArmL,.bfArmR,.bfLegL,.bfLegR{transform-box:fill-box;transform-origin:50% 10%}.bfArmL{animation:bfLimb .72s ease-in-out infinite alternate}.bfArmR{animation:bfLimb .72s ease-in-out infinite alternate-reverse}.bfLegL{animation:bfLeg .72s ease-in-out infinite alternate}.bfLegR{animation:bfLeg .72s ease-in-out infinite alternate-reverse}@keyframes bfLimb{from{transform:rotate(-18deg)}to{transform:rotate(20deg)}}@keyframes bfLeg{from{transform:rotate(-11deg)}to{transform:rotate(13deg)}}@keyframes bigfootCross{from{left:-145px}to{left:calc(100vw + 145px)}}@keyframes bigfootCrossReverse{from{right:-145px}to{right:calc(100vw + 145px)}}.ufo{width:105px;height:52px;top:16%;left:-130px;filter:drop-shadow(0 5px 7px #0009);animation:ufoFly 7s linear forwards}.ufo svg{width:100%;height:100%}.ufoBeam{opacity:.18;animation:ufoPulse .8s ease-in-out infinite alternate}@keyframes ufoFly{0%{left:-130px;transform:translateY(0) rotate(-2deg)}50%{transform:translateY(55px) rotate(2deg)}100%{left:calc(100vw + 130px);transform:translateY(10px) rotate(-2deg)}}@keyframes ufoPulse{to{opacity:.5}}
+.godMode{position:fixed;inset:0;z-index:90;background:#00120d;display:grid;place-items:center;font-family:monospace;color:#62ff9a;font-size:34px;font-weight:800;text-shadow:0 0 12px #62ff9a;animation:godFade 3.5s forwards}@keyframes godFade{0%,75%{opacity:1}100%{opacity:0;visibility:hidden}}
+.streakBadge{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#17351d;color:#8aff93;font-size:9px}.birthdayCell{box-shadow:inset 0 0 0 2px #ff74be,0 0 12px #ff74be55}.holidayCell{box-shadow:inset 0 0 0 2px #ffd84a,0 0 10px #ffd84a44}
+
+/* V7.2 KITCHEN EDITION — GROCERY POLISH */
+#groceryOverlay{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;padding:14px;overflow:hidden}
+#groceryOverlay.open{display:flex}.gTop{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px}.gTop h1{margin:0;text-align:center;font-size:29px}.gTop .gSync{font-size:10px;color:var(--m);text-align:right;min-width:110px}
+.gAdd{display:grid;grid-template-columns:110px minmax(180px,1fr) 190px auto;gap:8px;max-width:900px;width:100%;margin:0 auto 12px}.gAdd input,.gAdd select{background:#0c1822;color:var(--t);border:1px solid #405163;border-radius:10px;padding:12px;font-size:16px}.gAdd button{font-weight:700;padding:10px 18px}
+.gBody{flex:1;min-height:0;overflow:auto;max-width:1000px;width:100%;margin:auto;padding:0 4px 18px}.gSection{margin:9px 0 14px}.gSectionTitle{position:sticky;top:0;z-index:2;background:#071018ee;color:var(--theme1);font-size:13px;font-weight:800;letter-spacing:.06em;padding:7px 4px;border-bottom:1px solid #263747}.gItem{display:grid;grid-template-columns:38px minmax(0,1fr) 42px;align-items:center;min-height:53px;border-bottom:1px solid #1d2a35;background:#0b1721;padding:4px 7px}.gItem:first-of-type{border-radius:9px 9px 0 0}.gItem input{width:24px;height:24px;accent-color:var(--g)}.gName{font-size:17px}.gQty{display:inline-block;min-width:58px;margin-right:8px;color:var(--theme1);font-weight:800}.gMeta{font-size:10px;color:var(--m);margin-left:8px}.gEdit{border:0;background:transparent;color:#9ecfff;font-size:18px;cursor:pointer;padding:8px}.gItemActions{display:flex;align-items:center;justify-content:flex-end}.gItem.checked{opacity:.48}.gItem.checked .gName{text-decoration:line-through}.gDelete{border:0;background:transparent;color:#d9818e;font-size:22px;cursor:pointer}.gEmpty{text-align:center;color:var(--m);padding:70px 20px;font-size:18px}.gBottom{display:flex;justify-content:center;gap:8px;padding-top:7px}.gCount{color:var(--m);font-size:11px;text-align:center;margin:4px 0}
+@media(max-width:650px){
+#app{padding:8px 8px 74px;gap:7px}
+header{height:58px}.brand{font-size:18px}.controls{gap:4px}.controls .btn{padding:7px 9px}.month{font-size:18px;min-width:0}.week div{font-size:9px}.day{padding:4px}.num{font-size:13px}.event{font-size:8.5px}
+footer{position:fixed;left:0;right:0;bottom:0;z-index:24;min-height:64px;padding:6px 7px;background:#071018f5;border-top:1px solid #2b3c4b;display:block;box-shadow:0 -5px 18px #0007}
+.nav{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.nav button{min-width:0;min-height:52px;padding:5px 2px;border-radius:9px;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:normal;line-height:1.05}.navIcon{font-size:19px;margin:0}
+.quoteMain,#status{display:none}
+}
+@media(min-width:651px) and (max-width:1100px){footer{grid-template-columns:1fr}.quoteMain{text-align:center;margin:0}.nav{justify-content:center}}
+@media(max-width:650px){#groceryOverlay{padding:9px}.gTop{grid-template-columns:auto 1fr}.gTop h1{font-size:22px}.gTop .gSync{display:none}.gAdd{grid-template-columns:92px 1fr auto}.gAdd select{grid-column:1/-1;grid-row:2}.gAdd input{font-size:16px}.gName{font-size:16px}.gQty{min-width:48px;margin-right:5px}.gBody{padding-bottom:8px}.gItem{min-height:56px}}
+
+/* V8.0 Recipe Library + Meal Plans */
+#recipeOverlay{position:fixed;inset:0;z-index:28;background:#071018;display:none;flex-direction:column;padding:14px;overflow:hidden}#recipeOverlay.open{display:flex}.rTop{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;max-width:1200px;width:100%;margin:0 auto 10px}.rTop h1{margin:0;text-align:center;font-size:25px}.rTabs{display:flex;gap:7px;justify-content:center}.rTabs button.active{border-color:var(--theme1);box-shadow:0 0 0 1px var(--theme1) inset}.rTools{max-width:1100px;width:100%;margin:0 auto 9px;display:flex;gap:7px}.rTools input,.rTools select{background:#0b1721;color:var(--t);border:1px solid #344657;border-radius:9px;padding:10px;font-size:14px}.rTools input{flex:1}.rBody{flex:1;min-height:0;overflow:auto;max-width:1100px;width:100%;margin:auto}.recipeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:9px}.recipeCard,.planDay{background:#0c1822;border:1px solid #263747;border-radius:11px;padding:11px;cursor:pointer}.recipeCard:hover{border-color:var(--theme1)}.recipeCard h3{font-size:15px;margin:0 0 5px}.rMeta{font-size:10px;color:var(--m)}.rTags{font-size:10px;color:var(--theme1);margin-top:6px}.recipeDetail{max-width:850px;margin:auto}.recipeDetail h2{font-size:25px;margin:4px 0}.recipeDetail h3{color:var(--theme1);font-size:13px;margin:18px 0 6px}.recipeText{white-space:pre-wrap;line-height:1.55;font-size:14px}.planHeader{background:#0c1822;border:1px solid #263747;border-radius:11px;padding:12px;margin-bottom:9px}.planHeader h2{margin:0 0 5px}.planDays{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}.planDay{cursor:default}.planDay h3{margin:0 0 7px;color:var(--theme1)}.planMeal{font-size:12px;padding:7px 8px;margin:2px -8px;border-radius:7px;cursor:pointer}.planMeal:hover{background:#132432}.planMeal .tap{float:right;color:var(--theme1);font-weight:800}.planMeal.noRecipe{cursor:default}.planMeal.noRecipe:hover{background:transparent}.planNutrition{margin-top:7px;font-size:10px;color:var(--m);border-top:1px solid #263747;padding-top:6px}.rEmpty{text-align:center;color:var(--m);padding:60px 20px}.rError{color:#ff9aa7;text-align:center;padding:30px}.rLoading{text-align:center;padding:60px;color:var(--m)}
+.planBuilder{background:#0c1822;border:1px solid var(--theme1);border-radius:12px;padding:12px;margin-bottom:10px}.planBuilder h3{margin:0 0 8px}.planControls{display:grid;grid-template-columns:130px 180px auto;gap:8px;align-items:end}.planControls label{font-size:10px;color:var(--m);display:block;margin-bottom:4px}.planControls input,.planControls select{width:100%;box-sizing:border-box;background:#0b1721;color:var(--t);border:1px solid #405163;border-radius:9px;padding:10px;font-size:14px}.weekPreview{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:10px 0}.weekCard{background:#0c1822;border:1px solid #263747;border-radius:11px;padding:10px}.weekCard h3{margin:0 0 7px;color:var(--theme1)}.weekMeal{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #1d2a35;font-size:11px}.reroll{padding:5px 8px;font-size:10px}.loadedBadge{color:#8aff93;font-size:11px;font-weight:800;margin-left:8px}
+.planSelectBar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:9px}.planSelectBar label,.buildControls label{display:block;font-size:10px;color:var(--m);margin-bottom:4px}.planSelectBar select,.buildControls select,.buildControls input{width:100%;background:#0b1721;color:var(--t);border:1px solid #405163;border-radius:9px;padding:10px;font-size:14px}.planSourceNote{font-size:10px;color:var(--m);margin-top:6px}.buildPanel{background:#0c1822;border:1px solid var(--theme1);border-radius:12px;padding:13px}.buildControls{display:grid;grid-template-columns:180px 1fr auto auto;gap:8px;align-items:end}.randomWeek{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin:12px 0}.randomDinner{background:#0c1822;border:1px solid #263747;border-radius:11px;padding:10px}.randomDinner h3{margin:0 0 7px;color:var(--theme1)}.randomDinnerName{font-size:13px;font-weight:700;margin-bottom:6px}.sourceManager{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.planWarning{color:#ffcf70;font-size:10px;margin-top:6px}
+.wgPanel{background:#0c1822;border:1px solid var(--theme1);border-radius:12px;padding:13px}.wgTopline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}.wgActions{display:flex;gap:7px;flex-wrap:wrap}.wgList{display:flex;flex-direction:column;gap:7px}.wgRow{display:grid;grid-template-columns:auto 90px 1fr 150px;gap:7px;align-items:start;background:#0a151e;border:1px solid #263747;border-radius:10px;padding:9px}.wgRow>input[type=checkbox]{width:18px;height:18px;margin-top:9px;accent-color:var(--g)}.wgRow input[type=text],.wgRow select{width:100%;background:#071018;color:var(--t);border:1px solid #344657;border-radius:8px;padding:8px;font-size:13px}.wgSources{grid-column:3/-1;color:var(--m);font-size:9px;line-height:1.35}.wgSummary{font-size:11px;color:var(--m);margin-bottom:10px}.wgWarning{color:#ffcf70;font-size:10px;margin:8px 0}.wgSend{margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wgSuccess{background:#102718;border:1px solid #356b3d;color:#9cffab;border-radius:9px;padding:10px;margin-bottom:10px;font-size:12px;font-weight:700}
+@media(max-width:650px){.planControls{grid-template-columns:1fr}.nav{grid-template-columns:repeat(6,1fr)}.nav button{font-size:8px}.rTop{grid-template-columns:auto 1fr}.rTop h1{font-size:20px;text-align:left}.rTabs{grid-column:1/-1}.rTabs .btn{flex:1}.rTools{flex-direction:column}.recipeGrid,.planDays{grid-template-columns:1fr}#recipeOverlay{padding:9px}.recipeDetail h2{font-size:21px}}
+@media(max-width:650px){.buildControls,.planSelectBar{grid-template-columns:1fr}.rTabs{flex-wrap:wrap}.rTabs .btn{min-width:30%}.wgRow{grid-template-columns:auto 72px 1fr}.wgRow select{grid-column:2/-1}.wgSources{grid-column:2/-1}.wgTopline{align-items:flex-start}}
+
+/* V8.3.3 Wife Approved: warm light appearance + dark-mode fallback */
+body[data-appearance="light"]{--bg:#f5f1e8;--p:#fffdf8;--l:#d8d0c3;--t:#292722;--m:#716b62;--v:#7651a8;--g:#3f9148;--o:#b96b25;--b:#347eb8;background:radial-gradient(circle at 15% 10%,var(--themeGlow),transparent 28%),radial-gradient(circle at 85% 85%,var(--themeGlow),transparent 30%),var(--bg)}
+body[data-appearance="light"] .panel,body[data-appearance="light"] .card,body[data-appearance="light"] .v4quote,body[data-appearance="light"] .planBuilder,body[data-appearance="light"] .buildPanel,body[data-appearance="light"] .randomDinner,body[data-appearance="light"] .weekCard,body[data-appearance="light"] .wgPanel{background:linear-gradient(145deg,#fffdf9,#f8f3ea);box-shadow:0 2px 8px #4c403512}
+body[data-appearance="light"] .day{background:#fffdfa;border-color:#ddd4c7}body[data-appearance="light"] .day.other{opacity:.42}
+body[data-appearance="light"] .btn,body[data-appearance="light"] .nav button,body[data-appearance="light"] .v4back,body[data-appearance="light"] .daycheck{background:#eee7dc;border-color:#c9beaf;color:#302d28}
+body[data-appearance="light"] .btn:hover,body[data-appearance="light"] .nav button:hover{background:#e5dccf;border-color:#aa9c8b}
+body[data-appearance="light"] .modal,body[data-appearance="light"] .choreEdit,body[data-appearance="light"] .gRow,body[data-appearance="light"] .rCard,body[data-appearance="light"] .wgRow{background:#fffdf9;border-color:#d8d0c3;color:var(--t)}
+body[data-appearance="light"] .field input,body[data-appearance="light"] .field textarea,body[data-appearance="light"] .editor input,body[data-appearance="light"] .choreTop input,body[data-appearance="light"] .gAdd input,body[data-appearance="light"] .gAdd select,body[data-appearance="light"] .gEdit input,body[data-appearance="light"] .gEdit select,body[data-appearance="light"] .rTools input,body[data-appearance="light"] .rTools select,body[data-appearance="light"] .planControls input,body[data-appearance="light"] .planControls select,body[data-appearance="light"] .planSelectBar select,body[data-appearance="light"] .buildControls select,body[data-appearance="light"] .buildControls input,body[data-appearance="light"] .wgRow input[type=text],body[data-appearance="light"] .wgRow select{background:#fff;color:#292722;border-color:#cfc4b5}
+body[data-appearance="light"] .row,body[data-appearance="light"] .chore,body[data-appearance="light"] .menuitem,body[data-appearance="light"] .weekMeal{border-bottom-color:#e2dbd0}
+body[data-appearance="light"] .quote,body[data-appearance="light"] .quoteMain{color:#4e4942}body[data-appearance="light"] .progress{background:#ded6ca}
+body[data-appearance="light"] .countdownChip{background:#fff8ed}body[data-appearance="light"] .specialBanner{background:#fffdf9ee;color:#292722}
+body[data-appearance="light"] .dailyCelebrate{background:radial-gradient(circle,#d9f0d9dd 0%,#f5f1e833 42%,transparent 70%)}body[data-appearance="light"] .dailyCelebrateBox{background:#fffdf9f2;color:#292722}
+body[data-appearance="light"] #load{background:var(--bg)}
+.appearanceToggle{min-width:42px;padding-left:9px!important;padding-right:9px!important}
+
+
+
+/* V8.4.2 Wife Mode full-screen surface audit */
+body[data-appearance="light"] #groceryOverlay,
+body[data-appearance="light"] #recipeOverlay,
+body[data-appearance="light"] #dayOverlay{background:var(--bg);color:var(--t)}
+body[data-appearance="light"] .gSectionTitle{background:#f5f1e8f5;color:var(--theme1);border-bottom-color:#d8d0c3}
+body[data-appearance="light"] .gItem{background:#fffdf9;border-bottom-color:#e2dbd0;color:var(--t)}
+body[data-appearance="light"] .gItem.checked{opacity:.55}
+body[data-appearance="light"] .gEdit{color:#347eb8}
+body[data-appearance="light"] .gDelete{color:#a74352}
+body[data-appearance="light"] .recipeCard,
+body[data-appearance="light"] .planDay,
+body[data-appearance="light"] .planHeader,
+body[data-appearance="light"] .weekCard,
+body[data-appearance="light"] .randomDinner,
+body[data-appearance="light"] .wgRow,
+body[data-appearance="light"] .stockedItem,
+body[data-appearance="light"] .timerCreate,
+body[data-appearance="light"] .timerRow{background:#fffdf9;border-color:#d8d0c3;color:var(--t);box-shadow:0 1px 5px #4c40350d}
+body[data-appearance="light"] .recipeCard:hover{background:#fffaf1;border-color:var(--theme1)}
+body[data-appearance="light"] .planMeal:hover{background:#eee7dc}
+body[data-appearance="light"] .planMeal.noRecipe:hover{background:transparent}
+body[data-appearance="light"] .planNutrition{border-top-color:#e2dbd0}
+body[data-appearance="light"] .weekMeal{border-bottom-color:#e2dbd0}
+body[data-appearance="light"] .wgSuccess{background:#edf8ee;border-color:#9dc7a2;color:#2f7137}
+body[data-appearance="light"] .loadedBadge{color:#347d3d}
+body[data-appearance="light"] .rError{color:#a74352}
+body[data-appearance="light"] .planWarning,
+body[data-appearance="light"] .wgWarning{color:#9b6814}
+body[data-appearance="light"] .timerRow.ringing{background:#fff6e8;border-color:var(--o)}
+body[data-appearance="light"] .pinNote{background:#f5efe5}
+@media(max-width:650px){body[data-appearance="light"] footer{background:#f5f1e8f5;border-top-color:#d8d0c3;box-shadow:0 -5px 18px #4c403520}}
+
+/* V8.4 Kitchen Intelligence */
+.glanceStrip{display:flex;gap:8px;align-items:stretch;padding:0 10px 8px;max-width:1500px;margin:-2px auto 0}.glanceBox{flex:1;min-width:0;border:1px solid var(--l);background:var(--p);border-radius:10px;padding:7px 10px;font-size:10px;line-height:1.35}.glanceBox b{color:var(--v);font-size:10px}.glanceText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.pinNote{border-left:3px solid var(--o);padding:5px 7px;margin:5px 0;background:#ffffff08;border-radius:5px}.pinNote button{float:right;border:0;background:transparent;color:var(--m);cursor:pointer}.timerBadge{background:var(--o);color:#111;border-radius:999px;padding:1px 6px;margin-left:5px;font-size:9px}@keyframes timerPulse{50%{transform:scale(1.08)}}#timersNavBtn.ringing{animation:timerPulse .7s infinite;outline:2px solid var(--o)}.timerCreate{border:1px solid var(--l);border-radius:12px;padding:12px;margin:10px 0}.timerQuickNames,.timerPresets,.timerAdjust{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:8px 0}.timerQuickNames button,.timerPresets button{min-height:44px;padding:8px 12px}.timerAdjust{justify-content:center}.timerAdjust button{width:58px;height:54px;font-size:18px;font-weight:900}.timerMinuteDisplay{min-width:108px;text-align:center;font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}.timerNameInput{width:100%;box-sizing:border-box;background:#0b1721;color:var(--t);border:1px solid #405163;border-radius:9px;padding:12px;font-size:15px;margin-top:8px}.timerStart{width:100%;min-height:50px;font-size:16px;font-weight:900;margin-top:8px}.timerRow.ringing{border-color:var(--o);box-shadow:0 0 0 1px var(--o) inset}.timerStop{min-height:42px;font-weight:900}.timerAlarmBar{display:flex;gap:12px;align-items:center;justify-content:space-between;border:2px solid var(--o);border-radius:12px;padding:12px 14px;margin:8px 0 12px;background:#ffb00018}.timerAlarmBar b{color:var(--o);font-size:18px}.timerAlarmBar div div{font-size:11px;margin-top:3px}.timerAlarmStopAll{min-width:180px;min-height:58px;font-size:17px;font-weight:1000;animation:timerPulse .7s infinite}@media(max-width:700px){.timerAlarmBar{flex-direction:column;align-items:stretch}.timerAlarmStopAll{width:100%}}
+.timerList{display:grid;gap:8px;margin:12px 0}.timerRow{border:1px solid var(--l);border-radius:9px;padding:10px;display:flex;gap:10px;align-items:center}.timerName{font-weight:800;flex:1}.timerTime{font-size:20px;font-variant-numeric:tabular-nums}.stockedGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;margin:12px 0}.stockedItem{border:1px solid var(--l);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center}.stockedTag{font-size:9px;color:var(--g);font-weight:800}.wgRow.stocked{opacity:.55}.wgStocked{font-size:9px;color:var(--g);font-weight:800}.notesPins{margin:10px 0}.pinEditRow{display:flex;gap:6px;margin:6px 0}.pinEditRow input{flex:1}
+body[data-appearance="light"] .pinNote{background:#00000005}body[data-appearance="light"] .timerNameInput{background:#fff;color:#292722;border-color:#cfc4b5}
+@media(max-width:700px){.glanceStrip{padding:4px 7px 7px;gap:5px}.glanceBox{padding:6px;font-size:9px}.glanceText{white-space:normal;max-height:2.7em}.timerAdjust button{width:52px}.timerMinuteDisplay{min-width:92px}}
+
+
+/* V8.7 RECIPE MANAGEMENT */
+.recipeManageActions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.recipeEditor{max-width:900px;margin:auto;padding-bottom:24px}.recipeEditorHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.recipeEditorHead h2{margin:0}.recipeFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.recipeField{display:flex;flex-direction:column;gap:5px}.recipeField.full{grid-column:1/-1}.recipeField label{font-size:10px;font-weight:900;color:var(--theme1);letter-spacing:.04em}.recipeField input,.recipeField textarea,.recipeField select{box-sizing:border-box;width:100%;background:#0b1721;color:var(--t);border:1px solid #344657;border-radius:9px;padding:11px;font:inherit}.recipeField textarea{min-height:145px;resize:vertical;line-height:1.45}.recipeField textarea.instructions{min-height:220px}.recipeEditorFoot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 25%);padding-top:20px;padding-bottom:6px}.recipeSaveState{font-size:11px;color:var(--m);margin-right:auto;align-self:center}.recipeSource{font-size:9px;color:var(--m);margin-top:4px}.requiredStar{color:var(--o)}body[data-appearance="light"] .recipeField input,body[data-appearance="light"] .recipeField textarea,body[data-appearance="light"] .recipeField select{background:#fff;color:#292722;border-color:#cfc4b5}@media(max-width:650px){.recipeFormGrid{grid-template-columns:1fr}.recipeField.full{grid-column:auto}.recipeEditorHead{align-items:flex-start}.recipeEditorFoot{flex-wrap:wrap}.recipeEditorFoot .btn{flex:1}}
+
+
+
+/* V8.11 HOUSEHOLD CALENDAR CORE */
+.calQuickAdd{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.calOwnerPill{font-size:9px;font-weight:900;border-radius:999px;padding:3px 7px;margin-left:5px;background:#ffffff0b}.calEventActions{margin-left:auto}.calEventForm{display:grid;grid-template-columns:1fr 1fr;gap:9px}.calEventForm .full{grid-column:1/-1}.calEventForm label{display:flex;flex-direction:column;gap:4px;font-size:10px;font-weight:900;color:var(--theme1)}.calEventForm input,.calEventForm select{width:100%;box-sizing:border-box;background:#0b1721;color:var(--t);border:1px solid #344657;border-radius:8px;padding:9px;font:inherit}.calAllDay{flex-direction:row!important;align-items:center;gap:8px!important}.calAllDay input{width:auto}.calConflict{border-left:3px solid #ffb347!important;background:#ffb34712!important}.calConflictNote{font-size:9px;color:#ffbd68;font-weight:900;margin-top:3px}.calUpNext{display:flex;gap:7px;overflow:hidden;margin:5px 0 8px}.calUpChip{min-width:0;flex:1;border:1px solid #ffffff12;border-radius:8px;padding:6px 8px;font-size:9px}.calUpChip b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calUpChip span{color:var(--m)}body[data-appearance="light"] .calEventForm input,body[data-appearance="light"] .calEventForm select{background:#fff;color:#292722;border-color:#cfc4b5}@media(max-width:650px){.calEventForm{grid-template-columns:1fr}.calEventForm .full{grid-column:auto}.calUpNext{overflow-x:auto}.calUpChip{min-width:160px}}
+
+/* V8.11 GROCERY CENTER INTEGRATION — includes V8.7 Smart Recipe Import */
+.recipeImportBox{border:1px solid #344657;border-radius:12px;padding:12px;margin:0 0 14px;background:#ffffff05}.recipeImportBox h3{margin:0 0 4px}.recipeImportBox textarea{box-sizing:border-box;width:100%;min-height:220px;margin-top:9px;background:#0b1721;color:var(--t);border:1px solid #344657;border-radius:9px;padding:11px;font:inherit;line-height:1.4;resize:vertical}.recipeImportActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}.recipeImportHint{font-size:10px;color:var(--m);flex:1}.importReview{font-size:10px;color:var(--g);font-weight:800;margin-top:7px}body[data-appearance="light"] .recipeImportBox textarea{background:#fff;color:#292722;border-color:#cfc4b5}
+
+
+/* V8.11 GROCERY CENTER INTEGRATION */
+.recipeGroceryPanel{max-width:980px;margin:auto;padding-bottom:24px}.rgTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}.rgTop h2{margin:0 0 4px}.rgSummary{padding:9px 11px;border:1px solid #344657;border-radius:10px;background:#ffffff05;font-size:11px;color:var(--m);margin-bottom:10px}.rgList{display:flex;flex-direction:column;gap:6px}.rgRow{display:grid;grid-template-columns:34px 105px minmax(180px,1fr) 190px;gap:7px;align-items:center;border:1px solid #28394a;border-radius:10px;padding:8px;background:#ffffff04}.rgRow.stocked{opacity:.58}.rgRow input[type="checkbox"]{width:23px;height:23px}.rgRow input[type="text"],.rgRow select{box-sizing:border-box;width:100%;background:#0b1721;color:var(--t);border:1px solid #344657;border-radius:8px;padding:9px;font:inherit}.rgSource{grid-column:2/-1;font-size:9px;color:var(--m)}.rgStocked{color:var(--g);font-weight:900}.rgActions{display:flex;gap:7px;flex-wrap:wrap}.rgSend{display:flex;gap:10px;align-items:center;position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 25%);padding:22px 0 7px}.gSource{display:block;font-size:8px;color:var(--m);margin-top:2px}.gMergeNote{font-size:9px;color:var(--m);margin-top:3px}@media(max-width:700px){.rgRow{grid-template-columns:30px 82px minmax(0,1fr)}.rgRow select{grid-column:2/-1}.rgSource{grid-column:2/-1}.rgTop{flex-direction:column}.rgActions{width:100%}.rgActions .btn{flex:1}.rgSend{flex-wrap:wrap}.rgSend .primaryAction{width:100%}}body[data-appearance="light"] .rgRow input[type="text"],body[data-appearance="light"] .rgRow select{background:#fff;color:#292722;border-color:#cfc4b5}
+
+/* V8.5 COOK MODE */
+#cookOverlay{position:fixed;inset:0;z-index:42;background:var(--bg);display:none;flex-direction:column;padding:12px;overflow:hidden}#cookOverlay.open{display:flex}.cookTop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border-bottom:1px solid var(--l);padding-bottom:10px}.cookTitle{min-width:0}.cookTitle h1{margin:0;font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cookMeta{font-size:10px;color:var(--m);margin-top:3px}.cookTopActions{display:flex;gap:7px;align-items:center}.cookBody{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(0,1.5fr);gap:10px;padding-top:10px}.cookIngredients,.cookStepPanel{min-height:0;border:1px solid var(--l);border-radius:12px;background:var(--p);padding:12px}.cookIngredients{overflow:auto}.cookIngredients h2,.cookStepPanel h2{margin:0 0 10px;font-size:15px;color:var(--theme1)}.cookIngredient{display:flex;gap:9px;align-items:flex-start;padding:8px 4px;border-bottom:1px solid #1d2a35;font-size:13px;line-height:1.35;cursor:pointer}.cookIngredient input{width:20px;height:20px;flex:none;accent-color:var(--g);margin:0}.cookIngredient.checked span{text-decoration:line-through;opacity:.5}.cookStepPanel{display:flex;flex-direction:column;overflow:hidden}.cookProgress{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.cookStepCount{font-size:12px;color:var(--m);font-weight:800}.cookProgressBar{height:7px;background:#17232e;border-radius:99px;overflow:hidden;flex:1}.cookProgressBar div{height:100%;background:var(--g);transition:width .2s}.cookStepText{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;font-size:clamp(22px,3.1vw,38px);line-height:1.35;font-weight:650;padding:12px 6px}.cookDetectedTimers{display:flex;gap:8px;flex-wrap:wrap;margin:5px 0 10px}.cookDetectedTimers button{min-height:48px;font-weight:800;border-color:var(--o)}.cookNav{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}.cookNav button{min-height:58px;font-size:17px;font-weight:900}.cookTimerStrip{grid-column:1/-1;display:flex;gap:7px;align-items:center;overflow-x:auto;min-height:42px}.cookTimerChip{display:flex;gap:7px;align-items:center;border:1px solid var(--o);border-radius:999px;padding:6px 9px;background:#ffb00012;white-space:nowrap;font-size:11px}.cookTimerChip.ringing{animation:timerPulse .7s infinite;background:#ffb00025}.cookTimerChip b{font-size:13px}.cookTimerChip button{padding:4px 7px;border-radius:999px}.cookNoTimers{color:var(--m);font-size:10px}.cookAllSteps{display:none;flex:1;min-height:0;overflow:auto}.cookAllSteps.open{display:block}.cookAllStep{border:1px solid var(--l);border-radius:10px;padding:12px;margin:7px 0;font-size:16px;line-height:1.45}.cookAllStep b{color:var(--theme1);margin-right:8px}.cookAllStep.current{border-color:var(--g);box-shadow:0 0 0 1px var(--g) inset}.cookStepSingle.hidden{display:none}.cookModeBtn{margin-top:14px;min-height:52px;font-size:16px;font-weight:900;border-color:var(--g)}
+body[data-appearance="light"] #cookOverlay{background:#f4f0e8}body[data-appearance="light"] .cookIngredients,body[data-appearance="light"] .cookStepPanel{background:#fffdf9;border-color:#d8d0c3}body[data-appearance="light"] .cookIngredient{border-bottom-color:#e2dbd0}
+@media(max-width:720px){#cookOverlay{padding:8px}.cookTop{grid-template-columns:auto 1fr}.cookTopActions{grid-column:1/-1}.cookBody{grid-template-columns:1fr;grid-template-rows:minmax(120px,.55fr) minmax(0,1.45fr)}.cookIngredients{font-size:12px}.cookStepText{font-size:clamp(20px,6vw,30px)}.cookTitle h1{font-size:19px}}
+
+/* V8.5.3 COOK MODE POLISH & RESUME */
+.cookAllStep.done{opacity:.48;text-decoration:line-through}.cookWakeBtn.active{border-color:var(--g);box-shadow:0 0 0 1px var(--g) inset}.cookWakeStatus{font-size:10px;color:var(--m);font-weight:800}.cookAllStep{cursor:pointer}.cookDoneBadge{color:var(--g);margin-left:7px}
+/* V8.11 CALENDAR INTELLIGENCE */
+.intelStrip{display:flex;gap:7px;flex-wrap:wrap;margin:5px 0 9px}
+.intelChip{border:1px solid #ffffff18;border-radius:9px;padding:6px 9px;font-size:9px;background:#ffffff08;min-width:135px}
+.intelChip b{display:block;font-size:10px;margin-bottom:2px}
+.intelChip span{color:var(--m)}
+.intelChip.conflict{border-color:#ffb347;background:#ffb34712}
+.countdownChip.birthday{border-color:#ff8fc8}.countdownChip.vacation{border-color:#68d9ff}.countdownChip.school{border-color:#ffd45b}.countdownChip.holiday{border-color:#a6e37d}
+.day.hasConflict:after{content:"!";position:absolute;right:4px;top:4px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:#ffb347;color:#241400;font-size:10px;font-weight:900}
+.day{position:relative}
+@media(max-width:650px){.intelStrip{flex-wrap:nowrap;overflow-x:auto}.intelChip{min-width:155px}}
+
+.calendarEventRow{cursor:pointer;border-radius:7px;padding-left:5px;padding-right:5px}.calendarEventRow:hover{background:#ffffff0b}.eventManageHint{font-size:9px;color:var(--m);font-weight:500}.dangerBtn{border-color:#b94b55!important;color:#ff9da5!important}.eventReadOnly{padding:8px;border:1px solid #ffffff12;border-radius:8px;color:var(--m);font-size:10px;margin-top:8px}
+
+/* V8.11 MOBILE HEADER POLISH */
+.mobileCountdownStrip{display:none}
+@media(max-width:650px){
+  header{
+    height:auto;
+    min-height:92px;
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto auto;
+    gap:5px 8px;
+    align-items:center;
+  }
+  .brand{grid-column:1;grid-row:1;font-size:18px}
+  .clock{grid-column:2;grid-row:1;font-size:18px;align-self:start}
+  .clock #countdowns{display:none}
+  .controls{
+    grid-column:1/-1;
+    grid-row:2;
+    width:100%;
+    display:grid;
+    grid-template-columns:auto auto auto minmax(0,1fr) auto;
+    gap:4px;
+    align-items:center;
+  }
+  .controls .btn{padding:6px 8px}
+  .month{
+    min-width:0;
+    width:100%;
+    font-size:19px;
+    font-weight:800;
+    text-align:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .glanceStrip{margin:0 auto;padding:0 0 6px;width:100%}
+  .mobileCountdownStrip{
+    display:flex;
+    gap:5px;
+    width:100%;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding:0 0 5px;
+    scrollbar-width:none;
+  }
+  .mobileCountdownStrip::-webkit-scrollbar{display:none}
+  .mobileCountdownStrip .countdownChip{flex:0 0 auto}
+}
+
+
+/* V8.12 DINNER COMMAND CENTER THEME FIX */
+.dinnerCommand{border:1px solid var(--theme1);background:linear-gradient(135deg,#0d1c27,#102331);color:var(--t);border-radius:11px;padding:9px 11px;min-width:245px;flex:1.35}
+.dinnerCommandTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.dinnerCommand b{color:var(--theme1);font-size:10px}.dinnerName{font-size:13px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dinnerSub{font-size:9px;color:var(--m);margin-top:3px}.dinnerActions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}.dinnerActions .btn{padding:5px 8px;font-size:9px}.dinnerMissing{color:#ffcf78;font-weight:700}.dinnerReady{color:#8fe5a1;font-weight:700}
+
+body[data-appearance="light"] .dinnerCommand{background:linear-gradient(145deg,#fffdf9,#f8f3ea);border-color:var(--theme1);color:var(--t);box-shadow:0 2px 8px #4c403512}
+body[data-appearance="light"] .dinnerMissing{color:#9a5b18}
+body[data-appearance="light"] .dinnerReady{color:#2f7f3b}
+@media(max-width:650px){.dinnerCommand{min-width:220px;padding:7px 9px}.dinnerName{font-size:12px}.dinnerActions .btn{padding:5px 7px}}
+
+
+/* V8.13 HOUSEHOLD UX / MOBILE POLISH — calendar grid dimensions intentionally untouched */
+.kitchenIntel{display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;margin-top:4px;min-width:0}.kitchenIntelChip{font-size:9px;line-height:1.2;border-radius:999px;padding:3px 7px;background:#ffffff09;border:1px solid var(--l);white-space:normal;overflow-wrap:anywhere;max-width:100%;min-width:0}.kitchenIntelChip.busy{border-color:#ffb347}.kitchenIntelChip.prep{border-color:#b79cff}.kitchenIntelChip.time{border-color:#74c6e8}.kitchenIntelChip.tomorrow{border-color:#78cf8d}.dinnerSub.smartLine{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-appearance="light"] .kitchenIntelChip{background:#00000005}
+@media(max-width:650px){.kitchenIntel{flex-wrap:wrap;overflow:visible}.kitchenIntelChip{flex:0 1 auto;max-width:100%}}
+
+
+/* V8.13 HOUSEHOLD UX / MOBILE POLISH
+   Calendar grid sizing is intentionally untouched. */
+button,.btn{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{filter:brightness(1.08)}
+  .day:hover{outline:1px solid var(--theme1);outline-offset:-1px}
+}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--theme1);outline-offset:2px}
+.dinnerActions .btn{min-height:32px}
+.dinnerCommand{min-width:0}
+.glanceBox,.intelStrip{min-width:0}
+.glanceText{overflow-wrap:anywhere}
+@media(max-width:650px){
+  .btn{min-height:40px}
+  header .btn{min-width:40px}
+  .dinnerActions{gap:6px}
+  .dinnerActions .btn{min-height:38px;padding:6px 9px}
+  .dinnerCommand{min-width:210px}
+  .glanceBox{min-width:180px}
+  .glanceStrip{scroll-snap-type:x proximity}
+  .glanceStrip>.dinnerCommand,.glanceStrip>.glanceBox,.glanceStrip>.intelStrip{scroll-snap-align:start}
+  input,select,textarea{font-size:16px}
+}
+@media(max-width:390px){
+  .dinnerCommand{min-width:200px}
+  .glanceBox{min-width:170px}
+  .dinnerActions .btn{font-size:9px}
+}
+
+
+/* V8.13.1 RECIPE ACTION + HORIZONTAL DINNER COMMAND */
+.recipeManageActions{align-items:stretch}
+.recipeManageActions .btn{
+  min-height:44px;
+  padding:10px 14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.recipeManageActions .cookModeBtn{
+  margin-top:0;
+  min-height:44px;
+  font-size:inherit;
+  font-weight:900;
+}
+
+/* Keep Dinner Command wide and shallow so the calendar never gets pushed down */
+.glanceStrip{align-items:stretch}
+.dinnerCommand{
+  flex:2.35 1 520px;
+  min-width:420px;
+  display:grid;
+  grid-template-columns:minmax(170px,1.3fr) minmax(180px,1fr) auto;
+  grid-template-areas:
+    "head intel actions"
+    "name intel actions"
+    "status intel actions";
+  column-gap:12px;
+  row-gap:2px;
+  align-items:center;
+}
+.dinnerCommandTop{grid-area:head}
+.dinnerName{grid-area:name}
+.dinnerSub.smartLine{grid-area:status}
+.kitchenIntel{
+  grid-area:intel;
+  margin-top:0;
+  align-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.dinnerActions{
+  grid-area:actions;
+  margin-top:0;
+  flex-wrap:nowrap;
+  align-items:center;
+  justify-content:flex-end;
+}
+.dinnerActions .btn{white-space:nowrap}
+
+@media(max-width:900px){
+  .dinnerCommand{
+    flex:1 1 100%;
+    min-width:0;
+    grid-template-columns:minmax(150px,1fr) auto;
+    grid-template-areas:
+      "head actions"
+      "name actions"
+      "status actions"
+      "intel intel";
+  }
+  .kitchenIntel{margin-top:4px}
+}
+@media(max-width:650px){
+  .dinnerCommand{
+    display:block;
+    min-width:210px;
+  }
+  .dinnerActions{margin-top:7px;flex-wrap:wrap;justify-content:flex-start}
+  .kitchenIntel{margin-top:4px}
+}
+
+
+/* V8.13.2 FINAL UX POLISH — bounded Dinner Command + unified intelligence chips */
+.dinnerCommand{
+  flex:1.8 1 500px;
+  min-width:400px;
+  max-width:780px;
+}
+.kitchenIntelChip{
+  box-sizing:border-box;
+  min-height:24px;
+  height:24px;
+  min-width:92px;
+  padding:4px 9px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+@media(max-width:900px){
+  .dinnerCommand{max-width:none;min-width:0}
+  .kitchenIntelChip{min-width:88px}
+}
+@media(max-width:650px){
+  .dinnerCommand{max-width:none;min-width:210px}
+  .kitchenIntelChip{height:auto;min-height:24px;white-space:normal}
+}
+
+
+/* V8.14.1 RECIPE SCALE WORKFLOW + HEADER POLISH */
+.appearanceToggle{
+  min-width:0!important;
+  min-height:0!important;
+  height:32px!important;
+  padding:5px 8px!important;
+  line-height:1!important;
+  align-self:center;
+}
+.recipeScaleBar{
+  padding:8px 10px;
+  border:1px solid var(--l);
+  border-radius:10px;
+  background:#ffffff05;
+  width:max-content;
+  max-width:100%;
+}
+body[data-appearance="light"] .recipeScaleBar{background:#fffaf3}
+.rgScaleNote{font-weight:900;color:var(--theme1)}
+@media(max-width:650px){
+  .appearanceToggle{height:34px!important;min-height:34px!important}
+}
+
+.voiceFab{position:fixed;z-index:28;right:16px;bottom:70px;width:52px;height:52px;border-radius:50%;border:1px solid var(--theme1);background:var(--p);color:var(--t);font-size:22px;cursor:pointer}.voiceFab.listening{background:var(--theme1);color:#081018}.voiceSessionBar{position:fixed;z-index:27;right:78px;bottom:75px;display:none;align-items:center;gap:8px;border:1px solid var(--theme1);border-radius:999px;background:var(--p);padding:7px 10px;font-size:10px}.voiceSessionBar.open{display:flex}.voiceChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.voiceChoices .btn{min-height:44px}.voiceHelp{font-size:10px;line-height:1.55;color:var(--m)}@media(max-width:650px){.voiceFab{right:10px;bottom:64px}.voiceSessionBar{left:9px;right:68px;bottom:69px}.voiceChoices{grid-template-columns:repeat(2,1fr)}}
+/* V8.15.1 CHROME VOICE + HEADER FIT */
+@media(min-width:651px){
+  header .clock{line-height:1.05}
+  header .clock small{line-height:1.05}
+  header .weatherReaction,header .fridayMode{line-height:1}
+  header .countdownStrip{margin-top:1px;gap:4px;flex-wrap:nowrap}
+  header .countdownChip{font-size:8px;padding:2px 6px;white-space:nowrap}
+}
+.voiceNavBtn.active{border-color:var(--theme1);box-shadow:0 0 0 1px var(--theme1) inset}
+
+/* V8.15.2 VOICE CAPTURE FIX + DIAGNOSTICS */
+.voiceSessionBar .voiceState{font-weight:900;white-space:nowrap}
+.voiceSessionBar .voiceTranscript{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--m)}
+.voiceSessionBar.error{border-color:#d46a6a}
+@media(max-width:650px){.voiceSessionBar .voiceTranscript{display:none}}
+</style>
+
+<script>
+/* ============================================================
+   V8.16 GITHUB PAGES -> APPS SCRIPT BACKEND COMPATIBILITY BRIDGE
+   ============================================================
+
+   STEP AFTER DEPLOYING THE UPDATED APPS SCRIPT PROJECT:
+   Replace the placeholder below with the /exec web-app URL.
+*/
+const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbyg7NHXQNPKpZL6Ys4ZVZvrMCbhMsa41QbX6qxOQwWWO_iNhhx2QIzpPiveN4RCGPbKxQ/exec";
+
+(function installAppsScriptBridge_(){
+  const pending = new Map();
+  const queued = [];
+  let bridgeReady = false;
+  let seq = 0;
+
+  const bridge = document.createElement("iframe");
+  bridge.id = "appsScriptBridge";
+  bridge.setAttribute("aria-hidden", "true");
+  bridge.style.cssText =
+    "position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0;opacity:0;pointer-events:none;";
+
+  function backendConfigured_(){
+    return /^https:\/\/script\.google\.com\/.+\/exec(?:$|\?)/.test(FAMILY_DASHBOARD_APPS_SCRIPT_URL);
+  }
+
+  function bridgeUrl_(){
+    const join = FAMILY_DASHBOARD_APPS_SCRIPT_URL.includes("?") ? "&" : "?";
+    return FAMILY_DASHBOARD_APPS_SCRIPT_URL + join + "bridge=1";
+  }
+
+  function post_(payload){
+    if(!bridge.contentWindow) throw new Error("Family Dashboard backend bridge is not ready.");
+    // The Apps Script HTML page itself verifies that requests came from
+    // https://arensmaker1.github.io, so no secret is embedded in GitHub.
+    bridge.contentWindow.postMessage(payload, "*");
+  }
+
+  function flush_(){
+    while(bridgeReady && queued.length){
+      post_(queued.shift());
+    }
+  }
+
+  window.addEventListener("message", function(event){
+    if(event.source !== bridge.contentWindow) return;
+
+    const msg = event.data || {};
+    if(msg.type === "fd-bridge-ready"){
+      bridgeReady = true;
+      flush_();
+      return;
+    }
+
+    if(msg.type !== "fd-api-result" || !msg.id) return;
+
+    const job = pending.get(msg.id);
+    if(!job) return;
+    pending.delete(msg.id);
+    clearTimeout(job.timer);
+
+    if(msg.ok){
+      try{ job.success && job.success(msg.result); }catch(err){ console.error(err); }
+    }else{
+      const err = new Error(msg.error?.message || "Apps Script backend error");
+      err.name = msg.error?.name || "Error";
+      try{
+        if(job.failure) job.failure(err);
+        else console.error("Family Dashboard backend error:", err);
+      }catch(handlerErr){
+        console.error(handlerErr);
+      }
+    }
+  });
+
+  function callBackend_(method, args, success, failure){
+    if(!backendConfigured_()){
+      const err = new Error(
+        "V8.16 backend is not configured yet. Paste the Apps Script /exec URL into FAMILY_DASHBOARD_APPS_SCRIPT_URL."
+      );
+      if(failure) setTimeout(() => failure(err), 0);
+      else console.error(err);
+      return;
+    }
+
+    const id = "fd-" + Date.now() + "-" + (++seq);
+    const payload = {type:"fd-api-call", id, method, args:Array.from(args || [])};
+
+    const timer = setTimeout(function(){
+      pending.delete(id);
+      const err = new Error("Family Dashboard backend timed out while calling " + method + ".");
+      if(failure) failure(err);
+      else console.error(err);
+    }, 45000);
+
+    pending.set(id, {success, failure, timer});
+
+    if(bridgeReady) post_(payload);
+    else queued.push(payload);
+  }
+
+  function makeRunner_(){
+    let success = null;
+    let failure = null;
+    let proxy;
+
+    proxy = new Proxy({}, {
+      get(_target, prop){
+        if(prop === "withSuccessHandler"){
+          return function(fn){ success = fn; return proxy; };
+        }
+        if(prop === "withFailureHandler"){
+          return function(fn){ failure = fn; return proxy; };
+        }
+        if(prop === "withUserObject"){
+          // Current V8.15.2 does not use this, but retaining chain compatibility
+          // makes the shim safer for future Apps Script-style calls.
+          return function(){ return proxy; };
+        }
+        if(typeof prop === "symbol") return undefined;
+
+        return function(...args){
+          callBackend_(String(prop), args, success, failure);
+        };
+      }
+    });
+
+    return proxy;
+  }
+
+  window.google = window.google || {};
+  window.google.script = window.google.script || {};
+  Object.defineProperty(window.google.script, "run", {
+    configurable: true,
+    get: makeRunner_
+  });
+
+  function mountBridge_(){
+    if(!backendConfigured_()){
+      console.warn("Family Dashboard V8.16: Apps Script backend URL still needs to be configured.");
+      return;
+    }
+    bridge.src = bridgeUrl_();
+    document.body.appendChild(bridge);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", mountBridge_, {once:true});
+  }else{
+    mountBridge_();
+  }
+})();
+</script>
+
+</head><body><div id="themeDecor" class="themeDecor"></div>
+<div id="load">Loading Family Dashboard…</div><div id="app"><header><div class="brand" id="familyTitle">🏠 Family Dashboard</div><div class="controls"><button class="btn" onclick="move(-1)">‹</button><button class="btn" onclick="today()">Today</button><button id="appearanceToggle" class="btn appearanceToggle" onclick="toggleAppearance()" title="Switch light/dark appearance" aria-label="Switch light/dark appearance">🌙</button><div id="month" class="month"></div><button class="btn" onclick="move(1)">›</button></div><div class="clock"><span id="clock"></span><small id="mainWeather">Weather loading…</small><div id="weatherReaction" class="weatherReaction"></div><div id="fridayMode" class="fridayMode"></div><div id="countdowns" class="countdownStrip"></div><small id="sync"></small></div></header>
+<div id="glanceStrip" class="glanceStrip"></div>
+<div id="mobileCountdowns" class="mobileCountdownStrip"></div>
+<div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+
+<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
+<div id="dayOverlay">
+ <div class="v4top">
+  <button class="v4back" onclick="closeDay()">← Back to Month</button>
+  <div class="v4title"><h1 id="v4date"></h1><div id="v4year"></div></div>
+  <div class="weather" id="v4weather"></div>
+ </div>
+ <div class="v4body">
+  <div class="card" id="v4schedule"></div>
+  <div class="card" id="v4chores"></div>
+  <div class="v4lower">
+   <div class="card" id="v4menu"></div>
+   <div class="card" id="v4notes"></div>
+   <div class="card v4forecast" id="v4forecast"></div>
+  </div>
+  <div class="v4quote" id="v4quote"></div>
+ </div>
+</div>
+
+<div id="groceryOverlay">
+ <div class="gTop"><button class="v4back" onclick="closeGroceries()">← Dashboard</button><h1>🛒 Grocery List</h1><div id="grocerySync" class="gSync"></div></div>
+ <div class="gAdd"><input id="groceryQty" type="text" autocomplete="off" placeholder="Qty" aria-label="Quantity"><input id="groceryName" type="text" autocomplete="off" placeholder="Add an item…" onkeydown="if(event.key==='Enter')addGrocery()"><select id="groceryCategory"></select><button class="btn" onclick="addGrocery()">+ Add</button></div>
+ <div id="groceryCount" class="gCount"></div><div id="groceryBody" class="gBody"></div>
+ <div class="gBottom"><button class="btn" onclick="checkAllGroceriesUI()">✓ Check All</button><button class="btn" onclick="clearCheckedGroceriesUI()">Clear Checked</button><button class="btn" onclick="refreshGroceries()">↻ Refresh</button></div>
+</div>
+<div id="recipeOverlay">
+ <div class="rTop"><button class="v4back" onclick="closeRecipes()">← Dashboard</button><h1>🍳 Kitchen Recipe Center</h1><div></div><div class="rTabs"><button id="recipeTabBtn" class="btn active" onclick="showRecipeTab()">🍳 Recipes</button><button id="planTabBtn" class="btn" onclick="showPlanTab()">📅 Meal Plans</button><button id="buildTabBtn" class="btn" onclick="showBuildTab()">🎲 Build My Week</button><button id="groceryGenTabBtn" class="btn" onclick="showGroceryGenTab()">🛒 Week Groceries</button></div></div>
+ <div id="recipeTools" class="rTools"><input id="recipeSearch" type="search" placeholder="Search recipes, tags, categories…" oninput="renderRecipeLibrary()"><select id="recipeCategory" onchange="renderRecipeLibrary()"><option value="">All categories</option></select><button class="btn" onclick="openRecipeImporter()">📥 Import Recipe</button><button class="btn primaryAction" onclick="openRecipeEditor()">＋ Add Recipe</button></div>
+ <div id="recipeBody" class="rBody"><div class="rLoading">Loading the kitchen brain…</div></div>
+</div>
+
+<div id="cookOverlay">
+ <div class="cookTop"><button class="v4back" onclick="hideCookMode_()">← Dashboard</button><div class="cookTitle"><h1 id="cookRecipeTitle">Cook Mode</h1><div id="cookRecipeMeta" class="cookMeta"></div><div id="cookScaleBar" class="cookScaleBar"></div></div><div class="cookTopActions"><button class="btn" onclick="openVoiceControl()">🎙️ Listen While Cooking</button><div class="cookQuickTimers"><button class="btn" onclick="startCookTimer(5)">5m</button><button class="btn" onclick="startCookTimer(10)">10m</button><button class="btn" onclick="startCookTimer(15)">15m</button><button class="btn" onclick="startCookTimer(30)">30m</button></div><button id="cookWakeBtn" class="btn cookWakeBtn" onclick="toggleCookWakeLock()">☀️ Keep Awake</button><button id="cookAllStepsBtn" class="btn" onclick="toggleCookAllSteps()">☷ All Steps</button><button class="btn" onclick="openTimers()">⏱️ Timers</button></div><div id="cookTimerStrip" class="cookTimerStrip"></div></div>
+ <div class="cookBody"><div class="cookIngredients"><h2>INGREDIENTS</h2><div id="cookIngredients"></div></div><div class="cookStepPanel"><div class="cookProgress"><span id="cookStepCount" class="cookStepCount"></span><div class="cookProgressBar"><div id="cookProgressBar"></div></div></div><div id="cookSingleStep" class="cookStepSingle"><div id="cookStepText" class="cookStepText"></div><div id="cookDetectedTimers" class="cookDetectedTimers"></div></div><div id="cookAllSteps" class="cookAllSteps"></div><div class="cookNav"><button id="cookPrevBtn" class="btn" onclick="cookPrevStep()">← Previous</button><button id="cookNextBtn" class="btn primaryAction" onclick="cookNextStep()">Next →</button><button class="btn" onclick="closeCookMode()">✓ Finish Cooking</button></div></div></div>
+</div>
+<div id="modalbg" class="modalbg" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div>
+<script>
+let D={events:[],calendars:[]},S={chores:[],menu:{},notes:"",hiddenCalendars:[],completions:{}},W=null,view=new Date(),sel=new Date(),idle;
+let G={items:[],updatedAt:null},groceryTimer=null,STOCK={items:[]};
+let kitchenTimers=[];let timerDraftMinutes=10;let timerAudioCtx=null;let timerAlarmLoop=null;
+let R={recipes:[],loaded:false},MP={plans:[],recipes:[],sources:[],loaded:false},recipeView="recipes",currentPlanId="";
+let planWeekDraft=[],randomDinnerDraft=[],WG={items:[],recipes:[],loaded:false};
+let cookRecipe=null,cookStep=0,cookAllStepsOpen=false,cookCheckedIngredients=new Set(),cookCompletedSteps=new Set(),cookWakeLock=null,cookKeepAwake=false,cookScale=1;
+const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,same=(a,b)=>key(a)==key(b);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const ev=d=>D.events.filter(e=>same(new Date(e.start),d)&&!S.hiddenCalendars.includes(e.calendar)).sort((a,b)=>new Date(a.start)-new Date(b.start));
+const time=e=>e.allDay?"All day":new Date(e.start).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+function icon(c){if(c==0)return"☀️";if([1,2,3].includes(c))return"🌤️";if([45,48].includes(c))return"🌫️";if([61,63,65,80,81,82].includes(c))return"🌧️";if([71,73,75,85,86].includes(c))return"❄️";if([95,96,99].includes(c))return"⛈️";return"🌡️"}
+const quotes=[
+"Some people graduate with honors. I am just honored to graduate.",
+"If at first you don't succeed, skydiving is not for you.",
+"Do something today that your future self will thank you for.",
+"You don't have to be great to start, but you have to start to be great.",
+"Never put off until tomorrow what you can avoid entirely.",
+"Success is stumbling from failure to failure without losing your sense of humor.",
+"Be the reason someone smiles today — preferably not because you fell down.",
+"Dream big. Start small. Try not to set anything on fire.",
+"Hard work beats talent when talent hits the snooze button.",
+"Today is a good day to have a good day.",
+"Life is short. Smile while you still have teeth.",
+"Progress, not perfection — unless you're loading the dishwasher.",
+"Believe you can, and you're already halfway there.",
+"Every expert was once a beginner who probably Googled it.",
+"Be stubborn about your goals and flexible about your methods.",
+"You're never too old to set another goal — or eat cereal for dinner.",
+"Small steps still move you forward.",
+"Make today so useful that yesterday gets jealous.",
+"Do the right thing, even when nobody is watching.",
+"Motivation gets you started. Habit keeps you going.",
+"Don't count the days. Make the days count.",
+"Your attitude is like a flat tire: change it before going anywhere.",
+"Nothing worth doing is easy. Except maybe ordering pizza.",
+"Try to be a rainbow in somebody else's cloud.",
+"Good things come to those who hustle — and occasionally take a nap.",
+"The secret of getting ahead is getting started.",
+"Kindness costs nothing, but somehow still feels expensive before coffee.",
+"You miss 100% of the naps you don't take.",
+"Today's forecast: 100% chance of figuring it out.",
+"Keep going. Future you is already bragging about it.",
+"Be yourself. Everyone else is already taken.",
+"Punch today in the face."
+];
+const rareQuotes=["SPECIAL MESSAGE FROM MANAGEMENT: Nobody knows what they're doing. Carry on.","Plot twist: today is going to work out.","Achievement unlocked: You showed up.","You are now entering a highly caffeinated success zone.","Nobody has it all figured out. Some people just use better calendars."];
+const familyTitles=["🏠 Family Dashboard","🛰️ Family Mission Control","📋 Household Operations","🍕 Department of Snacks & Logistics","🚀 Family Command Center","🧭 Home Base","🛠️ Domestic Engineering Division","🎯 The Organized-ish Household"];
+const themes={0:{a:"#cdefff",b:"#73bfff",g:"rgba(202,235,255,.22)",d:["❄️","❅","✦"]},1:{a:"#ff6f9e",b:"#ff9ac0",g:"rgba(255,105,160,.18)",d:["❤️","💗","🌸"]},2:{a:"#54d66b",b:"#f0cf55",g:"rgba(69,190,83,.18)",d:["☘️","🍀","✨"]},3:{a:"#78c8ff",b:"#d99cff",g:"rgba(105,190,255,.17)",d:["🌧️","🌷","☂️"]},4:{a:"#71db82",b:"#ffb1d8",g:"rgba(113,219,130,.16)",d:["🌷","🌼","🌿"]},5:{a:"#ffd45e",b:"#68cfff",g:"rgba(255,212,94,.16)",d:["☀️","✨","🪲"]},6:{a:"#ff5d67",b:"#5f9dff",g:"rgba(255,93,103,.16)",d:["⭐","✨","🎆"]},7:{a:"#f3bf47",b:"#ff8c42",g:"rgba(243,191,71,.16)",d:["🌻","☀️","✨"]},8:{a:"#c94f44",b:"#e5a94f",g:"rgba(201,79,68,.16)",d:["🍎","🍂","✏️"]},9:{a:"#ff7a28",b:"#9f62ff",g:"rgba(255,122,40,.18)",d:["🎃","🦇","👻"]},10:{a:"#d77b39",b:"#b99a60",g:"rgba(215,123,57,.17)",d:["🍂","🍁","🦃"]},11:{a:"#e84c4c",b:"#65c66f",g:"rgba(232,76,76,.16)",d:["❄️","🎁","🎄"]}};
+function quoteFor(d){let n=Math.floor(new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()/86400000);if(Math.abs(n)%20===0)return rareQuotes[Math.abs(n)%rareQuotes.length];return quotes[Math.abs(n)%quotes.length]}
+function weeklyTitle(d=new Date()){let w=Math.floor(new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()/604800000);return familyTitles[Math.abs(w)%familyTitles.length]}
+function applyAppearance(mode){mode=mode==="dark"?"dark":"light";document.body.dataset.appearance=mode;try{localStorage.setItem("familyDashboardAppearance",mode)}catch(_){}let b=document.getElementById("appearanceToggle");if(b){b.textContent=mode==="light"?"🌙":"☀️";b.title=mode==="light"?"Switch to dark appearance":"Switch to light appearance"}}
+function initAppearance(){let mode="light";try{mode=localStorage.getItem("familyDashboardAppearance")||"light"}catch(_){}applyAppearance(mode)}
+function toggleAppearance(){applyAppearance(document.body.dataset.appearance==="light"?"dark":"light");activity()}
+function applyTheme(d){let t=themes[d.getMonth()]||themes[0];document.body.style.setProperty("--theme1",t.a);document.body.style.setProperty("--theme2",t.b);document.body.style.setProperty("--themeGlow",t.g);let ft=document.getElementById("familyTitle");if(ft)ft.textContent=weeklyTitle(d);let L=document.getElementById("themeDecor");if(!L)return;L.innerHTML="";for(let i=0;i<8;i++){let x=document.createElement("div");x.className="decor";x.textContent=t.d[i%t.d.length];x.style.left=(6+i*12)+"%";x.style.top=(-12-(i%4)*18)+"%";x.style.fontSize=(16+(i%3)*7)+"px";x.style.animationDelay=(-i*1.4)+"s";L.appendChild(x)}}
+function calendarEventKind_(title){
+ let t=String(title||"").toLowerCase();
+ if(/\b(birthday|bday)\b/.test(t))return"birthday";
+ if(/\b(vacation|trip|cruise|flight|travel)\b/.test(t))return"vacation";
+ if(/first day of school|school starts|back to school|last day of school/.test(t))return"school";
+ if(/holiday|christmas|thanksgiving|halloween|easter|new year|independence day|fourth of july|4th of july|memorial day|labor day/.test(t))return"holiday";
+ return"";
+}
+function specialDayType(d){let kinds=ev(d).map(e=>calendarEventKind_(e.title));return{birthday:kinds.includes("birthday"),holiday:kinds.includes("holiday"),vacation:kinds.includes("vacation"),school:kinds.includes("school")}}
+function launchConfetti(k="🎉"){for(let i=0;i<28;i++){let c=document.createElement("div");c.className="confetti";c.textContent=[k,"✨","🎊","🎈"][i%4];c.style.left=Math.random()*100+"vw";c.style.animationDelay=Math.random()*1.2+"s";c.style.fontSize=(15+Math.random()*17)+"px";document.body.appendChild(c);setTimeout(()=>c.remove(),5200)}}
+function showBanner(t,ms=2800){let b=document.createElement("div");b.className="specialBanner";b.textContent=t;document.body.appendChild(b);setTimeout(()=>b.remove(),ms)}
+function weatherReactionText(){if(!W||!W.ok||!W.current)return"";let t=Number(W.current.temperature_2m),c=W.current.weather_code;if([71,73,75,77,85,86].includes(c))return"❄️ SNOW DAY PROTOCOL: STANDBY";if([95,96,99].includes(c))return"⚡ THUNDER MODE: ACTIVATED";if(t>=90)return"🔥 OUTSIDE HAS BEEN CANCELLED";if(t<=10)return"🥶 AIR HURTS YOUR FACE";return""}
+function fridayModeText(){let n=new Date();return n.getDay()===5&&n.getHours()>=16?"🎉 WEEKEND UNLOCKED":""}
+function renderCountdowns(){
+ let n=new Date();n.setHours(0,0,0,0),a=[];
+ (D.events||[]).forEach(e=>{
+   if(S.hiddenCalendars.includes(e.calendar))return;
+   let kind=calendarEventKind_(e.title);if(!kind)return;
+   let d=new Date(e.start);d.setHours(0,0,0,0);let days=Math.round((d-n)/86400000);
+   let horizon=kind==="birthday"?14:(kind==="vacation"||kind==="school"?14:7);
+   if(days>=0&&days<=horizon)a.push({t:e.title,d:days,k:kind});
+ });
+ a.sort((x,y)=>x.d-y.d||x.t.localeCompare(y.t));
+ let seen=new Set();a=a.filter(x=>{let k=x.t.toLowerCase()+"|"+x.d;if(seen.has(k))return false;seen.add(k);return true});
+ let html=a.slice(0,3).map(x=>`<span class="countdownChip ${x.k}">${x.k==="birthday"?"🎂":x.k==="vacation"?"✈️":x.k==="school"?"🎒":"✨"} ${x.d===0?"TODAY":x.d+" day"+(x.d===1?"":"s")} • ${esc(x.t)}</span>`).join("");
+ let el=document.getElementById("countdowns"),mel=document.getElementById("mobileCountdowns");
+ if(el)el.innerHTML=html;
+ if(mel)mel.innerHTML=html;
+}
+function allChoresCompleteForDate(d){let C=choresFor(d);if(!C.length)return null;return C.every(x=>S.completions[key(d)+"-"+x.i])}
+function choreStreak(d=new Date()){let s=0,c=new Date(d);c.setHours(0,0,0,0);for(let i=0;i<60;i++){let v=allChoresCompleteForDate(c);if(v===true){s++;c.setDate(c.getDate()-1);continue}if(v===null){c.setDate(c.getDate()-1);continue}break}return s}
+function choresForPerson(d,who){return choresFor(d).filter(x=>(x.who||"Kid")===who)}
+function personChoresComplete(d,who){let C=choresForPerson(d,who);if(!C.length)return null;return C.every(x=>S.completions[key(d)+"-"+x.i])}
+function personChoreStreak(who,d=new Date()){let s=0,c=new Date(d);c.setHours(0,0,0,0);for(let i=0;i<90;i++){let v=personChoresComplete(c,who);if(v===true){s++;c.setDate(c.getDate()-1);continue}if(v===null){c.setDate(c.getDate()-1);continue}break}return s}
+function playCelebrationSound(big=false){try{let A=window.AudioContext||window.webkitAudioContext;if(!A)return;let ctx=new A(),notes=big?[523.25,659.25,783.99,1046.5]:[659.25,783.99,1046.5];notes.forEach((f,n)=>{let o=ctx.createOscillator(),g=ctx.createGain(),st=ctx.currentTime+n*.13;o.type=big?"triangle":"sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(big?.18:.10,st+.025);g.gain.exponentialRampToValueAtTime(.0001,st+.22);o.connect(g);g.connect(ctx.destination);o.start(st);o.stop(st+.24)});setTimeout(()=>ctx.close(),1200)}catch(e){}}
+function miniConfetti(){for(let i=0;i<16;i++){let c=document.createElement("div");c.className="confetti";c.textContent=["🎉","⭐","✨","👏"][i%4];c.style.left=(18+Math.random()*64)+"vw";c.style.animationDelay=(Math.random()*.45)+"s";c.style.fontSize=(15+Math.random()*13)+"px";document.body.appendChild(c);setTimeout(()=>c.remove(),4600)}}
+function celebrateDaily(who){let msgs=[`Nice work, ${who}!`,`Chores crushed, ${who}!`,`Mission accomplished, ${who}!`,`Great job, ${who}!`],icons=["🎉","🚀","🏆","⭐"];let n=Math.floor(Math.random()*msgs.length),wrap=document.createElement("div");wrap.className="dailyCelebrate";wrap.innerHTML=`<div class="dailyCelebrateBox"><div class="dailyCelebrateIcon">${icons[n]}</div><div class="dailyCelebrateText">${esc(msgs[n])}</div><div class="dailyCelebrateSub">All of today's chores are done!</div></div>`;document.body.appendChild(wrap);miniConfetti();playCelebrationSound(false);setTimeout(()=>wrap.remove(),3400)}
+function celebrateFiveDay(who){showBanner(`🔥 ${who}: 5-DAY CHORE STREAK!`,3000);launchConfetti("🏆");playCelebrationSound(true);setTimeout(()=>showBanner("🎁 SEE DAD FOR YOUR PRIZE!",4200),2700)}
+function checkChoreCelebrations(who){if(!personChoresComplete(sel,who))return;S.dailyCelebrations=S.dailyCelebrations||{};S.streakRewards=S.streakRewards||{};let dayMark=key(sel)+"|"+who,streak=personChoreStreak(who,sel);if(streak===5&&!S.streakRewards[dayMark]){S.streakRewards[dayMark]=true;S.dailyCelebrations[dayMark]=true;celebrateFiveDay(who);return}if(!S.dailyCelebrations[dayMark]){S.dailyCelebrations[dayMark]=true;celebrateDaily(who)}}
+function maybeCelebrateStreak(){let people=[...new Set(choresFor(sel).map(x=>x.who||"Kid"))];people.forEach(checkChoreCelebrations)}
+function summonBigfoot(force=false){if(document.querySelector(".bigfoot"))return;let e=document.createElement("div"),rev=Math.random()<.5;e.className="bigfoot"+(rev?" reverse":"");e.style.setProperty("--bfDur",(10+Math.random()*4).toFixed(1)+"s");e.style.transform=`scale(${(.86+Math.random()*.24).toFixed(2)})${rev?" scaleX(-1)":""}`;e.innerHTML=`<svg viewBox="0 0 112 188" aria-label="Sasquatch silhouette"><g><ellipse class="bfFur" cx="57" cy="28" rx="22" ry="27"/><path class="bfBody" d="M39 47 Q55 36 75 48 L85 104 Q78 126 59 129 Q38 126 30 104 Z"/><path class="bfFur" d="M42 45 Q57 34 75 48 Q70 58 57 59 Q46 58 42 45Z"/><g class="bfArmL"><path class="bfBody" d="M36 53 Q25 57 22 72 L10 125 Q8 136 15 138 Q22 139 25 129 L39 82 Q43 65 36 53Z"/><ellipse class="bfBody" cx="14" cy="139" rx="8" ry="10"/></g><g class="bfArmR"><path class="bfBody" d="M76 52 Q88 55 91 71 L103 124 Q106 135 99 138 Q91 140 88 129 L73 81 Q69 64 76 52Z"/><ellipse class="bfBody" cx="100" cy="139" rx="8" ry="10"/></g><g class="bfLegL"><path class="bfBody" d="M39 112 Q49 108 58 115 L53 169 Q51 181 42 181 Q34 179 36 168Z"/><ellipse class="bfBody" cx="40" cy="179" rx="14" ry="7"/></g><g class="bfLegR"><path class="bfBody" d="M59 114 Q70 108 78 115 L83 168 Q85 179 77 181 Q68 182 66 170Z"/><ellipse class="bfBody" cx="80" cy="179" rx="14" ry="7"/></g></g></svg>`;document.body.appendChild(e);setTimeout(()=>e.remove(),15500)}
+function summonUfo(){if(document.querySelector(".ufo"))return;let e=document.createElement("div");e.className="ufo";e.innerHTML=`<svg viewBox="0 0 110 58" aria-label="UFO"><defs><linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9fbff"/><stop offset="1" stop-color="#d9fbff" stop-opacity="0"/></linearGradient></defs><path class="ufoBeam" fill="url(#beam)" d="M39 34 L71 34 L91 58 L18 58Z"/><ellipse cx="55" cy="30" rx="48" ry="13" fill="#66737c"/><ellipse cx="55" cy="25" rx="25" ry="17" fill="#a9e7ef"/><ellipse cx="55" cy="33" rx="40" ry="7" fill="#27343d"/><circle cx="31" cy="35" r="3" fill="#d9fbff"/><circle cx="55" cy="37" r="3" fill="#d9fbff"/><circle cx="79" cy="35" r="3" fill="#d9fbff"/></svg>`;document.body.appendChild(e);setTimeout(()=>e.remove(),8000)}
+function maybeRareCreature(){let r=Math.random();if(r<.0015)summonUfo();else if(r<.003)summonBigfoot()}
+function cryptidTestKey(e){if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="b"){e.preventDefault();summonBigfoot(true)}if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="u"){e.preventDefault();summonUfo()}}
+let secretSeq=[],secretTarget=["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","Enter"];
+function secretKey(e){secretSeq.push(e.key);secretSeq=secretSeq.slice(-secretTarget.length);if(secretSeq.join("|")===secretTarget.join("|")){let g=document.createElement("div");g.className="godMode";g.textContent="FAMILY DASHBOARD: GOD MODE ENABLED";document.body.appendChild(g);launchConfetti("⚡");setTimeout(()=>g.remove(),3800)}}
+function choresFor(d){return S.chores.map((x,i)=>({...x,i})).filter(x=>x.days.includes(d.getDay()))}
+let suppressDayClickUntil=0;
+function calendarOverlap_(a,b){if(a.allDay||b.allDay)return false;return new Date(a.start)<new Date(b.end)&&new Date(b.start)<new Date(a.end)&&a.calendar!==b.calendar}
+function eventHasConflict_(e,list){return list.some(x=>x!==e&&calendarOverlap_(e,x))}
+function dayConflicts_(d){let a=ev(d),pairs=[];for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++)if(calendarOverlap_(a[i],a[j]))pairs.push([a[i],a[j]]);return pairs}
+function futureEventsForDay_(d,fromNow=false){let a=ev(d);if(!fromNow)return a;let now=new Date();return a.filter(e=>e.allDay||new Date(e.end||e.start)>now)}
+function calendarIntelHtml_(){
+ let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
+ let tc=dayConflicts_(now),mc=dayConflicts_(tom),chips=[];
+ if(tc.length)chips.push(`<div class="intelChip conflict"><b>⚠ TODAY: ${tc.length} overlap${tc.length===1?"":"s"}</b><span>${esc(tc[0][0].title)} ↔ ${esc(tc[0][1].title)}</span></div>`);
+ if(mc.length)chips.push(`<div class="intelChip conflict"><b>⚠ TOMORROW: ${mc.length} overlap${mc.length===1?"":"s"}</b><span>${esc(mc[0][0].title)} ↔ ${esc(mc[0][1].title)}</span></div>`);
+ let next=(D.events||[]).filter(e=>!S.hiddenCalendars.includes(e.calendar)&&new Date(e.start)>=now&&calendarEventKind_(e.title)).sort((a,b)=>new Date(a.start)-new Date(b.start))[0];
+ if(next){let d=new Date(next.start),days=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);if(days<=14)chips.push(`<div class="intelChip"><b>${calendarEventKind_(next.title)==="birthday"?"🎂":calendarEventKind_(next.title)==="vacation"?"✈️":calendarEventKind_(next.title)==="school"?"🎒":"✨"} NEXT MILESTONE</b><span>${esc(next.title)} • ${days===0?"Today":days===1?"Tomorrow":days+" days"}</span></div>`)}
+ return chips.length?`<div class="intelStrip">${chips.join("")}</div>`:"";
+}
+function maybeTriggerTodaySpecial_(){
+ let d=new Date(),sd=specialDayType(d),kind=sd.birthday?"birthday":sd.holiday?"holiday":sd.vacation?"vacation":sd.school?"school":"";
+ if(!kind)return;let k="familyDashboardSpecial-"+key(d)+"-"+kind;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(_){}
+ if(kind==="birthday"){showBanner("🎂 BIRTHDAY MODE: LEVEL UP!",3800);launchConfetti("🎈")}
+ else if(kind==="holiday"){showBanner("✨ HOLIDAY MODE",3400);launchConfetti("✨")}
+ else if(kind==="vacation"){showBanner("✈️ VACATION MODE: LET'S GO",3400);launchConfetti("🧳")}
+ else if(kind==="school"){showBanner("🎒 SCHOOL DAY MODE",3200)}
+}
+
+function calendarUpNextHtml_(){let now=new Date(),end=new Date(now.getTime()+48*3600000),a=(D.events||[]).filter(e=>new Date(e.end||e.start)>=now&&new Date(e.start)<=end&&!S.hiddenCalendars.includes(e.calendar)).sort((a,b)=>new Date(a.start)-new Date(b.start)).slice(0,4);return a.length?`<div class="calUpNext">${a.map(e=>`<div class="calUpChip" style="border-left:3px solid ${e.color}"><b>${esc(e.title)}</b><span>${same(new Date(e.start),now)?"Today":"Tomorrow"} • ${time(e)} • ${esc(e.calendar)}</span></div>`).join("")}</div>`:""}
+function calendarEventById_(id,calendarId){return(D.events||[]).find(e=>e.id===id&&e.calendarId===calendarId)}
+function localDateValue_(v){let d=new Date(v);return key(d)}
+function localTimeValue_(v){let d=new Date(v);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function openCalendarEventDetails(eventId,calendarId){
+ eventId=decodeURIComponent(String(eventId||""));calendarId=decodeURIComponent(String(calendarId||""));
+ let e=calendarEventById_(eventId,calendarId);if(!e){console.warn("Calendar event not found",eventId,calendarId);return}
+ let writable=!!e.writable;
+ document.getElementById("modal").innerHTML=`<h2>📅 Event Details</h2><div class="field"><label>EVENT</label><div style="font-size:18px;font-weight:800">${esc(e.title)}</div></div><div class="field"><label>CALENDAR</label><div>${esc(e.calendar)}</div></div><div class="field"><label>WHEN</label><div>${e.allDay?"All day":esc(time(e)+" – "+new Date(e.end).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}))}</div></div>${e.location?`<div class="field"><label>LOCATION</label><div>${esc(e.location)}</div></div>`:""}${writable?"":'<div class="eventReadOnly">This calendar is read-only here, so the dashboard can show the event but cannot change it.</div>'}<div class="actions"><button class="btn" onclick="closeModal()">Close</button>${writable?`<button class="btn" onclick="openCalendarEventEdit('${encodeURIComponent(e.id)}','${encodeURIComponent(e.calendarId)}')">✏️ Edit</button><button class="btn dangerBtn" onclick="deleteCalendarEventUI('${encodeURIComponent(e.id)}','${encodeURIComponent(e.calendarId)}')">🗑️ Delete Event</button>`:""}</div>`;
+ document.getElementById("modalbg").style.display="grid";activity();
+}
+function openCalendarEventEdit(eventId,calendarId){
+ let e=calendarEventById_(decodeURIComponent(eventId),decodeURIComponent(calendarId));if(!e||!e.writable)return;
+ let date=localDateValue_(e.start),st=e.allDay?"":localTimeValue_(e.start),et=e.allDay?"":localTimeValue_(e.end);
+ document.getElementById("modal").innerHTML=`<h2>✏️ Edit Event</h2><div class="calEventForm"><label class="full">EVENT TITLE<input id="ceeTitle" value="${esc(e.title)}"></label><label>DATE<input id="ceeDate" type="date" value="${date}"></label><label>CALENDAR<input value="${esc(e.calendar)}" disabled></label><label class="calAllDay"><input id="ceeAllDay" type="checkbox" ${e.allDay?"checked":""} onchange="toggleCalendarEditTimeFields_()"> All-day event</label><span></span><label id="ceeStartWrap" style="${e.allDay?"display:none":""}">START<input id="ceeStart" type="time" value="${st}"></label><label id="ceeEndWrap" style="${e.allDay?"display:none":""}">END<input id="ceeEnd" type="time" value="${et}"></label><label class="full">LOCATION<input id="ceeLocation" value="${esc(e.location||"")}"></label></div><div id="ceeState" class="note" style="margin-top:8px"></div><div class="actions"><button class="btn" onclick="openCalendarEventDetails('${encodeURIComponent(e.id)}','${encodeURIComponent(e.calendarId)}')">Cancel</button><button id="ceeSave" class="btn primaryAction" onclick="saveCalendarEventEditUI('${encodeURIComponent(e.id)}','${encodeURIComponent(e.calendarId)}')">Save Changes</button></div>`;
+ document.getElementById("modalbg").style.display="grid";
+}
+function toggleCalendarEditTimeFields_(){let on=document.getElementById("ceeAllDay")?.checked;document.getElementById("ceeStartWrap").style.display=on?"none":"flex";document.getElementById("ceeEndWrap").style.display=on?"none":"flex"}
+function refreshCalendarAfterManage_(message){google.script.run.withSuccessHandler(d=>{D=d;S=d.settings||S;closeModal();renderCal();renderDetail();renderGlance();renderCountdowns();if(document.getElementById("dayOverlay").classList.contains("open"))openDay(sel);document.getElementById("status").textContent=message||"Calendar updated ✓";setTimeout(()=>document.getElementById("status").textContent="",1800)}).getInitialData()}
+function saveCalendarEventEditUI(eventId,calendarId){
+ let btn=document.getElementById("ceeSave"),state=document.getElementById("ceeState"),p={eventId:decodeURIComponent(eventId),calendarId:decodeURIComponent(calendarId),title:document.getElementById("ceeTitle").value.trim(),date:document.getElementById("ceeDate").value,allDay:document.getElementById("ceeAllDay").checked,startTime:document.getElementById("ceeStart").value,endTime:document.getElementById("ceeEnd").value,location:document.getElementById("ceeLocation").value.trim()};
+ if(!p.title){alert("Give the event a title first.");return}btn.disabled=true;btn.textContent="Saving…";state.textContent="Updating Google Calendar…";
+ google.script.run.withSuccessHandler(r=>{if(!r?.ok){state.textContent=r?.message||"Couldn’t update event.";btn.disabled=false;btn.textContent="Save Changes";return}refreshCalendarAfterManage_("Event updated ✓")}).withFailureHandler(e=>{state.textContent=e.message||e;btn.disabled=false;btn.textContent="Save Changes"}).updateDashboardCalendarEvent(p)
+}
+function deleteCalendarEventUI(eventId,calendarId){
+ let e=calendarEventById_(decodeURIComponent(eventId),decodeURIComponent(calendarId));if(!e)return;
+ if(!confirm(`Delete "${e.title}" from ${e.calendar}?\\n\\nThis removes it from Google Calendar, not just the dashboard.`))return;
+ document.getElementById("modal").innerHTML=`<h2>🗑️ Deleting Event</h2><div class="note">Removing ${esc(e.title)} from Google Calendar…</div>`;
+ google.script.run.withSuccessHandler(r=>{if(!r?.ok){document.getElementById("modal").innerHTML=`<h2>Couldn’t Delete Event</h2><div class="note">${esc(r?.message||"Unknown error")}</div><div class="actions"><button class="btn" onclick="closeModal()">Close</button></div>`;return}refreshCalendarAfterManage_("Event deleted ✓")}).withFailureHandler(err=>{document.getElementById("modal").innerHTML=`<h2>Couldn’t Delete Event</h2><div class="note">${esc(err.message||err)}</div><div class="actions"><button class="btn" onclick="closeModal()">Close</button></div>`}).deleteDashboardCalendarEvent(e.calendarId,e.id)
+}
+function openCalendarEventEditor(date){let d=date||sel||new Date(),dateVal=key(d),now=new Date(),hh=String(now.getHours()).padStart(2,"0")+":"+(now.getMinutes()<30?"30":"00"),endH=String((now.getHours()+1)%24).padStart(2,"0")+":"+(now.getMinutes()<30?"30":"00");document.getElementById("modal").innerHTML=`<h2>📅 Add Family Event</h2><div class="note" style="margin-bottom:10px">Add directly to one of the writable Google calendars connected to this dashboard.</div><div class="calEventForm"><label class="full">EVENT TITLE<input id="ceTitle" autocomplete="off" placeholder="Dentist, practice, dinner…"></label><label>DATE<input id="ceDate" type="date" value="${dateVal}"></label><label>CALENDAR<select id="ceCalendar"><option value="">Loading calendars…</option></select></label><label class="calAllDay"><input id="ceAllDay" type="checkbox" onchange="toggleCalendarTimeFields_()"> All-day event</label><span></span><label id="ceStartWrap">START<input id="ceStart" type="time" value="${hh}"></label><label id="ceEndWrap">END<input id="ceEnd" type="time" value="${endH}"></label><label class="full">LOCATION<input id="ceLocation" placeholder="Optional"></label></div><div id="ceState" class="note" style="margin-top:8px"></div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button id="ceSave" class="btn primaryAction" onclick="saveCalendarEventUI()">＋ Add Event</button></div>`;document.getElementById("modalbg").style.display="grid";google.script.run.withSuccessHandler(r=>{let a=r?.calendars||[],q=document.getElementById("ceCalendar");q.innerHTML=a.map(c=>`<option value="${esc(c.id)}" ${c.primary?"selected":""}>${esc(c.name)}${c.primary?" (Primary)":""}</option>`).join("")||'<option value="">No writable calendars</option>'}).withFailureHandler(e=>document.getElementById("ceState").textContent=e.message||e).getCalendarChoices();activity()}
+function toggleCalendarTimeFields_(){let on=document.getElementById("ceAllDay")?.checked;document.getElementById("ceStartWrap").style.display=on?"none":"flex";document.getElementById("ceEndWrap").style.display=on?"none":"flex"}
+function saveCalendarEventUI(){let btn=document.getElementById("ceSave"),state=document.getElementById("ceState"),p={title:document.getElementById("ceTitle").value.trim(),date:document.getElementById("ceDate").value,calendarId:document.getElementById("ceCalendar").value,allDay:document.getElementById("ceAllDay").checked,startTime:document.getElementById("ceStart").value,endTime:document.getElementById("ceEnd").value,location:document.getElementById("ceLocation").value.trim()};if(!p.title){alert("Give the event a title first.");return}btn.disabled=true;btn.textContent="Adding…";state.textContent="Writing to Google Calendar…";google.script.run.withSuccessHandler(r=>{if(!r?.ok){state.textContent=r?.message||"Couldn’t add event.";btn.disabled=false;btn.textContent="＋ Add Event";return}state.textContent="Added ✓ Refreshing calendar…";google.script.run.withSuccessHandler(d=>{D=d;S=d.settings||S;closeModal();renderCal();if(document.getElementById("dayOverlay").classList.contains("open"))openDay(sel)}).withFailureHandler(e=>{state.textContent=e.message||e}).getInitialData()}).withFailureHandler(e=>{state.textContent=e.message||e;btn.disabled=false;btn.textContent="＋ Add Event"}).createDashboardCalendarEvent(p)}
+function renderCal(){applyTheme(view);document.getElementById("month").textContent=view.toLocaleDateString([],{month:"long",year:"numeric"});let g=document.getElementById("grid");g.innerHTML="";let f=new Date(view.getFullYear(),view.getMonth(),1),st=new Date(f);st.setDate(f.getDate()-f.getDay());for(let i=0;i<42;i++){let d=new Date(st);d.setDate(st.getDate()+i);let c=document.createElement("div");c.className="day"+(d.getMonth()!=view.getMonth()?" other":"")+(same(d,new Date())?" today":"")+(same(d,sel)?" sel":"");let sd=specialDayType(d);if(sd.birthday)c.classList.add("birthdayCell");if(sd.holiday)c.classList.add("holidayCell");c.tabIndex=0;c.onclick=()=>{if(Date.now()<suppressDayClickUntil)return;openDay(d)};c.innerHTML=`<div class="num">${d.getDate()}</div>`;let E=ev(d);if(dayConflicts_(d).length)c.classList.add("hasConflict");E.slice(0,3).forEach(e=>{let x=document.createElement("div");x.className="event";x.style.background=e.color+"33";x.style.borderLeft="3px solid "+e.color;x.textContent=(e.allDay?"":time(e)+" ")+e.title;c.appendChild(x)});if(E.length>3){let x=document.createElement("div");x.className="more";x.textContent=`+ ${E.length-3} more`;c.appendChild(x)}g.appendChild(c)}document.getElementById("quoteMain").textContent="💬 “"+quoteFor(new Date())+"”";document.getElementById("legend").innerHTML=D.calendars.map(c=>`<span class="${S.hiddenCalendars.includes(c.name)?"off":""}" onclick="toggleCal('${encodeURIComponent(c.name)}')"><i style="background:${c.color}"></i>${esc(c.name)}</span>`).join("")}
+function weather(){if(!W||!W.ok)return`<div class="wm">${esc(W?.message||"Weather loading…")}</div>`;let i=W.daily.time.indexOf(key(sel));if(i<0)return"";return`<div class="temp">${icon(W.daily.weather_code[i])} ${Math.round(W.daily.temperature_2m_max[i])}°</div><div class="wm">${Math.round(W.daily.temperature_2m_min[i])}° low • ${W.daily.precipitation_probability_max[i]||0}% rain</div><div class="wm">${esc(W.location)}</div>`}
+function forecast(){if(!W||!W.ok)return"";return W.daily.time.map((t,i)=>`<div class="menuitem"><span class="md">${new Date(t+"T12:00").toLocaleDateString([],{weekday:"short"})}</span>${icon(W.daily.weather_code[i])} ${Math.round(W.daily.temperature_2m_max[i])}° / ${Math.round(W.daily.temperature_2m_min[i])}°</div>`).join("")}
+function renderDetail(){let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.completions[key(sel)+"-"+x.i]).length,p=C.length?Math.round(done/C.length*100):100;document.getElementById("detail").innerHTML=`<div class="head"><div><h1>${sel.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</h1><div class="sub">${sel.getFullYear()}</div></div><div class="weather">${weather()}</div></div><div class="cards">
+<div class="card"><h2>📅 TODAY'S SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}</div></div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}</div>
+<div class="card"><h2>✅ TODAY'S CHORES <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div></div>
+<div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}</div>
+<div class="card"><h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2>${(S.pinnedNotes||[]).map((x,i)=>`<div class="pinNote">📌 ${esc(x)}<button onclick="dismissPinned(${i})">×</button></div>`).join("")}<div class="notesbox">${esc(S.notes)}</div><h2 style="margin-top:12px">🌤️ FORECAST</h2>${forecast()}</div>
+<div class="card quoteCard"><h2>💬 DAILY WISDOM(ISH)</h2><div class="quote">“${esc(quoteFor(sel))}”</div></div></div>`}
+function persist(cb){document.getElementById("status").textContent="Saving…";google.script.run.withSuccessHandler(()=>{document.getElementById("status").textContent="Saved ✓";setTimeout(()=>document.getElementById("status").textContent="",1500);if(cb)cb()}).saveDashboardSettings(S)}
+function chore(i,on){let who=(S.chores[i]&&S.chores[i].who)||"Kid";S.completions[key(sel)+"-"+i]=on;if(!on)delete S.completions[key(sel)+"-"+i];if(on)checkChoreCelebrations(who);renderDetail();persist()}
+function toggleCal(x){let n=decodeURIComponent(x),i=S.hiddenCalendars.indexOf(n);i>=0?S.hiddenCalendars.splice(i,1):S.hiddenCalendars.push(n);renderCal();renderDetail();renderGlance();renderCountdowns();persist()}
+function showAll(){S.hiddenCalendars=[];renderCal();renderDetail();persist()}
+function move(n){view=new Date(view.getFullYear(),view.getMonth()+n,1);renderCal();activity()}
+function swipeMonth(n){let g=document.getElementById("grid"),out=n>0?"swipeOutLeft":"swipeOutRight",inn=n>0?"swipeInRight":"swipeInLeft";if(g.dataset.swiping==="1")return;g.dataset.swiping="1";g.classList.add(out);setTimeout(()=>{view=new Date(view.getFullYear(),view.getMonth()+n,1);g.classList.remove(out);renderCal();g.classList.add(inn);setTimeout(()=>{g.classList.remove(inn);g.dataset.swiping="0"},155)},145);activity()}
+function setupCalendarSwipe(){let g=document.getElementById("grid");if(!g||g.dataset.swipeReady==="1")return;g.dataset.swipeReady="1";let start=null,fired=false;const reset=e=>{if(start&&e&&e.pointerId===start.id){try{if(g.hasPointerCapture(e.pointerId))g.releasePointerCapture(e.pointerId)}catch(_){}}start=null;fired=false};g.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;start={id:e.pointerId,x:e.clientX,y:e.clientY};fired=false;try{g.setPointerCapture(e.pointerId)}catch(_){}});g.addEventListener("pointermove",e=>{if(!start||fired||e.pointerId!==start.id)return;let dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)>=70&&Math.abs(dx)>Math.abs(dy)*1.2){fired=true;suppressDayClickUntil=Date.now()+600;swipeMonth(dx<0?1:-1)}});g.addEventListener("pointerup",e=>{if(!start||e.pointerId!==start.id)return;if(!fired){let dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)>=70&&Math.abs(dx)>Math.abs(dy)*1.2){suppressDayClickUntil=Date.now()+600;swipeMonth(dx<0?1:-1)}}reset(e)});g.addEventListener("pointercancel",reset);g.addEventListener("lostpointercapture",()=>{start=null;fired=false})}
+function today(){let d=new Date();view=new Date(d.getFullYear(),d.getMonth(),1);sel=d;renderCal();renderDetail();activity()}
+function openModal(x){document.getElementById("modal").innerHTML=x;document.getElementById("modalbg").style.display="grid"}
+let modalMode="",choreEditOriginal=null;
+function closeModal(){if(modalMode==="chores"){cancelChores();return}document.getElementById("modalbg").style.display="none";modalMode=""}
+function dayChecks(x,i){return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,n)=>`<label class="daycheck"><input type="checkbox" id="cd${i}_${n}" ${x.days.includes(n)?"checked":""}>${d}</label>`).join("")}
+function choreEditorData(){return S.chores.map((x,i)=>{let n=document.getElementById("cn"+i),w=document.getElementById("cw"+i);if(!n||!w)return x;return{name:n.value,who:w.value,days:[0,1,2,3,4,5,6].filter(d=>{let c=document.getElementById(`cd${i}_${d}`);return c&&c.checked})}})}
+function choresDirty(){if(!choreEditOriginal)return false;return JSON.stringify(choreEditorData())!==JSON.stringify(choreEditOriginal)}
+function openChores(){if(!choreEditOriginal)choreEditOriginal=JSON.parse(JSON.stringify(S.chores));modalMode="chores";openModal(`<h2>Edit recurring chores</h2><div class="note">Check the days each chore should appear.</div><div>${S.chores.map((x,i)=>`<div class="choreEdit"><div class="choreTop"><input id="cn${i}" value="${esc(x.name)}" placeholder="Chore"><input id="cw${i}" value="${esc(x.who)}" placeholder="Who"><button class="x" onclick="delChore(${i})">×</button></div><div class="daychecks">${dayChecks(x,i)}</div></div>`).join("")}</div><button class="btn" onclick="addChore()">+ Add chore</button><div class="actions"><button class="btn" onclick="cancelChores()">Cancel</button><button class="btn" onclick="saveChores()">Save</button></div>`)}
+function captureChoreEdits(){S.chores=choreEditorData()}
+function addChore(){captureChoreEdits();S.chores.push({name:"",who:"",days:[1,2,3,4,5]});openChores();let n=document.getElementById("cn"+(S.chores.length-1));if(n){n.focus();n.scrollIntoView({block:"nearest"})}}
+function delChore(i){captureChoreEdits();S.chores.splice(i,1);openChores()}
+function cancelChores(){let dirty=choresDirty();if(dirty&&!confirm("You have unsaved chore changes. Discard them?"))return;if(choreEditOriginal)S.chores=JSON.parse(JSON.stringify(choreEditOriginal));choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail()}
+function saveChores(){S.chores=choreEditorData().map(x=>({name:x.name.trim(),who:x.who.trim(),days:x.days})).filter(x=>x.name);choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail();persist()}
+function openMenu(){openModal(`<h2>Edit weekly menu</h2>${Object.entries(S.menu).map(([d,m])=>`<div class="field"><label>${d}</label><input id="meal${d}" value="${esc(m)}"></div>`).join("")}<div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`)}
+function saveMenu(){Object.keys(S.menu).forEach(d=>S.menu[d]=document.getElementById("meal"+d).value.trim());closeModal();renderDetail();persist()}
+function openNotes(){S.pinnedNotes=S.pinnedNotes||[];openModal(`<h2>Family Notes</h2><div class="field"><label>General notes</label><textarea id="notes">${esc(S.notes)}</textarea></div><h3>📌 PINNED / IMPORTANT</h3><div class="note">These stay visible in the dashboard glance until you remove them.</div><div id="pinEditor">${S.pinnedNotes.map((x,i)=>`<div class="pinEditRow"><input id="pin${i}" value="${esc(x)}"><button class="x" onclick="removePinEditor(${i})">×</button></div>`).join("")}</div><button class="btn" onclick="addPinEditor()">+ Pin reminder</button><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveNotes()">Save</button></div>`)}
+function addPinEditor(){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.push("");openNotes()}
+function removePinEditor(i){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.splice(i,1);openNotes()}
+function saveNotes(){S.notes=document.getElementById("notes").value;S.pinnedNotes=(S.pinnedNotes||[]).map((_,i)=>(document.getElementById("pin"+i)?.value||"").trim()).filter(Boolean);closeModal();renderDetail();renderGlance();persist()}
+function dismissPinned(i){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.splice(i,1);renderDetail();renderGlance();persist()}
+
+
+const GROCERY_CATEGORIES=["Produce","Bakery","Deli","Meat & Seafood","Dairy & Eggs","Spices & Seasonings","Oils, Sauces & Condiments","Pantry","Beverages","Frozen","Household","Personal Care","Other"];
+function guessGroceryCategory(n){let s=n.toLowerCase();let rules=[
+ ["Spices & Seasonings",/\b(cumin|paprika|smoked paprika|chili powder|chile powder|cayenne|oregano|thyme|rosemary|turmeric|coriander|cinnamon|nutmeg|allspice|onion powder|garlic powder|seasoning|seasoned salt|kosher salt|sea salt|table salt|black pepper|white pepper|red pepper flakes|crushed red pepper|bay leaves?|bay leaf|italian seasoning|taco seasoning|cajun seasoning|old bay)\b/],
+ ["Oils, Sauces & Condiments",/\b(olive oil|avocado oil|vegetable oil|canola oil|sesame oil|coconut oil|cooking oil|salsa|ketchup|mustard|dijon|mayonnaise|mayo|hot sauce|soy sauce|worcestershire|barbecue sauce|bbq sauce|teriyaki|hoisin|fish sauce|oyster sauce|steak sauce|vinegar|balsamic|rice vinegar|apple cider vinegar|sriracha|buffalo sauce|enchilada sauce|taco sauce|adobo sauce|chimichurri)\b/],
+ ["Produce",/apple|banana|orange|lemon|lime|lettuce|spinach|pepper|onion|potato|tomato|avocado|cilantro|parsley|garlic|carrot|celery|broccoli|berry|berries|grape|melon|cucumber|zucchini|mushroom|corn|fruit|vegetable/],
+ ["Bakery",/bread|bun|roll|bagel|tortilla|pita|muffin/],["Deli",/deli|salami|prosciutto|lunch meat/],["Meat & Seafood",/beef|steak|chicken|pork|sausage|chorizo|bacon|turkey|salmon|shrimp|fish|ground meat/],
+ ["Dairy & Eggs",/milk|cheese|yogurt|egg|butter|cream|cottage cheese/],["Frozen",/frozen|ice cream|pizza/],["Beverages",/water|soda|pop|coffee|tea|juice/],["Household",/foil|paper towel|toilet paper|trash bag|detergent|dish soap|cleaner|sponge/],["Personal Care",/toothpaste|shampoo|deodorant|soap|razor/]
+ ];for(let [c,r] of rules)if(r.test(s))return c;return "Pantry"}
+function groceryCategoryOptions(){return GROCERY_CATEGORIES.map(c=>`<option>${esc(c)}</option>`).join("")}
+function normalizeStockedNameUI_(s){return String(s||"").toLowerCase().replace(/\([^)]*\)/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim()}
+function refreshPantry(cb){google.script.run.withSuccessHandler(x=>{STOCK=x||{items:[]};if(cb)cb()}).getAlwaysStocked()}
+function openPantry(){openModal(`<h2>🥫 Always Stocked</h2><div class="note">Things you normally keep in the house. Grocery generation will leave these unchecked automatically.</div><div class="gAdd" style="margin-top:12px"><input id="stockName" placeholder="Cumin, olive oil, garlic powder…" onkeydown="if(event.key==='Enter')addStockedUI()"><button class="btn" onclick="addStockedUI()">+ Add</button></div><div id="stockedBody"><div class="note">Loading pantry brain…</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div>`);refreshPantry(renderPantry)}
+function renderPantry(){let e=document.getElementById("stockedBody");if(!e)return;e.innerHTML=(STOCK.items||[]).length?`<div class="stockedGrid">${STOCK.items.map(x=>`<div class="stockedItem"><span>${esc(x.name)}</span><button class="x" onclick="deleteStockedUI('${x.id}')">×</button></div>`).join("")}</div>`:'<div class="empty" style="margin:12px 0">Nothing marked Always Stocked yet.</div>'}
+function addStockedUI(){let e=document.getElementById("stockName"),n=(e?.value||"").trim();if(!n)return;google.script.run.withSuccessHandler(x=>{STOCK=x;e.value="";renderPantry()}).addAlwaysStocked(n)}
+function deleteStockedUI(id){google.script.run.withSuccessHandler(x=>{STOCK=x;renderPantry()}).deleteAlwaysStocked(id)}
+
+function loadKitchenTimers(){try{kitchenTimers=JSON.parse(localStorage.getItem("familyKitchenTimersV1")||"[]")}catch(_){kitchenTimers=[]}kitchenTimers=kitchenTimers.filter(x=>x&&x.end)}
+function saveKitchenTimers(){try{localStorage.setItem("familyKitchenTimersV1",JSON.stringify(kitchenTimers))}catch(_){}}
+function fmtTimer(ms){ms=Math.max(0,ms);let s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),z=s%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(z).padStart(2,"0")}`:`${m}:${String(z).padStart(2,"0")}`}
+function openTimers(){timerDraftMinutes=Math.max(1,timerDraftMinutes||10);renderTimersModal(true)}
+function timerRowsHTML(){return kitchenTimers.map((x,i)=>`<div class="timerRow ${x.ringing?"ringing":""}"><div class="timerName">${esc(x.name||"Timer")}</div><div class="timerTime" id="timerTime${i}">${x.end>Date.now()?fmtTimer(x.end-Date.now()):"DONE!"}</div>${x.ringing?`<button class="btn timerStop" onclick="stopTimerAlarm(${i})">■ Stop Alarm</button>`:`<button class="btn timerStop" onclick="removeTimer(${i})">■ Stop</button>`}</div>`).join("")}
+function renderTimersModal(open=false){let anyRinging=kitchenTimers.some(x=>x.ringing),alarmBar=anyRinging?`<div class="timerAlarmBar"><div><b>⏰ TIMER DONE!</b><div>Tap below to silence the alarm without leaving this screen.</div></div><button class="btn timerAlarmStopAll" onclick="stopAllTimerAlarms()">■ STOP ALARM</button></div>`:"";let content=`<h2>⏱️ Kitchen Timers</h2>${alarmBar}<div class="note">Tap a preset or use the big +/- buttons.</div><div class="timerCreate"><div class="timerPresets"><button class="btn" onclick="setTimerMinutes(5)">5 min</button><button class="btn" onclick="setTimerMinutes(10)">10</button><button class="btn" onclick="setTimerMinutes(15)">15</button><button class="btn" onclick="setTimerMinutes(20)">20</button><button class="btn" onclick="setTimerMinutes(30)">30</button><button class="btn" onclick="setTimerMinutes(45)">45</button><button class="btn" onclick="setTimerMinutes(60)">60</button></div><div class="timerAdjust"><button class="btn" onclick="adjustTimerMinutes(-5)">−5</button><button class="btn" onclick="adjustTimerMinutes(-1)">−1</button><div id="timerMinuteDisplay" class="timerMinuteDisplay">${timerDraftMinutes} min</div><button class="btn" onclick="adjustTimerMinutes(1)">+1</button><button class="btn" onclick="adjustTimerMinutes(5)">+5</button></div><button class="btn timerStart" onclick="addTimerUI()">▶ Start ${timerDraftMinutes}-Minute Timer</button></div><div class="timerList">${timerRowsHTML()||'<div class="empty">No timers running. Miraculously, nothing is burning.</div>'}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div>`;if(open)openModal(content);else if(document.getElementById("modalbg").style.display!=="none"&&document.getElementById("modal")?.querySelector(".timerList"))document.getElementById("modal").innerHTML=content}
+function updateTimerDraftUI(){let d=document.getElementById("timerMinuteDisplay");if(d)d.textContent=timerDraftMinutes+" min";let b=document.querySelector(".timerStart");if(b)b.textContent=`▶ Start ${timerDraftMinutes}-Minute Timer`}
+function setTimerMinutes(m){timerDraftMinutes=Math.max(1,Number(m)||1);updateTimerDraftUI()}
+function adjustTimerMinutes(delta){timerDraftMinutes=Math.max(1,Math.min(720,timerDraftMinutes+(Number(delta)||0)));updateTimerDraftUI()}
+function setTimerQuickName(n){let e=document.getElementById("timerName");if(e)e.value=n}
+function nextTimerName(){let used=new Set(kitchenTimers.map(x=>String(x.name||"").toLowerCase()));let n=1;while(used.has(("timer "+n).toLowerCase()))n++;return "Timer "+n}
+function primeTimerAudio(){try{let A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!timerAudioCtx)timerAudioCtx=new A();if(timerAudioCtx.state==="suspended")timerAudioCtx.resume()}catch(_){}}
+function addTimerUI(){primeTimerAudio();let n=nextTimerName(),m=timerDraftMinutes;if(!m||m<=0)return;kitchenTimers.push({name:n,end:Date.now()+m*60000,ringing:false});saveKitchenTimers();renderTimersModal(false);updateTimers()}
+function removeTimer(i){kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();renderTimersModal(false);updateTimers()}
+function stopTimerAlarm(i){if(kitchenTimers[i])kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();renderTimersModal(false);updateTimers()}
+function stopAllTimerAlarms(){kitchenTimers=kitchenTimers.filter(x=>!x.ringing);saveKitchenTimers();syncTimerAlarmLoop();renderTimersModal(false);updateTimers()}
+function timerAlarmPulse(){try{let A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!timerAudioCtx)timerAudioCtx=new A();if(timerAudioCtx.state==="suspended"){timerAudioCtx.resume().catch(()=>{});return}let c=timerAudioCtx,t=c.currentTime;[0,.18,.36,.72,.90,.108].forEach((off,i)=>{let o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=i<3?880:1040;g.gain.setValueAtTime(.001,t+off);g.gain.exponentialRampToValueAtTime(.24,t+off+.015);g.gain.exponentialRampToValueAtTime(.001,t+off+.13);o.connect(g);g.connect(c.destination);o.start(t+off);o.stop(t+off+.15)})}catch(_){}}
+function startTimerAlarmLoop(){if(timerAlarmLoop)return;timerAlarmPulse();timerAlarmLoop=setInterval(timerAlarmPulse,1800)}
+function stopTimerAlarmLoop(){if(timerAlarmLoop){clearInterval(timerAlarmLoop);timerAlarmLoop=null}}
+function syncTimerAlarmLoop(){kitchenTimers.some(x=>x.ringing)?startTimerAlarmLoop():stopTimerAlarmLoop()}
+function updateTimers(){let now=Date.now(),ring=false,changed=false;kitchenTimers.forEach(x=>{if(x.end<=now&&!x.ringing){x.ringing=true;changed=true}if(x.ringing)ring=true});if(changed)saveKitchenTimers();syncTimerAlarmLoop();let active=kitchenTimers.filter(x=>x.end>now).length,btn=document.getElementById("timersNavBtn"),label=document.getElementById("timersNavLabel");if(label)label.innerHTML=`Timers${active?` <span class="timerBadge">${active}</span>`:""}${ring?" 🔔":""}`;if(btn)btn.classList.toggle("ringing",ring);kitchenTimers.forEach((x,i)=>{let e=document.getElementById("timerTime"+i);if(e)e.textContent=x.end>now?fmtTimer(x.end-now):"DONE!"});if(changed&&document.getElementById("modalbg").style.display!=="none"&&document.getElementById("modal")?.querySelector(".timerList"))renderTimersModal(false);updateCookTimerBar();updateCookMiniBar_()}
+
+
+function dinnerForDate_(d){
+ let iso=key(d),x=(S.mealPlanWeek||[]).find(v=>v.date===iso);
+ if(x&&x.dinner)return {name:x.dinner,id:x.dinnerId||"",source:"plan",planName:x.planName||"Meal Plan"};
+ x=(S.randomDinnerWeek||[]).find(v=>v.date===iso);
+ if(x&&x.dinner)return {name:x.dinner,id:x.id||x.dinnerId||"",source:"library",planName:"Build My Week"};
+ let keys=["SUN","MON","TUE","WED","THU","FRI","SAT"],raw=String(S.menu?.[keys[d.getDay()]]||"").trim();
+ if(!raw)return null;
+ let m=raw.match(/(?:🌙\s*)?([^•]+)$/),name=(m?m[1]:raw).replace(/^🌙\s*/,"").trim();
+ return name?{name:name,id:"",source:"",planName:"Weekly Menu"}:null;
+}
+function recipeMatchForDinner_(dinner){
+ if(!dinner)return null;
+ if(dinner.id){
+   let pool=dinner.source==="plan"?(MP.recipes||[]):(R.recipes||[]),x=pool.find(r=>String(r.id)===String(dinner.id));
+   if(x)return {source:dinner.source,id:x.id,recipe:x};
+ }
+ let n=String(dinner.name||"").toLowerCase().replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim();
+ for(let source of ["library","plan"]){
+   let pool=source==="library"?(R.recipes||[]):(MP.recipes||[]);
+   let x=pool.find(r=>String(r.name||"").toLowerCase().replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim()===n);
+   if(x)return {source,id:x.id,recipe:x};
+ }
+ return null;
+}
+function groceryNeedForRecipe_(recipe){
+ if(!recipe||!G||!Array.isArray(G.items))return null;
+ let parts=cookIngredients_(recipe.ingredients||"").map(x=>x.toLowerCase()),active=G.items.filter(x=>!x.checked);
+ let missing=0;
+ parts.forEach(line=>{let words=line.replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2&&!/^(cup|cups|tbsp|tsp|tablespoon|teaspoon|ounce|ounces|pound|pounds|clove|cloves|large|small|medium|fresh|minced|chopped|diced|sliced|ground|optional|taste)$/.test(w));if(words.length&&!active.some(g=>{let gn=String(g.name||"").toLowerCase();return words.slice(-2).some(w=>gn.includes(w))}))missing++});
+ return {missing,total:parts.length};
+}
+function ensureDinnerData_(cb){
+ let jobs=0,done=()=>{if(--jobs<=0){renderGlance();if(cb)cb()}};
+ if(!R.loaded){jobs++;google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;done()}).withFailureHandler(done).getRecipeLibrary()}
+ if(!MP.loaded){jobs++;google.script.run.withSuccessHandler(d=>{MP=d||{plans:[],recipes:[]};MP.loaded=!!MP.ok;done()}).withFailureHandler(done).getMealPlans()}
+ if(!G||!Array.isArray(G.items)||!G.updatedAt){jobs++;google.script.run.withSuccessHandler(g=>{G=g||{items:[]};done()}).withFailureHandler(done).getGroceries()}
+ if(!jobs&&cb)cb();
+}
+function openDinnerRecipe_(source,id){
+ openRecipes();
+ if(source==="plan"){showPlanTab();setTimeout(()=>openPlanRecipe(id),MP.loaded?40:700)}
+ else{showRecipeTab();setTimeout(()=>openRecipeDetail(id),R.loaded?40:700)}
+}
+function startDinnerCook_(source,id){let m=recipeMatchForDinner_(dinnerForDate_(new Date()));if(m)openCookMode(m.source,m.id)}
+
+function durationMinutesFromText_(text){
+ let s=String(text||"").toLowerCase(),total=0,found=[];
+ let re=/\b(?:for\s+|about\s+|approximately\s+|approx\.?\s+|roughly\s+|around\s+)?(\d+(?:\.\d+)?)\s*(hours?|hrs?|hr|minutes?|mins?|min)\b/g,m;
+ while((m=re.exec(s))){let n=Number(m[1]),mins=/^h/.test(m[2])?n*60:n;if(mins>0&&mins<=1440)found.push(mins)}
+ if(!found.length)return null;
+ // Recipe steps usually contain sequential durations; cap absurd totals.
+ total=found.reduce((a,b)=>a+b,0);return Math.min(total,1440);
+}
+function formatCookEstimate_(mins){if(!mins)return "";if(mins>=240)return mins>=480?"Long cook":`~${Math.round(mins/60)} hr`;if(mins>=60){let h=Math.floor(mins/60),m=Math.round((mins%60)/5)*5;return `~${h} hr${m?" "+m+" min":""}`}return `~${Math.max(5,Math.round(mins/5)*5)} min`}
+function prepIntelForRecipe_(recipe){
+ let s=[recipe?.ingredients,recipe?.instructions,recipe?.notes].filter(Boolean).join(" ").toLowerCase(),hits=[];
+ if(/\bovernight\b/.test(s))hits.push("overnight prep");
+ if(/\b(?:marinate|marinade)\b/.test(s)){let m=s.match(/(?:marinate|marinade)[^.!;\n]{0,80}?(\d+(?:\.\d+)?)\s*(hours?|hrs?|hr|minutes?|mins?|min)/);hits.push(m?`marinate ${m[1]} ${m[2]}`:"marinate ahead")}
+ if(/\bthaw|defrost\b/.test(s))hits.push("thaw ahead");
+ if(/\bsoak\b/.test(s))hits.push("soak ahead");
+ if(/\bbrine\b/.test(s))hits.push("brine ahead");
+ if(/\brefrigerat(?:e|ed)[^.!;\n]{0,60}?\d+\s*(?:hours?|hrs?|hr|minutes?|mins?|min)/.test(s)){let m=s.match(/refrigerat(?:e|ed)[^.!;\n]{0,60}?(\d+(?:\.\d+)?)\s*(hours?|hrs?|hr|minutes?|mins?|min)/);if(m)hits.push(`chill ${m[1]} ${m[2]}`)}
+ return [...new Set(hits)].slice(0,2);
+}
+function busyEveningIntel_(d){
+ let a=ev(d).filter(e=>!e.allDay).filter(e=>{let x=new Date(e.start),end=new Date(e.end||e.start);return x.getHours()<21&&end.getHours()>=16}).sort((a,b)=>new Date(a.start)-new Date(b.start));
+ if(!a.length)return null;
+ let e=a[0];return {count:a.length,title:e.title,time:time(e)};
+}
+function kitchenIntelHtml_(d,m){
+ if(!m||!m.recipe)return "";
+ let chips=[],mins=durationMinutesFromText_(m.recipe.instructions||""),prep=prepIntelForRecipe_(m.recipe),busy=busyEveningIntel_(d);
+ if(mins)chips.push(`<span class="kitchenIntelChip time">⏱️ ${esc(formatCookEstimate_(mins))}</span>`);
+ if(prep.length)chips.push(`<span class="kitchenIntelChip prep">🧂 ${esc(prep[0])}</span>`);
+ if(busy)chips.push(`<span class="kitchenIntelChip busy">📅 ${busy.count>1?busy.count+" evening events":busy.time+" "+busy.title}</span>`);
+ let tom=new Date(d);tom.setDate(tom.getDate()+1),td=dinnerForDate_(tom),tm=recipeMatchForDinner_(td),tp=tm?prepIntelForRecipe_(tm.recipe):[];
+ if(tp.length)chips.push(`<span class="kitchenIntelChip tomorrow">➡️ Tomorrow: ${esc(tp[0])}</span>`);
+ return chips.length?`<div class="kitchenIntel">${chips.slice(0,4).join("")}</div>`:"";
+}
+function dinnerCommandHtml_(d){
+ let dinner=dinnerForDate_(d);if(!dinner)return "";
+ let m=recipeMatchForDinner_(dinner),need=m?groceryNeedForRecipe_(m.recipe):null;
+ let sub=m?(need?(need.missing?`<span class="dinnerMissing">🛒 ${need.missing} ingredient${need.missing===1?"":"s"} may still be needed</span>`:`<span class="dinnerReady">✓ Grocery list looks covered</span>`):"Recipe ready"):"No linked recipe found yet";
+ let actions=m?`<div class="dinnerActions"><button class="btn primaryAction" onclick="event.stopPropagation();openDinnerRecipe_('${m.source}','${esc(m.id)}')">🍽️ Recipe</button><button class="btn" onclick="event.stopPropagation();openCookMode('${m.source}','${esc(m.id)}')">👨‍🍳 Start Dinner</button><button class="btn" onclick="event.stopPropagation();openRecipeGroceryFromDinner_('${m.source}','${esc(m.id)}')">🛒 Ingredients</button></div>`:"";
+ return `<div class="dinnerCommand"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dinnerSub">${esc(dinner.planName||"")}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${m?kitchenIntelHtml_(d,m):""}${actions}</div>`;
+}
+function openRecipeGroceryFromDinner_(source,id){openRecipes();setTimeout(()=>openRecipeGroceryPreview(source,id),80)}
+function renderGlance(){
+ let e=document.getElementById("glanceStrip");if(!e)return;
+ let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
+ let E=futureEventsForDay_(now,true).slice(0,3),T=futureEventsForDay_(tom,false).slice(0,3),
+ pins=(S.pinnedNotes||[]);
+ let line=a=>a.length?a.map(x=>(x.allDay?"":time(x)+" ")+x.title).join(" • "):"Nothing else scheduled";
+ let label=now.getHours()>=17?"TONIGHT":"TODAY",dinner=dinnerCommandHtml_(now),tomDinner=dinnerForDate_(tom);
+ e.innerHTML=`${calendarIntelHtml_()}${dinner}<div class="glanceBox"><b>${label}</b><div class="glanceText">${esc(line(E))}</div></div><div class="glanceBox"><b>TOMORROW</b><div class="glanceText">${esc(line(T))}${tomDinner?` • 🍽️ ${esc(tomDinner.name)}`:""}</div></div>${pins.length?`<div class="glanceBox"><b>📌 IMPORTANT</b><div class="glanceText">${esc(pins[0])}${pins.length>1?` • +${pins.length-1} more`:""}</div></div>`:""}`;
+ if((!R.loaded||!MP.loaded||!G?.updatedAt)&&!window._dinnerDataLoading){window._dinnerDataLoading=true;ensureDinnerData_(()=>window._dinnerDataLoading=false)}
+}
+function openGroceries(){document.getElementById("groceryOverlay").classList.add("open");let s=document.getElementById("groceryCategory");if(!s.innerHTML)s.innerHTML=groceryCategoryOptions();refreshGroceries();clearInterval(groceryTimer);groceryTimer=setInterval(refreshGroceries,20000);setTimeout(()=>document.getElementById("groceryName")?.focus(),100);activity()}
+function closeGroceries(){document.getElementById("groceryOverlay").classList.remove("open");clearInterval(groceryTimer);groceryTimer=null;activity()}
+function renderGroceries(){let body=document.getElementById("groceryBody");if(!body)return;let active=G.items.filter(x=>!x.checked).length,checked=G.items.length-active;document.getElementById("groceryCount").innerHTML=`${active} to get${checked?` • ${checked} checked`:""}<div class="gMergeNote">Recipe and weekly-plan adds automatically merge matching items.</div>`;document.getElementById("grocerySync").textContent=G.updatedAt?"Synced "+new Date(G.updatedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";if(!G.items.length){body.innerHTML='<div class="gEmpty">Your list is empty. Add something delicious. 😈</div>';return}let html="";GROCERY_CATEGORIES.forEach(cat=>{let a=G.items.filter(x=>x.category===cat).sort((a,b)=>Number(a.checked)-Number(b.checked)||a.name.localeCompare(b.name));if(!a.length)return;html+=`<section class="gSection"><div class="gSectionTitle">${esc(cat)}</div>${a.map(x=>`<div class="gItem ${x.checked?"checked":""}"><input type="checkbox" ${x.checked?"checked":""} onchange="setGroceryCheckedUI('${x.id}',this.checked)"><span class="gName">${x.qty?`<span class="gQty">${esc(x.qty)}</span>`:""}${esc(x.name)}${x.source?`<span class="gSource">From: ${esc(x.source)}</span>`:""}</span><div class="gItemActions"><button class="gEdit" onclick="editGroceryUI('${x.id}')" title="Edit">✎</button><button class="gDelete" onclick="deleteGroceryUI('${x.id}')" title="Delete">×</button></div></div>`).join("")}</section>`});body.innerHTML=html}
+function groceryFail(e){document.getElementById("grocerySync").textContent="Sync error";console.error(e)}
+function refreshGroceries(){google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).getGroceries()}
+function addGrocery(){let i=document.getElementById("groceryName"),q=document.getElementById("groceryQty"),s=document.getElementById("groceryCategory"),name=i.value.trim(),qty=q.value.trim();if(!name)return;let guessed=guessGroceryCategory(name);if(!s.dataset.touched)s.value=guessed;i.value="";q.value="";google.script.run.withSuccessHandler(g=>{G=g;renderGroceries();s.dataset.touched="";i.focus()}).withFailureHandler(groceryFail).addGroceryItem(name,s.value,qty)}
+function editGroceryUI(id){let x=G.items.find(i=>i.id===id);if(!x)return;let name=prompt("Item name:",x.name);if(name===null||!name.trim())return;let qty=prompt("Quantity / amount (optional):",x.qty||"");if(qty===null)return;let cats=GROCERY_CATEGORIES.map((c,i)=>`${i+1}. ${c}`).join("\n");let cat=prompt(`Category — type a name or number:\n${cats}`,x.category||guessGroceryCategory(name));if(cat===null)return;cat=cat.trim();let n=Number(cat);if(Number.isInteger(n)&&n>=1&&n<=GROCERY_CATEGORIES.length)cat=GROCERY_CATEGORIES[n-1];if(!GROCERY_CATEGORIES.includes(cat))cat=guessGroceryCategory(name);google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).updateGroceryItem(id,name.trim(),cat,qty.trim())}
+function setGroceryCheckedUI(id,v){google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).setGroceryChecked(id,v)}
+function deleteGroceryUI(id){google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).deleteGroceryItem(id)}
+function checkAllGroceriesUI(){if(!G.items.length)return;google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).setAllGroceriesChecked(true)}
+function clearCheckedGroceriesUI(){if(!G.items.some(x=>x.checked))return;if(!confirm("Clear all checked grocery items?"))return;google.script.run.withSuccessHandler(g=>{G=g;renderGroceries()}).withFailureHandler(groceryFail).clearCheckedGroceries()}
+document.addEventListener("change",e=>{if(e.target&&e.target.id==="groceryCategory")e.target.dataset.touched="1"});
+
+function v4Forecast(){
+ if(!W||!W.ok)return "<div class='empty'>Forecast unavailable.</div>";
+ return `<div class="v4forecastrow">${W.daily.time.map((t,i)=>{let d=new Date(t+"T12:00");return `<div class="v4fday"><b>${d.toLocaleDateString([],{weekday:"short"})}</b><div class="v4fi">${icon(W.daily.weather_code[i])}</div>${Math.round(W.daily.temperature_2m_max[i])}° / ${Math.round(W.daily.temperature_2m_min[i])}°<div>${W.daily.precipitation_probability_max[i]||0}% rain</div></div>`}).join("")}</div>`;
+}
+function openDay(d){
+ sel=new Date(d);applyTheme(sel);renderCal();
+ let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.completions[key(sel)+"-"+x.i]).length,p=C.length?Math.round(done/C.length*100):100;
+ document.getElementById("v4date").textContent=sel.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
+ document.getElementById("v4year").textContent=sel.getFullYear();
+ document.getElementById("v4weather").innerHTML=weather();
+ document.getElementById("v4schedule").innerHTML=`<h2>📅 SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD EVENT</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}${e.location?" • "+esc(e.location):""}</div>${eventHasConflict_(e,E)?'<div class="calConflictNote">⚠ Schedule overlap</div>':""}</div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}`;
+ document.getElementById("v4chores").innerHTML=`<h2>✅ CHORES <span class="streakBadge">🔥 ${choreStreak(new Date())} day streak</span> <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked);openDay(sel)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div>`;
+ document.getElementById("v4menu").innerHTML=`<h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}`;
+ document.getElementById("v4notes").innerHTML=`<h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2><div class="notesbox">${esc(S.notes)}</div>`;
+ document.getElementById("v4forecast").innerHTML=`<h2>🌤️ 7-DAY FORECAST</h2>${v4Forecast()}`;
+ document.getElementById("v4quote").textContent="💬 “"+quoteFor(sel)+"”";
+ document.getElementById("dayOverlay").classList.add("open");
+ let sd=specialDayType(sel);if(sd.birthday){showBanner("🎂 BIRTHDAY MODE: LEVEL UP!");launchConfetti("🎈")}else if(sd.holiday){showBanner("✨ HOLIDAY MODE");launchConfetti("✨")}else if(sd.vacation){showBanner("✈️ VACATION MODE: LET'S GO");launchConfetti("🧳")}else if(sd.school){showBanner("🎒 SCHOOL DAY MODE")}
+ activity();
+}
+function closeDay(){document.getElementById("dayOverlay").classList.remove("open");renderCal();activity()}
+function clock(){document.getElementById("clock").textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
+
+// V8.2 Recipe Library + generalized Meal Planner
+function openRecipes(){document.getElementById("recipeOverlay").classList.add("open");activity();showRecipeTab()}
+function closeRecipes(){document.getElementById("recipeOverlay").classList.remove("open");activity()}
+function setRecipeTab_(tab){recipeView=tab;document.getElementById("recipeTabBtn").classList.toggle("active",tab==="recipes");document.getElementById("planTabBtn").classList.toggle("active",tab==="plans");document.getElementById("buildTabBtn").classList.toggle("active",tab==="build");document.getElementById("groceryGenTabBtn")?.classList.toggle("active",tab==="groceryGen");document.getElementById("recipeTools").style.display=tab==="recipes"?"flex":"none"}
+function showRecipeTab(){setRecipeTab_("recipes");if(!R.loaded){document.getElementById("recipeBody").innerHTML='<div class="rLoading">Reading Family Recipes Mission Control…</div>';google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;if(!R.ok){recipeDataFail(R.message);return}buildRecipeCategories();renderRecipeLibrary()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getRecipeLibrary()}else renderRecipeLibrary()}
+function showPlanTab(){setRecipeTab_("plans");if(!MP.loaded){document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading meal plans…</div>';google.script.run.withSuccessHandler(d=>{MP=d||{plans:[],recipes:[]};MP.loaded=!!MP.ok;if(!MP.ok){recipeDataFail(MP.message);return}currentPlanId=currentPlanId||(MP.plans[0]?.id||"");renderMealPlans()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getMealPlans()}else renderMealPlans()}
+function showBuildTab(){setRecipeTab_("build");if(!R.loaded){document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading recipes for the weekly dinner lottery…</div>';google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;if(!R.ok){recipeDataFail(R.message);return}buildRecipeCategories();renderBuildWeek()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getRecipeLibrary()}else renderBuildWeek()}
+function recipeDataFail(m){document.getElementById("recipeBody").innerHTML=`<div class="rError"><b>Couldn’t read the Sheet.</b><br><br>${esc(m||"Unknown error")}<br><br><span class="rMeta">Check Sheet access and Apps Script authorization.</span></div>`}
+const SIMPLE_RECIPE_CATEGORIES=["Breakfast","Mains","Sides","Apps","Soups & Salads","Sauces","Desserts","Drinks","Other"];
+function simpleRecipeCategory_(cat,name,tags){let c=String(cat||"").trim().toLowerCase(),blob=[c,name||"",tags||""].join(" ").toLowerCase();if(/breakfast|brunch|egg|pancake|waffle|oatmeal/.test(c))return "Breakfast";if(/dessert|sweet|cake|cookie|pie|brownie|candy|ice cream/.test(c))return "Desserts";if(/sauce|condiment|dressing|marinade|rub|seasoning|crema|chimichurri|salsa|gravy/.test(c))return "Sauces";if(/app|appetizer|starter|snack|dip|finger food/.test(c))return "Apps";if(/soup|stew|chowder|bisque|salad/.test(c))return "Soups & Salads";if(/side|vegetable|veggie|potato|rice|bread|slaw/.test(c))return "Sides";if(/drink|beverage|cocktail|mocktail|smoothie|shake/.test(c))return "Drinks";if(/main|dinner|entree|entrée|beef|chicken|pork|turkey|seafood|fish|shrimp|steak|bbq|barbecue|smoker|grill|mexican|italian|asian|casserole|pasta|sandwich|burger|taco|pizza/.test(c)||/\b(chicken|beef|pork|steak|fish|shrimp|turkey|salmon|taco|burger|pasta|pizza)\b/.test(blob))return "Mains";return "Other"}
+function recipeDisplayCategory_(x){return simpleRecipeCategory_(x?.category,x?.name,x?.tags)}
+function buildRecipeCategories(){let s=document.getElementById("recipeCategory"),v=s.value;s.innerHTML='<option value="">All categories</option>'+SIMPLE_RECIPE_CATEGORIES.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");s.value=SIMPLE_RECIPE_CATEGORIES.includes(v)?v:""}
+
+const RECIPE_SCALE_KEY="familyDashboardRecipeScalesV814",RECENT_COOKED_KEY="familyDashboardRecentCookedV814";
+let recipeScales={};
+try{recipeScales=JSON.parse(localStorage.getItem(RECIPE_SCALE_KEY)||"{}")||{}}catch(e){recipeScales={}}
+function recipeScaleKey_(source,id){return String(source||"library")+":"+String(id||"")}
+function recipeScaleFor_(source,id){let n=Number(recipeScales[recipeScaleKey_(source,id)]||1);return [0.5,1,1.5,2,3].includes(n)?n:1}
+function saveRecipeScales_(){try{localStorage.setItem(RECIPE_SCALE_KEY,JSON.stringify(recipeScales))}catch(e){}}
+function formatScaledQty_(n){if(!isFinite(n))return "";let whole=Math.floor(n+1e-9),frac=n-whole,fracs=[[.125,"⅛"],[.25,"¼"],[.333,"⅓"],[.375,"⅜"],[.5,"½"],[.625,"⅝"],[.667,"⅔"],[.75,"¾"],[.875,"⅞"]],best=fracs.reduce((a,b)=>Math.abs(frac-b[0])<Math.abs(frac-a[0])?b:a,[0,""]);if(Math.abs(frac-best[0])>.035)return String(Math.round(n*100)/100);return (whole?whole+" ":"")+best[1]||String(whole)}
+function scaleIngredientLine_(line,factor){if(factor===1)return line;let s=String(line||""),m=s.match(/^(\s*)(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞])(?=\s|$)/);if(!m)return s;let n=cookNum_(m[2].replace("⅓",".333").replace("⅔",".667").replace("⅛",".125").replace("⅜",".375").replace("⅝",".625").replace("⅞",".875"));if(!isFinite(n))return s;return m[1]+formatScaledQty_(n*factor)+s.slice(m[0].length)}
+function scaleIngredientText_(text,factor){return String(text||"").split("\n").map(x=>scaleIngredientLine_(x,factor)).join("\n")}
+function recipeScaleControlsHtml_(source,id){let cur=recipeScaleFor_(source,id);return `<span>Scale</span>${[[.5,"½×"],[1,"1×"],[1.5,"1½×"],[2,"2×"],[3,"3×"]].map(x=>`<button class="btn ${cur===x[0]?"active":""}" onclick="setRecipeScale_('${source}','${esc(id)}',${x[0]},this)">${x[1]}</button>`).join("")}`}
+function setRecipeScale_(source,id,factor,btn){recipeScales[recipeScaleKey_(source,id)]=Number(factor)||1;saveRecipeScales_();let bar=btn?.closest(".recipeScaleBar");bar?.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));btn?.classList.add("active");let x=source==="plan"?(MP.recipes||[]).find(r=>String(r.id)===String(id)):(R.recipes||[]).find(r=>String(r.id)===String(id)),e=document.getElementById("recipeScaledIngredients");if(x&&e)e.textContent=scaleIngredientText_(x.ingredients||"—",factor)}
+function recentCooked_(){try{return JSON.parse(localStorage.getItem(RECENT_COOKED_KEY)||"[]")||[]}catch(e){return[]}}
+function recordRecentCooked_(recipe){if(!recipe)return;let a=recentCooked_().filter(x=>!(x.source===recipe.source&&String(x.id)===String(recipe.id)));a.unshift({source:recipe.source,id:recipe.id,name:recipe.name,at:Date.now()});try{localStorage.setItem(RECENT_COOKED_KEY,JSON.stringify(a.slice(0,12)))}catch(e){}}
+function recentCookedHtml_(){let a=recentCooked_().filter(x=>x.source==="library").slice(0,6);return a.length?`<div class="recentCooked"><div class="recentCookedTitle">RECENTLY COOKED</div><div class="recentCookedRow">${a.map(x=>`<button class="recentCookedChip" onclick="openRecipeDetail('${esc(x.id)}')">👨‍🍳 ${esc(x.name)}</button>`).join("")}</div></div>`:""}
+function renderRecipeLibrary(){let b=document.getElementById("recipeBody"),q=(document.getElementById("recipeSearch")?.value||"").trim().toLowerCase(),cat=document.getElementById("recipeCategory")?.value||"";let a=(R.recipes||[]).filter(x=>(!cat||recipeDisplayCategory_(x)===cat)&&(!q||[x.name,x.category,recipeDisplayCategory_(x),x.tags,x.status].join(" ").toLowerCase().includes(q)));if(!a.length){b.innerHTML='<div class="rEmpty">No recipes found. The kitchen goblins searched everywhere.</div>';return}b.innerHTML=`${recentCookedHtml_()}<div class="rMeta" style="margin:0 0 8px">${a.length} recipe${a.length===1?"":"s"}</div><div class="recipeGrid">${a.map(x=>`<div class="recipeCard" onclick="openRecipeDetail('${esc(x.id)}')"><h3>${esc(x.name)}</h3><div class="rMeta">${esc(recipeDisplayCategory_(x))}${x.yield?` • ${esc(x.yield)}`:""}${x.status?` • ${esc(x.status)}`:""}</div>${x.tags?`<div class="rTags">${esc(x.tags)}</div>`:""}</div>`).join("")}</div>`}
+function openRecipeDetail(id){let x=(R.recipes||[]).find(r=>r.id===id);if(!x)return;document.getElementById("recipeTools").style.display="none";let sc=recipeScaleFor_("library",x.id);document.getElementById("recipeBody").innerHTML=`<div class="recipeDetail"><button class="btn" onclick="${recipeView==='build'?'renderBuildWeek()':"document.getElementById('recipeTools').style.display='flex';renderRecipeLibrary()"}">← ${recipeView==='build'?'Build My Week':'Recipe Library'}</button><h2>${esc(x.name)}</h2><div class="rMeta">${esc(recipeDisplayCategory_(x))}${x.yield?` • Yield: ${esc(x.yield)}`:""}${x.status?` • ${esc(x.status)}`:""}</div>${x.tags?`<div class="rTags">${esc(x.tags)}</div>`:""}<div class="recipeScaleBar">${recipeScaleControlsHtml_('library',x.id)}</div><div class="recipeManageActions"><button class="btn cookModeBtn" onclick="openCookMode('library','${esc(x.id)}',recipeScaleFor_('library','${esc(x.id)}'))">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openRecipeGroceryPreview('library','${esc(x.id)}',recipeScaleFor_('library','${esc(x.id)}'))">🛒 Add Ingredients</button><button class="btn" onclick="openRecipeEditor('${esc(x.id)}')">✏️ Edit Recipe</button><button class="btn" onclick="duplicateRecipeUI('${esc(x.id)}')">⧉ Duplicate as New</button></div><h3>INGREDIENTS</h3><div id="recipeScaledIngredients" class="recipeText">${esc(scaleIngredientText_(x.ingredients||"—",sc))}</div><h3>INSTRUCTIONS</h3><div class="recipeText">${esc(x.instructions||"—")}</div>${x.notes?`<h3>NOTES</h3><div class="recipeText">${esc(x.notes)}</div>`:""}${x.variantOf?`<div class="rMeta" style="margin-top:18px">Variant of ${esc(x.variantOf)}</div>`:""}</div>`}
+
+function recipeEditorValue_(id){return document.getElementById(id)?.value||""}
+function openRecipeImporter(){document.getElementById("recipeTools").style.display="none";document.getElementById("recipeBody").innerHTML=`<div class="recipeEditor"><div class="recipeEditorHead"><div><h2>📥 Smart Recipe Import</h2><div class="rMeta">Paste a recipe copied from a website, email, document, text message, or notes. Nothing is saved until you review it.</div></div><button class="btn" onclick="document.getElementById('recipeTools').style.display='flex';renderRecipeLibrary()">Cancel</button></div><div class="recipeImportBox"><h3>Paste the whole recipe</h3><div class="recipeImportHint">Title, description, servings, ingredient list, instructions — messy is okay.</div><textarea id="recipeImportText" placeholder="Grandma's Chili\nServes 6\n\nIngredients\n2 lb ground beef\n1 onion, diced\n...\n\nInstructions\n1. Brown the beef...\n2. Add the onion..."></textarea><div class="recipeImportActions"><span class="recipeImportHint">We'll separate it into editable fields first.</span><button class="btn primaryAction" onclick="parseRecipeImportUI()">✨ Parse Recipe</button></div></div></div>`;setTimeout(()=>document.getElementById("recipeImportText")?.focus(),50);activity()}
+function importCleanLines_(raw){return String(raw||"").replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean)}
+function importIsIngredient_(x){return /^(?:[-•*]\s*)?(?:(?:\d+\s+)?\d+\/\d+|\d+(?:\.\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|one|two|three|four|five|six|a\s|an\s|pinch\b|dash\b|salt\b|pepper\b)/i.test(x)&&!/^\d+[.)]\s+[A-Z][a-z]+\s+(?:the|a|an)\b/.test(x)}
+function importIsStep_(x){return /^(?:step\s*)?\d+[.)\-:]\s*/i.test(x)||/^(?:preheat|heat|add|combine|mix|stir|whisk|cook|bake|roast|grill|smoke|place|pour|season|remove|transfer|reduce|bring|cover|uncover|serve|let|rest|chill|refrigerate|fold|beat|slice|cut)\b/i.test(x)}
+function guessImportCategory_(name,ingredients,raw){let b=[name,ingredients,raw].join(" ").toLowerCase();if(/breakfast|brunch|pancake|waffle|oatmeal|frittata|breakfast burrito/.test(b))return "Breakfast";if(/cake|cookie|brownie|pie|dessert|frosting|ice cream|pudding|cheesecake/.test(b))return "Desserts";if(/\b(sauce|chimichurri|crema|dressing|marinade|rub|seasoning|gravy|salsa)\b/.test(name.toLowerCase()))return "Sauces";if(/\b(appetizer|dip|crostini|bruschetta|deviled egg|slider)\b/.test(b))return "Apps";if(/\b(soup|chowder|bisque|salad)\b/.test(name.toLowerCase()))return "Soups & Salads";if(/\b(side|slaw|mashed|potatoes|vegetables|corn|rice|stuffing)\b/.test(name.toLowerCase()))return "Sides";if(/\b(cocktail|mocktail|drink|smoothie|lemonade)\b/.test(name.toLowerCase()))return "Drinks";return "Mains"}
+function parseRecipeImport_(raw){let lines=importCleanLines_(raw),name="",yieldText="",ingredients=[],steps=[],notes=[],mode="";let heads=/^(ingredients?|what you(?:'|’)ll need)\s*:?$/i,stepHeads=/^(instructions?|directions?|method|preparation|steps?)\s*:?$/i,noteHeads=/^(notes?|tips?)\s*:?$/i;for(let i=0;i<lines.length;i++){let x=lines[i];if(heads.test(x)){mode="ing";continue}if(stepHeads.test(x)){mode="step";continue}if(noteHeads.test(x)){mode="note";continue}if(!name&&i<3&&!/^(prep|cook|total)\s*time/i.test(x)&&x.length<100){name=x.replace(/^#+\s*/,"");continue}if(!yieldText&&/^(?:yield|serves?|servings?)\s*:?\s*/i.test(x)){yieldText=x.replace(/^(?:yield|serves?|servings?)\s*:?\s*/i,"");if(/^\d/.test(yieldText))yieldText="Serves "+yieldText;continue}if(/^(?:prep|cook|total)\s*time\s*:/i.test(x)){notes.push(x);continue}if(mode==="ing"){if(importIsStep_(x)&&ingredients.length){mode="step";steps.push(x.replace(/^(?:step\s*)?\d+[.)\-:]?\s*/i,""));continue}ingredients.push(x.replace(/^[-•*]\s*/,""));continue}if(mode==="step"){steps.push(x.replace(/^(?:step\s*)?\d+[.)\-:]?\s*/i,""));continue}if(mode==="note"){notes.push(x);continue}if(importIsIngredient_(x)&&!steps.length){ingredients.push(x.replace(/^[-•*]\s*/,""));mode="ing"}else if(importIsStep_(x)){steps.push(x.replace(/^(?:step\s*)?\d+[.)\-:]?\s*/i,""));mode="step"}else notes.push(x)}if(!ingredients.length||!steps.length){let split=lines.findIndex(x=>stepHeads.test(x));if(split>0){let h=lines.findIndex(x=>heads.test(x));if(h>=0)ingredients=lines.slice(h+1,split).map(x=>x.replace(/^[-•*]\s*/,""));steps=lines.slice(split+1).filter(x=>!noteHeads.test(x)).map(x=>x.replace(/^(?:step\s*)?\d+[.)\-:]?\s*/i,""))}}return {name:name||"Imported Recipe",category:guessImportCategory_(name,ingredients.join(" "),raw),yield:yieldText,tags:"",status:"",variantOf:"",ingredients:ingredients.join("\n"),instructions:steps.join("\n"),notes:notes.join("\n"),imported:true}}
+function parseRecipeImportUI(){let raw=document.getElementById("recipeImportText")?.value||"";if(raw.trim().length<20){alert("Paste a little more of the recipe first.");return}let d=parseRecipeImport_(raw);openRecipeEditor(null,false,d)}
+function openRecipeEditor(id,duplicate,seed){let x=id?(R.recipes||[]).find(r=>r.id===id):null,editing=!!x&&!duplicate,d=x?JSON.parse(JSON.stringify(x)):(seed||{name:"",category:"",variantOf:"",tags:"",yield:"",ingredients:"",instructions:"",notes:"",status:""});if(duplicate){d.name=(d.name||"Recipe")+" — Copy";d.id="";d.sourceSheet="";d.sourceRow=0}document.getElementById("recipeTools").style.display="none";let cats=SIMPLE_RECIPE_CATEGORIES,editorCat=editing?recipeDisplayCategory_(d):(SIMPLE_RECIPE_CATEGORIES.includes(d.category)?d.category:"Mains");document.getElementById("recipeBody").innerHTML=`<div class="recipeEditor"><div class="recipeEditorHead"><div><h2>${editing?'✏️ Edit Recipe':'＋ Add Recipe'}</h2><div class="rMeta">Paste whole ingredient lists and instructions — one item or step per line works perfectly with Cook Mode.</div>${seed?.imported?`<div class="importReview">✓ Import parsed. Review everything below before saving.</div>`:""}${editing?`<div class="recipeSource">Stored in ${esc(d.sourceSheet||'recipe workbook')}</div>`:''}</div><button class="btn" onclick="${editing?`openRecipeDetail('${esc(d.id)}')`:`document.getElementById('recipeTools').style.display='flex';renderRecipeLibrary()`}">Cancel</button></div><div class="recipeFormGrid"><div class="recipeField full"><label>RECIPE NAME <span class="requiredStar">*</span></label><input id="reName" value="${esc(d.name||'')}" autocomplete="off" placeholder="e.g. Smoked Chile Colorado"></div><div class="recipeField"><label>CATEGORY</label><select id="reCategory">${cats.map(c=>`<option value="${esc(c)}" ${c===editorCat?"selected":""}>${esc(c)}</option>`).join("")}</select></div><div class="recipeField"><label>YIELD / SERVINGS</label><input id="reYield" value="${esc(d.yield||'')}" placeholder="e.g. Serves 4"></div><div class="recipeField"><label>TAGS</label><input id="reTags" value="${esc(d.tags||'')}" placeholder="smoker, spicy, weeknight"></div><div class="recipeField"><label>STATUS</label><input id="reStatus" value="${esc(d.status||'')}" placeholder="Favorite, Tested, Draft…"></div><div class="recipeField full"><label>VARIANT OF</label><input id="reVariant" value="${esc(d.variantOf||'')}" placeholder="Optional — original recipe name"></div><div class="recipeField full"><label>INGREDIENTS <span class="requiredStar">*</span></label><textarea id="reIngredients" placeholder="1 lb chicken thighs&#10;2 tbsp olive oil&#10;1 tsp smoked paprika">${esc(d.ingredients||'')}</textarea></div><div class="recipeField full"><label>INSTRUCTIONS <span class="requiredStar">*</span></label><textarea id="reInstructions" class="instructions" placeholder="1. Season the chicken.&#10;2. Heat the grill.&#10;3. Cook 6–8 minutes per side.">${esc(d.instructions||'')}</textarea></div><div class="recipeField full"><label>NOTES</label><textarea id="reNotes" placeholder="Optional family notes, substitutions, what you'd change next time…">${esc(d.notes||'')}</textarea></div></div><div class="recipeEditorFoot"><span id="recipeSaveState" class="recipeSaveState"></span><button class="btn" onclick="${editing?`openRecipeDetail('${esc(d.id)}')`:`document.getElementById('recipeTools').style.display='flex';renderRecipeLibrary()`}">Cancel</button><button id="recipeSaveBtn" class="btn primaryAction" onclick="saveRecipeUI(${editing?`'${esc(d.id)}'`:'null'})">💾 Save Recipe</button></div></div>`;activity()}
+function duplicateRecipeUI(id){openRecipeEditor(id,true)}
+function saveRecipeUI(id){let existing=id?(R.recipes||[]).find(r=>r.id===id):null,payload={id:existing?.id||"",sourceSheet:existing?.sourceSheet||"",sourceRow:existing?.sourceRow||0,name:recipeEditorValue_("reName").trim(),category:recipeEditorValue_("reCategory").trim(),yield:recipeEditorValue_("reYield").trim(),tags:recipeEditorValue_("reTags").trim(),status:recipeEditorValue_("reStatus").trim(),variantOf:recipeEditorValue_("reVariant").trim(),ingredients:recipeEditorValue_("reIngredients").trim(),instructions:recipeEditorValue_("reInstructions").trim(),notes:recipeEditorValue_("reNotes").trim()};if(!payload.name){alert("Give the recipe a name first.");document.getElementById("reName")?.focus();return}if(!payload.ingredients){alert("Add at least one ingredient.");document.getElementById("reIngredients")?.focus();return}if(!payload.instructions){alert("Add the cooking instructions.");document.getElementById("reInstructions")?.focus();return}let btn=document.getElementById("recipeSaveBtn"),state=document.getElementById("recipeSaveState"),saveDone=false;const watchdog=setTimeout(()=>{if(!saveDone&&state)state.textContent="Still saving… this is taking longer than expected."},8000),hardWatch=setTimeout(()=>{if(!saveDone){if(state)state.textContent="Save is taking too long. Try again; if it repeats, check Apps Script Executions.";if(btn){btn.disabled=false;btn.textContent="💾 Save Recipe"}}},25000);if(btn){btn.disabled=true;btn.textContent="Saving…"}if(state)state.textContent="Writing to Family Recipes Mission Control…";google.script.run.withSuccessHandler(res=>{saveDone=true;clearTimeout(watchdog);clearTimeout(hardWatch);if(!res?.ok){alert(res?.message||"Couldn’t save recipe.");if(btn){btn.disabled=false;btn.textContent="💾 Save Recipe"}return}if(state)state.textContent="Saved ✓ Refreshing recipe…";R.loaded=false;google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;if(!R.ok){recipeDataFail(R.message);return}buildRecipeCategories();let saved=(R.recipes||[]).find(r=>r.id===res.id);if(saved)openRecipeDetail(saved.id);else renderRecipeLibrary()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getRecipeLibrary()}).withFailureHandler(e=>{saveDone=true;clearTimeout(watchdog);clearTimeout(hardWatch);alert("Couldn’t save recipe: "+(e.message||e));if(btn){btn.disabled=false;btn.textContent="💾 Save Recipe"}if(state)state.textContent="Save failed."}).saveRecipe(payload)}
+function planMealHtml_(icon,label,id,name){let has=(MP.recipes||[]).some(r=>r.id===id);return `<div class="planMeal${has?"":" noRecipe"}"${has?` onclick="openPlanRecipe('${esc(id)}')"`:""}>${icon} <b>${label}:</b> ${esc(name)}${has?'<span class="tap">Recipe ›</span>':''}</div>`}
+function currentPlan_(){return (MP.plans||[]).find(p=>p.id===currentPlanId)||(MP.plans||[])[0]}
+function choosePlan(id){currentPlanId=id;planWeekDraft=[];renderMealPlans()}
+function renderMealPlans(){let b=document.getElementById("recipeBody"),plans=MP.plans||[];if(!plans.length){b.innerHTML='<div class="rEmpty">No meal plans found.</div>';return}let p=currentPlan_();currentPlanId=p.id;let rc=(MP.recipes||[]).filter(r=>r.planId===p.id).length,today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");let warnings=(MP.errors||[]).map(e=>`${esc(e.source)}: ${esc(e.message)}`).join('<br>');b.innerHTML=`<div class="planSelectBar"><div><label>MEAL PLAN</label><select id="mealPlanSelect" onchange="choosePlan(this.value)">${plans.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select></div><button class="btn" onclick="addMealPlanSourceUI()">＋ Add Plan Sheet</button></div><div class="planHeader"><h2>${esc(p.name)}</h2><div class="rMeta">${p.days.length} scheduled days • ${rc} core recipes • Tap any meal to open its recipe</div><div class="planSourceNote">Future compatible meal-plan Sheets can be added here without changing dashboard code.</div>${warnings?`<div class="planWarning">Skipped plan source(s):<br>${warnings}</div>`:""}</div><div class="planBuilder"><h3>🍽️ Load My Week</h3><div class="planControls"><div><label>START AT PLAN DAY</label><select id="planStartDay">${p.days.map(d=>`<option value="${d.day}">Day ${d.day}</option>`).join("")}</select></div><div><label>START ON CALENDAR DATE</label><input id="planStartDate" type="date" value="${iso}"></div><button class="btn" onclick="buildPlanWeek()">Preview 7 Days</button></div><div id="planWeekPreview"></div></div><div class="planDays">${p.days.map(d=>`<div class="planDay"><h3>Day ${d.day}</h3>${planMealHtml_('🌅','Breakfast',d.breakfastId,d.breakfast)}${planMealHtml_('☀️','Lunch',d.lunchId,d.lunch)}${planMealHtml_('🌙','Dinner',d.dinnerId,d.dinner)}<div class="planNutrition">${d.calories?esc(d.calories)+" cal":""}${d.protein?` • ${esc(d.protein)}g protein`:""}${d.fiber?` • ${esc(d.fiber)}g fiber`:""}${d.servings?` • ${esc(d.servings)} household servings`:""}</div></div>`).join("")}</div>`}
+function addMealPlanSourceUI(){let link=prompt("Paste the Google Sheet link for the new meal plan:");if(!link)return;let name=prompt("What should this plan be called? (Leave blank to use the Sheet name)")||"";let b=document.getElementById("recipeBody");b.insertAdjacentHTML("afterbegin",'<div class="loadedBadge">Checking new meal plan…</div>');google.script.run.withSuccessHandler(()=>{MP.loaded=false;showPlanTab()}).withFailureHandler(e=>alert("Couldn’t add that plan: "+(e.message||e))).addMealPlanSource(name,link)}
+
+function localDate_(iso,offset){let [y,m,d]=iso.split("-").map(Number),x=new Date(y,m-1,d+offset);return x}
+function buildPlanWeek(){let p=currentPlan_();if(!p)return;let start=Number(document.getElementById("planStartDay").value)||1,iso=document.getElementById("planStartDate").value;if(!iso)return;planWeekDraft=[];for(let i=0;i<7;i++){let idx=p.days.findIndex(x=>x.day===start),d=p.days[(idx+i)%p.days.length],dt=localDate_(iso,i);planWeekDraft.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"),day:d.day,planId:p.id,planName:p.name,breakfastId:d.breakfastId,breakfast:d.breakfast,lunchId:d.lunchId,lunch:d.lunch,dinnerId:d.dinnerId,dinner:d.dinner})}renderPlanWeekPreview()}
+function renderPlanWeekPreview(){let e=document.getElementById("planWeekPreview");if(!e)return;if(!planWeekDraft.length){e.innerHTML="";return}e.innerHTML=`<div class="weekPreview">${planWeekDraft.map((d,i)=>`<div class="weekCard"><h3>${localDate_(d.date,0).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})} <span class="rMeta">Plan Day ${d.day}</span></h3>${draftMeal_(i,"breakfast","🌅 Breakfast")}${draftMeal_(i,"lunch","☀️ Lunch")}${draftMeal_(i,"dinner","🌙 Dinner")}</div>`).join("")}</div><button class="btn" onclick="loadPlanWeek()">🍽️ Load This Week Into Menu</button><span class="rMeta" style="margin-left:8px">Rerolls only change the meal you choose.</span>`}
+function draftMeal_(i,type,label){let d=planWeekDraft[i];return `<div class="weekMeal"><span><b>${label}:</b> ${esc(d[type])}</span><button class="btn reroll" onclick="rerollMeal(${i},'${type}')">🎲 Reroll</button></div>`}
+function rerollMeal(i,type){let p=currentPlan_(),pool=(MP.recipes||[]).filter(r=>r.planId===p.id&&String(r.meal).toLowerCase()===type.toLowerCase()&&r.name!==planWeekDraft[i][type]);if(!pool.length)return;let x=pool[Math.floor(Math.random()*pool.length)];planWeekDraft[i][type]=x.name;planWeekDraft[i][type+"Id"]=x.id;renderPlanWeekPreview()}
+function loadPlanWeek(){if(!planWeekDraft.length)return;S.mealPlanWeek=JSON.parse(JSON.stringify(planWeekDraft));S.randomDinnerWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];planWeekDraft.forEach(d=>{let dt=localDate_(d.date,0),k=keys[dt.getDay()];S.menu[k]=`🌅 ${d.breakfast}  •  ☀️ ${d.lunch}  •  🌙 ${d.dinner}`});persist(()=>{renderDetail();renderCal();let e=document.getElementById("planWeekPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="loadedBadge">✓ Loaded into Weekly Menu &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Build Grocery List</button></div>')})}
+function openPlanRecipe(id){let x=(MP.recipes||[]).find(r=>r.id===id);if(!x)return;document.getElementById("recipeTools").style.display="none";let sc=recipeScaleFor_("plan",x.id);document.getElementById("recipeBody").innerHTML=`<div class="recipeDetail"><button class="btn" onclick="renderMealPlans()">← Meal Plan</button><h2>${esc(x.name)}</h2><div class="rMeta">${esc(x.meal)}${x.serving?` • Serving: ${esc(x.serving)}`:""}${x.servings?` • ${esc(x.servings)} household servings`:""}</div><div class="rTags">${x.calories?esc(x.calories)+" cal":""}${x.protein?` • ${esc(x.protein)}g protein`:""}${x.fiber?` • ${esc(x.fiber)}g fiber`:""}${x.nutritionBasis?` • ${esc(x.nutritionBasis)}`:""}</div><div class="recipeScaleBar">${recipeScaleControlsHtml_('plan',x.id)}</div><div class="recipeManageActions"><button class="btn cookModeBtn" onclick="openCookMode('plan','${esc(x.id)}',recipeScaleFor_('plan','${esc(x.id)}'))">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openRecipeGroceryPreview('plan','${esc(x.id)}',recipeScaleFor_('plan','${esc(x.id)}'))">🛒 Add Ingredients</button></div><h3>INGREDIENTS</h3><div id="recipeScaledIngredients" class="recipeText">${esc(scaleIngredientText_(x.ingredients||"—",sc))}</div><h3>QUICK METHOD</h3><div class="recipeText">${esc(x.instructions||"—")}</div></div>`}
+
+
+let voiceRecognition=null,voiceSessionEnd=0,voiceSessionUnlimited=false,voiceSessionTick=null,voiceWanted=false,voiceSpeaking=false;
+function voiceSupported_(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
+function speak_(text){text=String(text||"").trim();if(!text||!("speechSynthesis" in window))return;
+ voiceSpeaking=true;
+ // Never let the dashboard hear its own voice.
+ try{if(voiceRecognition){voiceRecognition.abort();voiceRecognition=null}}catch(e){}
+ try{
+   speechSynthesis.cancel();
+   let u=new SpeechSynthesisUtterance(text);u.rate=1;
+   let finish=()=>{voiceSpeaking=false;if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250)};
+   u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);
+ }catch(e){voiceSpeaking=false;if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250)}
+}
+function openVoiceControl(){if(!voiceSupported_()){openModal('<h2>🎙️ Voice Assistant</h2><div class="rError">Speech recognition is not available in this browser. Use Chrome on the kitchen PC.</div><div class="actions"><button class="btn" onclick="closeModal()">Close</button></div>');return}openModal(`<h2>🎙️ Voice Assistant</h2><div class="note">Quick Listen hears one command. Voice Session keeps listening temporarily while you cook.</div><div class="voiceChoices"><button class="btn primaryAction" onclick="startVoiceSession(0,true)">Quick Listen</button><button class="btn" onclick="startVoiceSession(5)">5 min</button><button class="btn" onclick="startVoiceSession(10)">10 min</button><button class="btn" onclick="startVoiceSession(30)">30 min</button><button class="btn" onclick="startVoiceSession(45)">45 min</button><button class="btn" onclick="startVoiceSession(60)">60 min</button><button class="btn" onclick="startVoiceSession(-1)">Until I Stop It</button></div><div class="voiceHelp"><b>Try:</b> “What’s for dinner?” • “Read this step” • “Next step” • “Repeat” • “Start a 10 minute timer” • “How much garlic?” • “Add milk to groceries” • “What’s on the calendar today?” • “Stop listening”</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button></div>`)}
+function startVoiceSession(minutes,quick=false){
+ closeModal();stopVoiceSession(false);
+ voiceWanted=true;voiceSessionUnlimited=minutes<0;
+ voiceSessionEnd=quick?Date.now()+90000:(voiceSessionUnlimited?0:Date.now()+Math.max(1,minutes)*60000);
+ window._voiceQuick=quick;
+ updateVoiceUI_();
+ voiceSessionTick=setInterval(updateVoiceUI_,1000);
+ // IMPORTANT: Chrome wants recognition.start() directly from the tap/click gesture.
+ // Do not speak first and delay microphone startup.
+ ensureVoiceListening_();
+}
+function stopVoiceSession(announce=false){voiceWanted=false;voiceSessionUnlimited=false;voiceSessionEnd=0;window._voiceQuick=false;clearInterval(voiceSessionTick);voiceSessionTick=null;try{voiceRecognition?.stop()}catch(e){}voiceRecognition=null;updateVoiceUI_();if(announce)speak_("Voice session ended.")}
+function updateVoiceUI_(){if(voiceWanted&&!voiceSessionUnlimited&&Date.now()>=voiceSessionEnd){stopVoiceSession(false);speak_("Voice session ended.");return}document.getElementById("voiceFab")?.classList.toggle("listening",voiceWanted);document.getElementById("voiceNavBtn")?.classList.toggle("active",voiceWanted);let vl=document.getElementById("voiceNavLabel");if(vl)vl.textContent=voiceWanted?"Listening":"Voice";document.getElementById("voiceSessionBar")?.classList.toggle("open",voiceWanted);let e=document.getElementById("voiceSessionTime");if(e&&voiceWanted)e.textContent=voiceSessionUnlimited?"Until stopped":fmtTimer(voiceSessionEnd-Date.now());if(!voiceWanted){setVoiceState_("🎙️ Ready");let t=document.getElementById("voiceTranscript");if(t)t.textContent=""}}
+function setVoiceState_(text,error=false){
+ let s=document.getElementById("voiceState"),bar=document.getElementById("voiceSessionBar");
+ if(s)s.textContent=text;
+ if(bar)bar.classList.toggle("error",!!error);
+}
+function ensureVoiceListening_(){
+ if(!voiceWanted||voiceSpeaking||voiceRecognition)return;
+ let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){setVoiceState_("🎙️ Unsupported",true);return}
+ let r=new SR();voiceRecognition=r;
+ r.lang="en-US";r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
+ r.onstart=()=>setVoiceState_("🎙️ Listening");
+ r.onspeechstart=()=>setVoiceState_("🎙️ Hearing you…");
+ r.onresult=e=>{
+   let text=e.results?.[0]?.[0]?.transcript||"";
+   let t=document.getElementById("voiceTranscript");if(t)t.textContent=text?`“${text}”`:"";
+   setVoiceState_("✓ Heard");
+   handleVoiceCommand_(text);
+   if(window._voiceQuick)setTimeout(()=>stopVoiceSession(false),700);
+ };
+ r.onerror=e=>{
+   let code=e?.error||"unknown";
+   console.warn("Voice recognition error:",code,e);
+   if(code==="not-allowed"||code==="service-not-allowed"){
+     voiceWanted=false;updateVoiceUI_();setVoiceState_("Mic permission blocked",true);
+     alert("Chrome blocked microphone access for the dashboard. Click the site controls icon by the address bar, allow Microphone, then reload.");
+     return;
+   }
+   if(code==="audio-capture"){setVoiceState_("No microphone found",true);return}
+   if(code==="network"){setVoiceState_("Voice service unavailable",true);return}
+   if(code==="no-speech"){setVoiceState_("🎙️ Listening");return}
+   setVoiceState_("Voice error: "+code,true);
+ };
+ r.onend=()=>{
+   if(voiceRecognition===r)voiceRecognition=null;
+   if(voiceWanted&&!voiceSpeaking&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250);
+ };
+ try{r.start()}catch(e){
+   console.warn("Voice start failed",e);voiceRecognition=null;
+   setVoiceState_("Could not start mic",true);
+ }
+}
+function setVoiceDuration_(m){m=Number(m)||10;voiceSessionUnlimited=false;voiceSessionEnd=Date.now()+m*60000;window._voiceQuick=false;updateVoiceUI_();speak_(`I'll keep listening for ${m} minutes.`)}
+function voiceDinner_(){let d=dinnerForDate_(new Date());return d?`Tonight is ${d.name}.`:"I don't see dinner planned for tonight."}
+function voiceEvents_(d){let a=futureEventsForDay_(d,false);return a.length?a.map(e=>(e.allDay?"":time(e)+" ")+e.title).join(". "):"Nothing is scheduled."}
+function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
+function voiceStartTimer_(m){m=Number(m)||1;primeTimerAudio();kitchenTimers.push({name:nextTimerName(),end:Date.now()+m*60000,ringing:false});saveKitchenTimers();updateTimers();speak_(`${m} minute timer started.`)}
+function handleVoiceCommand_(raw){let s=String(raw).toLowerCase().replace(/[?.!]/g,"").trim(),m;if(/stop listening|voice off|microphone off/.test(s)){stopVoiceSession(false);speak_("Voice session ended.");return}if((m=s.match(/keep listening(?: for)? (\d+) (?:minutes?|mins?)/))){setVoiceDuration_(m[1]);return}if((m=s.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return}if(/what(?:'s| is) for dinner/.test(s)){speak_(voiceDinner_());return}if(/calendar today|schedule today|what do we have today/.test(s)){speak_(voiceEvents_(new Date()));return}if(/what(?:'s| is) tomorrow|schedule tomorrow/.test(s)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d));return}if((m=s.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return}if(/open (?:the )?grocer/.test(s)){openGroceries();speak_("Opening groceries.");return}if(/open (?:the )?recipe/.test(s)){openRecipes();speak_("Opening recipes.");return}if(/go home|open (?:the )?dashboard/.test(s)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));updateCookMiniBar_();speak_("Back to the dashboard.");return}if(cookRecipe){if(/^(next|next step|continue)$/.test(s)){if(cookStep<cookRecipe.steps.length-1)cookNextStep();speak_(cookRecipe.steps[cookStep]);return}if(/previous|go back a step/.test(s)){cookPrevStep();speak_(cookRecipe.steps[cookStep]);return}if(/repeat|read this step|read the step/.test(s)){speak_(cookRecipe.steps[cookStep]);return}if(/read (?:the )?ingredients/.test(s)){speak_(cookRecipe.ingredients.join(". "));return}if((m=s.match(/how much (.+)$/))){let x=cookRecipe.ingredients.filter(i=>i.toLowerCase().includes(m[1])).slice(0,3);speak_(x.length?x.join(". "):`I couldn't find ${m[1]} in this recipe.`);return}if(/start (?:the )?timer/.test(s)){let x=cookTimerMatches_(cookRecipe.steps[cookStep]);if(x.length){startCookTimer(x[0].minutes);speak_(`${x[0].label} timer started.`)}else speak_("I don't see a timer in this step.");return}}speak_("I didn't recognize that command.")}
+
+function cookLines_(text){return String(text||"").replace(/\r/g,"").split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/^\s*(?:step\s*)?\d+[.)\-:]?\s*/i,"").replace(/^[-•]\s*/,"").trim()).filter(Boolean)}
+function cookSteps_(text){let raw=String(text||"").replace(/\r/g,"").trim();if(!raw)return ["No instructions were provided for this recipe."];let lines=cookLines_(raw);if(lines.length>1)return lines;let parts=raw.split(/(?<=[.!?])\s+(?=(?:Then|Next|Meanwhile|After|Add|Place|Cook|Bake|Roast|Grill|Smoke|Stir|Mix|Heat|Reduce|Remove|Serve|Let|Rest|Season|Pour|Transfer|Return|Cover|Uncover)\b)/i).map(x=>x.trim()).filter(Boolean);return parts.length?parts:[raw]}
+function cookIngredients_(text){return String(text||"—").replace(/\r/g,"").split(/(?:\n+|;\s*)/).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/^[-•]\s*/,"").trim()).filter(Boolean)}
+function cookNum_(v){v=String(v||"").trim().replace("½",".5").replace("¼",".25").replace("¾",".75");if(/^\d+\s+\d+\/\d+$/.test(v)){let a=v.split(/\s+/),f=a[1].split("/");return Number(a[0])+Number(f[0])/Number(f[1])}if(/^\d+\/\d+$/.test(v)){let f=v.split("/");return Number(f[0])/Number(f[1])}return Number(v)}
+function cookTimerMatches_(text){let out=[],re=/\b(?:about\s+|approximately\s+|approx\.?\s+)?(\d+(?:\.\d+)?|\d+\s+\d+\/\d+|\d+\/\d+|\d*\s*[½¼¾])(?:\s*(?:-|–|to)\s*(\d+(?:\.\d+)?|\d+\s+\d+\/\d+|\d+\/\d+|\d*\s*[½¼¾]))?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)\b/gi,m;while((m=re.exec(String(text||"")))){let a=cookNum_(m[1]),b=m[2]?cookNum_(m[2]):null,n=b||a,u=m[3].toLowerCase(),mins=u.startsWith("h")?n*60:u.startsWith("s")?n/60:n;if(mins>=.25&&mins<=720&&!out.some(x=>Math.abs(x.minutes-mins)<.001))out.push({minutes:mins,label:m[0].trim()})}return out.slice(0,4)}
+function saveCookSession_(){if(!cookRecipe)return;try{localStorage.setItem(COOK_SESSION_KEY,JSON.stringify({recipe:cookRecipe,step:cookStep,checked:[...cookCheckedIngredients],done:[...cookCompletedSteps],keepAwake:cookKeepAwake,scale:cookScale,at:Date.now()}))}catch(e){}}
+function clearCookSession_(){try{localStorage.removeItem(COOK_SESSION_KEY)}catch(e){}}
+async function requestCookWakeLock_(){if(!cookKeepAwake||!document.getElementById("cookOverlay").classList.contains("open"))return;try{if("wakeLock" in navigator){cookWakeLock=await navigator.wakeLock.request("screen");cookWakeLock.addEventListener("release",()=>{cookWakeLock=null;updateCookWakeButton_()})}}catch(e){}updateCookWakeButton_()}
+function releaseCookWakeLock_(){if(cookWakeLock){try{cookWakeLock.release()}catch(e){}cookWakeLock=null}updateCookWakeButton_()}
+function updateCookWakeButton_(){let b=document.getElementById("cookWakeBtn");if(!b)return;b.classList.toggle("active",cookKeepAwake);b.textContent=cookKeepAwake?"☀️ Keep Awake ✓":"☀️ Keep Awake"}
+function toggleCookWakeLock(){cookKeepAwake=!cookKeepAwake;if(cookKeepAwake)requestCookWakeLock_();else releaseCookWakeLock_();saveCookSession_();updateCookWakeButton_()}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&cookKeepAwake&&cookRecipe)requestCookWakeLock_()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&voiceWanted)stopVoiceSession(false)});
+function openCookMode(source,id,scale){let x=source==="plan"?(MP.recipes||[]).find(r=>r.id===id):(R.recipes||[]).find(r=>r.id===id);if(!x)return;let baseIngredients=cookIngredients_(x.ingredients),fresh={source,id,name:x.name||"Recipe",meta:source==="plan"?[x.meal,x.serving?"Serving: "+x.serving:"",x.servings?x.servings+" household servings":""].filter(Boolean).join(" • "):[x.category,x.yield?"Yield: "+x.yield:"",x.status].filter(Boolean).join(" • "),baseIngredients:baseIngredients,ingredients:baseIngredients,steps:cookSteps_(x.instructions)};let old=null;try{old=JSON.parse(localStorage.getItem(COOK_SESSION_KEY)||"null")}catch(e){}cookRecipe=fresh;cookScale=Number(scale)||recipeScaleFor_(source,id)||1;cookStep=0;cookAllStepsOpen=false;cookCheckedIngredients=new Set();cookCompletedSteps=new Set();cookKeepAwake=false;if(old&&old.recipe&&String(old.recipe.id)===String(id)&&old.recipe.source===source){cookStep=Number(old.step)||0;cookCheckedIngredients=new Set(old.checked||[]);cookCompletedSteps=new Set(old.done||[]);cookKeepAwake=!!old.keepAwake;cookScale=Number(old.scale)||cookScale}applyCookScale_();document.getElementById("cookOverlay").classList.add("open");document.getElementById("cookMiniBar").classList.remove("open");renderCookMode();saveCookSession_();if(cookKeepAwake)requestCookWakeLock_();primeTimerAudio();activity()}
+function applyCookScale_(){if(!cookRecipe)return;let base=cookRecipe.baseIngredients||cookRecipe.ingredients||[];cookRecipe.baseIngredients=base;cookRecipe.ingredients=base.map(x=>scaleIngredientLine_(x,cookScale))}
+function setCookScale_(factor){cookScale=Number(factor)||1;recipeScales[recipeScaleKey_(cookRecipe?.source,cookRecipe?.id)]=cookScale;saveRecipeScales_();applyCookScale_();renderCookMode()}
+function cookScaleBarHtml_(){return `<span>Scale</span>${[[.5,"½×"],[1,"1×"],[1.5,"1½×"],[2,"2×"],[3,"3×"]].map(x=>`<button class="btn ${cookScale===x[0]?"active":""}" onclick="setCookScale_(${x[0]})">${x[1]}</button>`).join("")}`}
+function hideCookMode_(){if(!cookRecipe)return;releaseCookWakeLock_();document.getElementById("cookOverlay").classList.remove("open");updateCookMiniBar_();activity()}
+function resumeCookFromMini_(){if(!cookRecipe)return;document.getElementById("cookOverlay").classList.add("open");document.getElementById("cookMiniBar").classList.remove("open");renderCookMode();if(cookKeepAwake)requestCookWakeLock_();activity()}
+function updateCookMiniBar_(){let bar=document.getElementById("cookMiniBar");if(!bar)return;if(!cookRecipe||document.getElementById("cookOverlay").classList.contains("open")){bar.classList.remove("open");return}let n=Math.max(1,cookRecipe.steps?.length||1),active=kitchenTimers.filter(x=>x.end>Date.now()).sort((a,b)=>a.end-b.end)[0];document.getElementById("cookMiniName").textContent="👨‍🍳 "+cookRecipe.name;document.getElementById("cookMiniMeta").textContent=`Step ${cookStep+1}/${n}${active?" • ⏱ "+fmtTimer(active.end-Date.now()):""}`;bar.classList.add("open")}
+function closeCookMode(force){if(!cookRecipe)return;if(!force&&!confirm("Finish Cook Mode? This clears the current cooking session and adds the recipe to Recently Cooked."))return;recordRecentCooked_(cookRecipe);releaseCookWakeLock_();document.getElementById("cookOverlay").classList.remove("open");document.getElementById("cookMiniBar").classList.remove("open");cookRecipe=null;cookScale=1;cookAllStepsOpen=false;cookCheckedIngredients=new Set();cookCompletedSteps=new Set();cookKeepAwake=false;clearCookSession_();activity()}
+function renderCookMode(){if(!cookRecipe)return;let steps=cookRecipe.steps||[],n=Math.max(1,steps.length);cookStep=Math.max(0,Math.min(cookStep,n-1));document.getElementById("cookRecipeTitle").textContent="👨‍🍳 "+cookRecipe.name;document.getElementById("cookRecipeMeta").textContent=cookRecipe.meta||"Cook Mode";document.getElementById("cookScaleBar").innerHTML=cookScaleBarHtml_();document.getElementById("cookIngredients").innerHTML=(cookRecipe.ingredients||[]).map((x,i)=>`<label class="cookIngredient ${cookCheckedIngredients.has(i)?"checked":""}"><input type="checkbox" ${cookCheckedIngredients.has(i)?"checked":""} onchange="toggleCookIngredient(${i},this.checked)"><span>${esc(x)}</span></label>`).join("")||'<div class="empty">No ingredient list provided.</div>';document.getElementById("cookStepCount").textContent=`Step ${cookStep+1} of ${n}`;document.getElementById("cookProgressBar").style.width=((cookStep+1)/n*100)+"%";document.getElementById("cookStepText").textContent=steps[cookStep]||"—";let timers=cookTimerMatches_(steps[cookStep]||"");document.getElementById("cookDetectedTimers").innerHTML=timers.map(t=>`<button class="btn" onclick="startCookTimer(${t.minutes})">⏱️ Start ${esc(t.label)} Timer</button>`).join("");document.getElementById("cookPrevBtn").disabled=cookStep<=0;let next=document.getElementById("cookNextBtn");next.disabled=cookStep>=n-1;next.textContent=cookStep>=n-1?"✓ Last Step":"Next →";document.getElementById("cookAllStepsBtn").textContent=cookAllStepsOpen?"▣ One Step":"☷ All Steps";document.getElementById("cookSingleStep").classList.toggle("hidden",cookAllStepsOpen);let all=document.getElementById("cookAllSteps");all.classList.toggle("open",cookAllStepsOpen);all.innerHTML=steps.map((x,i)=>`<div class="cookAllStep ${i===cookStep?"current":""} ${cookCompletedSteps.has(i)?"done":""}" onclick="cookJumpStep(${i})"><b>${i+1}.</b>${esc(x)}${cookCompletedSteps.has(i)?'<span class="cookDoneBadge">✓</span>':""}</div>`).join("");updateCookTimerBar();updateCookWakeButton_();saveCookSession_()}
+function toggleCookIngredient(i,on){on?cookCheckedIngredients.add(i):cookCheckedIngredients.delete(i);let rows=document.querySelectorAll(".cookIngredient");if(rows[i])rows[i].classList.toggle("checked",on);saveCookSession_()}
+function cookPrevStep(){if(cookStep>0){cookStep--;renderCookMode()}}
+function cookNextStep(){if(cookRecipe&&cookStep<cookRecipe.steps.length-1){cookCompletedSteps.add(cookStep);cookStep++;renderCookMode()}}
+function cookJumpStep(i){cookStep=i;cookAllStepsOpen=false;renderCookMode()}
+function toggleCookAllSteps(){cookAllStepsOpen=!cookAllStepsOpen;renderCookMode()}
+function startCookTimer(minutes){primeTimerAudio();let m=Number(minutes)||1,label=((cookRecipe&&cookRecipe.name)||"Cook")+" — Step "+(cookStep+1);kitchenTimers.push({name:label,end:Date.now()+Math.round(m*60000),ringing:false});saveKitchenTimers();updateTimers();updateCookTimerBar()}
+function updateCookTimerBar(){let e=document.getElementById("cookTimerStrip");if(!e)return;let now=Date.now();e.innerHTML=kitchenTimers.length?kitchenTimers.map((x,i)=>`<div class="cookTimerChip ${x.ringing?"ringing":""}"><span>${x.ringing?"🔔":"⏱️"}</span><span>${esc(x.name||"Timer")}</span><b>${x.end>now?fmtTimer(x.end-now):"DONE!"}</b><button class="btn" onclick="${x.ringing?`stopTimerAlarm(${i})`:`removeTimer(${i})`}">${x.ringing?"Stop Alarm":"Stop"}</button></div>`).join(""):'<span class="cookNoTimers">No active kitchen timers.</span>'}
+function resumeCookSessionOnLoad_(){let old=null;try{old=JSON.parse(localStorage.getItem(COOK_SESSION_KEY)||"null")}catch(e){}if(!old||!old.recipe||!old.recipe.steps)return;cookRecipe=old.recipe;cookStep=Number(old.step)||0;cookCheckedIngredients=new Set(old.checked||[]);cookCompletedSteps=new Set(old.done||[]);cookKeepAwake=!!old.keepAwake;cookScale=Number(old.scale)||1;cookAllStepsOpen=false;applyCookScale_();document.getElementById("cookOverlay").classList.add("open");renderCookMode();if(cookKeepAwake)requestCookWakeLock_()}
+setTimeout(resumeCookSessionOnLoad_,900);
+
+function likelyDinner_(r){let c=String(r.category||"").toLowerCase(),t=String(r.tags||"").toLowerCase();if(/breakfast|side|sauce|injection|finisher|topping/.test(c)&&!/(main)/.test(c))return false;if(/appetizer/.test(c)&&!/(main)/.test(c))return false;return /main|bbq|seafood|entree|dinner/.test(c)||/(chicken|beef|pork|turkey|seafood|shrimp|scallop|lasagna|skillet)/.test(t)}
+function dinnerProtein_(r){let s=(String(r.tags||"")+" "+String(r.name||"")).toLowerCase();for(let k of ["chicken","beef","pork","turkey","shrimp","scallop","seafood","fish","sausage","vegetarian"]){if(s.includes(k))return k}return "other"}
+function dinnerPool_(cat){let a=(R.recipes||[]).filter(likelyDinner_);if(cat)a=a.filter(x=>x.category===cat);return a}
+function renderBuildWeek(){let b=document.getElementById("recipeBody"),today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0"),cats=[...new Set((R.recipes||[]).filter(likelyDinner_).map(x=>x.category).filter(Boolean))].sort();b.innerHTML=`<div class="buildPanel"><h2 style="margin-top:0">🎲 Build My Week — Dinner Only</h2><div class="rMeta" style="margin-bottom:10px">Pick seven dinners from Family Recipes Mission Control. It tries to avoid repeat proteins and can avoid dinners used recently.</div><div class="buildControls"><div><label>START DATE</label><input id="randomStartDate" type="date" value="${iso}"></div><div><label>RECIPE POOL</label><select id="randomCategory"><option value="">Likely dinner recipes</option>${cats.map(c=>`<option>${esc(c)}</option>`).join("")}</select></div><label style="display:flex;align-items:center;gap:6px;margin:0;padding:10px"><input id="avoidRecent" type="checkbox" checked style="width:auto"> Avoid recent</label><button class="btn" onclick="generateDinnerWeek()">🎲 Pick 7 Dinners</button></div><div id="randomDinnerPreview"></div></div>`;if(randomDinnerDraft.length)renderDinnerPreview()}
+function recentDinnerNames_(){let a=[];(S.mealPlanWeek||[]).forEach(x=>x.dinner&&a.push(x.dinner));(S.randomDinnerWeek||[]).forEach(x=>x.dinner&&a.push(x.dinner));return new Set(a)}
+function smartDinnerPick_(pool,used,lastProtein,avoid){let candidates=pool.filter(x=>!used.has(x.id)&&(!avoid||!recentDinnerNames_().has(x.name)));if(!candidates.length)candidates=pool.filter(x=>!used.has(x.id));if(!candidates.length)candidates=pool.slice();let varied=candidates.filter(x=>dinnerProtein_(x)!==lastProtein);if(varied.length)candidates=varied;return candidates[Math.floor(Math.random()*candidates.length)]}
+function generateDinnerWeek(){let iso=document.getElementById("randomStartDate").value,cat=document.getElementById("randomCategory").value,avoid=document.getElementById("avoidRecent").checked,pool=dinnerPool_(cat);if(!iso||!pool.length){alert("No dinner recipes match that selection yet.");return}let used=new Set(),last="";randomDinnerDraft=[];for(let i=0;i<7;i++){let x=smartDinnerPick_(pool,used,last,avoid);if(!x)break;used.add(x.id);last=dinnerProtein_(x);let dt=localDate_(iso,i);randomDinnerDraft.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"),dinnerId:x.id,dinner:x.name,category:x.category,protein:last})}renderDinnerPreview()}
+function renderDinnerPreview(){let e=document.getElementById("randomDinnerPreview");if(!e)return;e.innerHTML=`<div class="randomWeek">${randomDinnerDraft.map((d,i)=>`<div class="randomDinner"><h3>${localDate_(d.date,0).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})}</h3><div class="randomDinnerName" onclick="openRecipeDetail('${esc(d.dinnerId)}')" style="cursor:pointer">${esc(d.dinner)} <span class="tap">Recipe ›</span></div><div class="rMeta">${esc(d.category)}${d.protein&&d.protein!=="other"?` • ${esc(d.protein)}`:""}</div><button class="btn reroll" style="margin-top:8px" onclick="rerollDinner(${i})">🎲 Reroll Dinner</button></div>`).join("")}</div><button class="btn" onclick="loadDinnerWeek()">🍽️ Load These Dinners Into Menu</button><span class="rMeta" style="margin-left:8px">Only dinner is replaced in the weekly menu.</span>`}
+function rerollDinner(i){let cat=document.getElementById("randomCategory")?.value||"",pool=dinnerPool_(cat),used=new Set(randomDinnerDraft.filter((_,j)=>j!==i).map(x=>x.dinnerId)),prev=i?randomDinnerDraft[i-1].protein:"",x=smartDinnerPick_(pool,used,prev,false);if(!x)return;randomDinnerDraft[i].dinnerId=x.id;randomDinnerDraft[i].dinner=x.name;randomDinnerDraft[i].category=x.category;randomDinnerDraft[i].protein=dinnerProtein_(x);renderDinnerPreview()}
+function loadDinnerWeek(){if(!randomDinnerDraft.length)return;S.randomDinnerWeek=JSON.parse(JSON.stringify(randomDinnerDraft));S.mealPlanWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];randomDinnerDraft.forEach(d=>{let k=keys[localDate_(d.date,0).getDay()];S.menu[k]=`🌙 ${d.dinner}`});persist(()=>{renderDetail();renderCal();let e=document.getElementById("randomDinnerPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="loadedBadge">✓ Seven dinners loaded into Weekly Menu &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Build Grocery List</button></div>')})}
+
+
+let RG={ok:false,items:[],recipe:"",source:"",id:""};
+function openRecipeGroceryPreview(source,id,scale){let x=source==="plan"?(MP.recipes||[]).find(r=>r.id===id):(R.recipes||[]).find(r=>r.id===id);if(!x)return;let sc=Number(scale)||recipeScaleFor_(source,id)||1,ingredients=scaleIngredientText_(x.ingredients||"",sc);document.getElementById("recipeTools").style.display="none";document.getElementById("recipeBody").innerHTML='<div class="rLoading">Turning '+esc(x.name||"this recipe")+' into a shopping list…</div>';google.script.run.withSuccessHandler(d=>{RG=Object.assign({source:source,id:id,scale:sc},d||{});renderRecipeGroceryPreview()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getRecipeGroceryPreview(x.name||"Recipe",ingredients)}
+
+function renderRecipeGroceryPreview(){let b=document.getElementById("recipeBody");if(!RG.ok){b.innerHTML=`<div class="rEmpty"><h2>🛒 Recipe Groceries</h2>${esc(RG.message||"Couldn’t parse this ingredient list.")}</div>`;return}let stocked=RG.items.filter(x=>x.stocked).length,scaleNote=Number(RG.scale||1)!==1?`<span class="rgScaleNote"> • Scaled ${RG.scale}×</span>`:"";b.innerHTML=`<div class="recipeGroceryPanel"><div class="rgTop"><div><h2>🛒 ${esc(RG.recipe)} Groceries</h2><div class="rMeta">Review what you need, then send it to the shared grocery list.${scaleNote}</div></div><div class="rgActions"><button class="btn" onclick="setRecipeGroceryChecks(true)">✓ Select All</button><button class="btn" onclick="setRecipeGroceryChecks(false)">None</button><button class="btn" onclick="openPantry()">🥫 Pantry</button><button class="btn" onclick="${RG.source==='plan'?`openPlanRecipe('${esc(RG.id)}')`:`openRecipeDetail('${esc(RG.id)}')`}">← Recipe</button></div></div><div class="rgSummary">${RG.items.length} ingredient${RG.items.length===1?"":"s"} found.${stocked?` ${stocked} marked Always Stocked and left unchecked.`:""} Matching items already on the grocery list will be merged instead of duplicated.</div><div class="rgList">${RG.items.map((x,i)=>recipeGroceryRow_(x,i)).join("")||'<div class="rEmpty">No grocery ingredients were found.</div>'}</div><div class="rgSend"><button id="rgSendBtn" class="btn primaryAction" onclick="sendRecipeGroceries()">🛒 Add Selected to Shared Groceries</button><span id="rgSendStatus" class="rMeta">Existing matching items stay in place and quantities are combined when safe.</span></div></div>`}
+function recipeGroceryRow_(x,i){return `<div class="rgRow ${x.stocked?"stocked":""}"><input id="rgCheck${i}" type="checkbox" ${x.stocked?"":"checked"}><input id="rgQty${i}" type="text" value="${esc(x.qty||"")}" placeholder="Qty"><input id="rgName${i}" type="text" value="${esc(x.name||"")}" placeholder="Ingredient"><select id="rgCat${i}">${GROCERY_CATEGORIES.map(c=>`<option ${c===x.category?"selected":""}>${esc(c)}</option>`).join("")}</select><div class="rgSource">From: ${esc(RG.recipe)}${x.stocked?' <span class="rgStocked">• ALWAYS STOCKED</span>':""}</div></div>`}
+function setRecipeGroceryChecks(v){RG.items.forEach((_,i)=>{let e=document.getElementById("rgCheck"+i);if(e)e.checked=v})}
+function sendRecipeGroceries(){let items=RG.items.map((x,i)=>({selected:document.getElementById("rgCheck"+i)?.checked,name:(document.getElementById("rgName"+i)?.value||"").trim(),qty:(document.getElementById("rgQty"+i)?.value||"").trim(),category:document.getElementById("rgCat"+i)?.value||"Other",sourceText:RG.recipe||"Recipe"})).filter(x=>x.selected&&x.name);if(!items.length){alert("Nothing is selected to add.");return}let btn=document.getElementById("rgSendBtn"),st=document.getElementById("rgSendStatus");btn.disabled=true;btn.textContent="Adding…";st.textContent=`Sending ${items.length} item${items.length===1?"":"s"} to shared groceries…`;google.script.run.withSuccessHandler(g=>{G=g;btn.disabled=false;btn.textContent="✓ Added to Groceries";st.innerHTML=`${items.length} selected item${items.length===1?"":"s"} processed. Matching groceries were merged. <button class="btn" onclick="closeRecipes();openGroceries()">Open Groceries →</button>`}).withFailureHandler(e=>{btn.disabled=false;btn.textContent="🛒 Add Selected to Shared Groceries";st.textContent="Error: "+(e.message||e)}).addGeneratedGroceries(items)}
+function showGroceryGenTab(){
+  recipeView="groceryGen";
+  ["recipeTabBtn","planTabBtn","buildTabBtn","groceryGenTabBtn"].forEach(id=>document.getElementById(id)?.classList.remove("active"));
+  document.getElementById("groceryGenTabBtn")?.classList.add("active");
+  document.getElementById("recipeTools").style.display="none";
+  document.getElementById("recipeBody").innerHTML='<div class="rLoading">Turning this week into a shopping attack plan…</div>';
+  google.script.run.withSuccessHandler(d=>{WG=d||{items:[],recipes:[]};WG.loaded=!!WG.ok;renderWeekGroceries()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getWeekGroceryPreview();
+}
+function renderWeekGroceries(){
+  let b=document.getElementById("recipeBody");if(!WG.ok){b.innerHTML=`<div class="rEmpty"><h2>🛒 Week Groceries</h2>${esc(WG.message||"No loaded week found.")}<br><br><span class="rMeta">Load a week from Meal Plans or Build My Week first, then come back here.</span></div>`;return}
+  let warn=(WG.missing||[]).length?`<div class="wgWarning">Couldn’t match ${WG.missing.length} meal${WG.missing.length===1?"":"s"}: ${esc(WG.missing.join(", "))}</div>`:"";
+  b.innerHTML=`<div class="wgPanel"><div class="wgTopline"><div><h2 style="margin:0 0 4px">🛒 Grocery Generator</h2><div class="rMeta">Built from ${WG.recipes.length} recipe${WG.recipes.length===1?"":"s"}. Duplicates are combined only when the quantities/units are safe to combine.</div></div><div class="wgActions"><button class="btn" onclick="setWeekGroceryChecks(true)">✓ Select All</button><button class="btn" onclick="setWeekGroceryChecks(false)">None</button><button class="btn" onclick="uncheckPantryWeekGroceries()">Uncheck Pantry</button><button class="btn" onclick="showGroceryGenTab()">↻ Rebuild</button></div></div>${warn}<div class="wgSummary">Always Stocked items are automatically left unchecked. Review the rest and edit anything that needs a human brain.</div><div id="wgList" class="wgList">${WG.items.map((x,i)=>weekGroceryRow_(x,i)).join("")}</div><div class="wgSend"><button id="wgSendBtn" class="btn primaryAction" onclick="sendWeekGroceries()">🛒 Add Selected to Shared Groceries</button><span id="wgSendStatus" class="rMeta">Nothing currently in groceries will be deleted.</span></div></div>`;
+}
+function weekGroceryRow_(x,i){return `<div class="wgRow ${x.stocked?"stocked":""}"><input id="wgCheck${i}" type="checkbox" ${x.stocked?"":"checked"}><input id="wgQty${i}" type="text" value="${esc(x.qty||"")}" placeholder="Qty"><input id="wgName${i}" type="text" value="${esc(x.name||"")}" placeholder="Ingredient"><select id="wgCat${i}">${GROCERY_CATEGORIES.map(c=>`<option ${c===x.category?"selected":""}>${esc(c)}</option>`).join("")}</select><div class="wgSources">From: ${esc(x.sourceText||"")}${x.stocked?` <span class="wgStocked">• ALWAYS STOCKED</span>`:""}</div></div>`}
+function setWeekGroceryChecks(v){WG.items.forEach((_,i)=>{let e=document.getElementById("wgCheck"+i);if(e)e.checked=v})}
+function uncheckPantryWeekGroceries(){WG.items.forEach((x,i)=>{let e=document.getElementById("wgCheck"+i);if(e&&document.getElementById("wgCat"+i)?.value==="Pantry")e.checked=false})}
+function sendWeekGroceries(){
+  let items=WG.items.map((x,i)=>({selected:document.getElementById("wgCheck"+i)?.checked,name:(document.getElementById("wgName"+i)?.value||"").trim(),qty:(document.getElementById("wgQty"+i)?.value||"").trim(),category:document.getElementById("wgCat"+i)?.value||"Other",sourceText:x.sourceText||"Weekly meal plan"})).filter(x=>x.selected&&x.name);
+  if(!items.length){alert("Nothing is selected to add.");return}
+  let btn=document.getElementById("wgSendBtn"),st=document.getElementById("wgSendStatus");btn.disabled=true;btn.textContent="Adding…";st.textContent=`Sending ${items.length} item${items.length===1?"":"s"} to the shared list…`;
+  google.script.run.withSuccessHandler(g=>{G=g;btn.disabled=false;btn.textContent="✓ Added to Groceries";st.innerHTML=`${items.length} item${items.length===1?"":"s"} added. <button class="btn" onclick="closeRecipes();openGroceries()">Open Groceries →</button>`;let p=document.querySelector(".wgPanel");if(p)p.insertAdjacentHTML("afterbegin",'<div class="wgSuccess">✓ Grocery run generated. Existing grocery items were left alone.</div>')}).withFailureHandler(e=>{btn.disabled=false;btn.textContent="🛒 Add Selected to Shared Groceries";st.textContent="Error: "+(e.message||e)}).addGeneratedGroceries(items);
+}
+
+function activity(){clearTimeout(idle);idle=setTimeout(()=>{closeDay();today()},120000)}
+function editingField_(e){let t=e.target;return !!(t&&(t.matches?.("input, textarea, select")||t.isContentEditable))}
+document.addEventListener("keydown",e=>{secretKey(e);if(e.key==="Backspace"&&editingField_(e))return;if((e.key==="Escape"||e.key==="Backspace")&&document.getElementById("cookOverlay").classList.contains("open")){e.preventDefault();closeCookMode();return}if((e.key==="Escape"||e.key==="Backspace")&&document.getElementById("recipeOverlay").classList.contains("open")){e.preventDefault();closeRecipes();return}if((e.key==="Escape"||e.key==="Backspace")&&document.getElementById("groceryOverlay").classList.contains("open")){e.preventDefault();closeGroceries();return}if((e.key==="Escape"||e.key==="Backspace")&&document.getElementById("dayOverlay").classList.contains("open")){e.preventDefault();closeDay()}});["click","keydown","mousemove"].forEach(e=>document.addEventListener(e,activity,{passive:true}));
+function loadWeather(){google.script.run.withSuccessHandler(w=>{W=w;renderDetail();let mw=document.getElementById("mainWeather");if(mw){if(W&&W.ok&&W.current){mw.innerHTML=`<span class="weatherPrimary">${icon(W.current.weather_code)} ${Math.round(W.current.temperature_2m)}°</span><span class="weatherSecondary">Feels ${Math.round(W.current.apparent_temperature)}° • ${esc(W.location)}</span>`;}else{mw.innerHTML='<span class="weatherSecondary">Weather unavailable</span>';}}let wr=document.getElementById("weatherReaction");if(wr)wr.textContent=weatherReactionText();let fm=document.getElementById("fridayMode");if(fm)fm.textContent=fridayModeText();renderCountdowns();if(document.getElementById("dayOverlay")?.classList.contains("open"))openDay(sel)}).getWeather()}
+function load(){google.script.run.withSuccessHandler(x=>{D=x;S=x.settings;S.dailyCelebrations=S.dailyCelebrations||{};S.streakRewards=S.streakRewards||{};S.pinnedNotes=S.pinnedNotes||[];document.getElementById("sync").textContent="Synced "+new Date().toLocaleTimeString();document.getElementById("load").style.display="none";renderCal();renderDetail();renderGlance();renderCountdowns();maybeTriggerTodaySpecial_();refreshPantry();loadWeather();activity()}).withFailureHandler(e=>document.getElementById("load").textContent="Error: "+e.message).getInitialData()}
+initAppearance();loadKitchenTimers();updateTimers();setInterval(updateTimers,1000);clock();setInterval(clock,15000);setupCalendarSwipe();load();setInterval(load,300000);setInterval(()=>{let fm=document.getElementById("fridayMode");if(fm)fm.textContent=fridayModeText();renderCountdowns();renderGlance();maybeRareCreature()},60000);setTimeout(maybeRareCreature,9000);
+document.addEventListener("keydown",cryptidTestKey);
+</script></body></html>
