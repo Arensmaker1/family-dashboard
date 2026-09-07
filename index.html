@@ -1159,7 +1159,7 @@ const SPORTS_DIRECT_TEAMS_=[
  {key:"notredame",name:"Notre Dame Football",shortName:"Notre Dame",emoji:"☘️",sport:"football",league:"college-football",teamId:"87",abbr:"ND",college:true},
  {key:"msubasketball",name:"Michigan State Basketball",shortName:"Michigan State",emoji:"🏀",sport:"basketball",league:"mens-college-basketball",teamId:"127",abbr:"MSU",college:true}
 ];
-const SPORTS_DIRECT_CACHE_KEY_="familyDashboardSportsDirectV182";
+const SPORTS_DIRECT_CACHE_KEY_="familyDashboardSportsDirectV183";
 function sportsDirectDateKey_(d){return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`}
 function sportsNormalizeEventDirect_(cfg,event){
  try{
@@ -1175,15 +1175,33 @@ function sportsNormalizeEventDirect_(cfg,event){
  }catch(_){return null}
 }
 async function sportsFetchTeamDirect_(cfg,force){
- let now=new Date(),from=new Date(now.getTime()-21*86400000),to=new Date(now.getTime()+35*86400000),range=`${sportsDirectDateKey_(from)}-${sportsDirectDateKey_(to)}`;
- let params=new URLSearchParams({dates:range,limit:cfg.college?"500":"1000"});if(cfg.college)params.set("groups","50");
- let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/scoreboard?${params.toString()}`;
- let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json"}});if(!res.ok)throw new Error(`ESPN ${cfg.league} returned HTTP ${res.status}`);
- let data=await res.json(),events=Array.isArray(data.events)?data.events:[];
+ let now=new Date(),events=[],data={};
+
+ // College feeds behave differently from the pro scoreboards. ESPN's team-schedule
+ // endpoint is much more reliable for Notre Dame and other independents, and it
+ // gives us the full season in one request instead of depending on scoreboard groups.
+ if(cfg.college){
+  let season=now.getFullYear();
+  if(cfg.league==="mens-college-basketball"&&now.getMonth()>=7)season+=1;
+  let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/teams/${encodeURIComponent(cfg.teamId)}/schedule?season=${season}`;
+  let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json, text/plain, */*"}});
+  if(!res.ok)throw new Error(`ESPN ${cfg.league} schedule returned HTTP ${res.status}`);
+  data=await res.json();
+  events=Array.isArray(data.events)?data.events:[];
+ }else{
+  let from=new Date(now.getTime()-21*86400000),to=new Date(now.getTime()+35*86400000),range=`${sportsDirectDateKey_(from)}-${sportsDirectDateKey_(to)}`;
+  let params=new URLSearchParams({dates:range,limit:"1000"});
+  let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/scoreboard?${params.toString()}`;
+  let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json"}});
+  if(!res.ok)throw new Error(`ESPN ${cfg.league} returned HTTP ${res.status}`);
+  data=await res.json();
+  events=Array.isArray(data.events)?data.events:[];
+ }
+
  let teamEvents=events.filter(e=>{let cs=e?.competitions?.[0]?.competitors||[];return cs.some(c=>String(c?.team?.id||"")===String(cfg.teamId)||String(c?.team?.abbreviation||"").toUpperCase()===String(cfg.abbr||"").toUpperCase())});
  let normalized=teamEvents.map(e=>sportsNormalizeEventDirect_(cfg,e)).filter(Boolean).sort((a,b)=>new Date(a.date)-new Date(b.date)),nowMs=Date.now();
  let live=normalized.find(e=>e.state==="in")||null,last=normalized.filter(e=>e.completed&&new Date(e.date).getTime()<=nowMs).sort((a,b)=>new Date(b.date)-new Date(a.date))[0]||null,next=normalized.find(e=>!e.completed&&e.state!=="in"&&new Date(e.date).getTime()>=nowMs-10800000&&!e.cancelled)||null;
- return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||"",record:"",eventCount:normalized.length};
+ return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||data.season?.year||"",record:"",eventCount:normalized.length};
 }
 function sportsReadDirectCache_(){try{let x=JSON.parse(localStorage.getItem(SPORTS_DIRECT_CACHE_KEY_)||"null");if(x&&Date.now()-Number(x.savedAt||0)<600000)return x.data}catch(_){}return null}
 function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CACHE_KEY_,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
