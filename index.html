@@ -797,7 +797,160 @@ let familyDashboardTokenTimer = null;
 <div id="glanceStrip" class="glanceStrip"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="/* =========================================================
+   V8.17.1 SMART MORNING BRIEF
+   ========================================================= */
+
+function morningChoreStats_(){
+  let d=new Date();
+  let C=choresFor(d);
+
+  let done=C.filter(x=>S.completions[key(d)+"-"+x.i]).length;
+
+  return {
+    total:C.length,
+    done,
+    left:Math.max(0,C.length-done)
+  };
+}
+
+function morningReminderStats_(){
+  let all=activeBriefReminders_();
+
+  let overdue=all.filter(r=>daysUntil_(r.nextDue)<0).length;
+  let today=all.filter(r=>daysUntil_(r.nextDue)===0).length;
+  let week=all.filter(r=>{
+    let n=daysUntil_(r.nextDue);
+    return n>0 && n<=7;
+  }).length;
+
+  return {overdue,today,week};
+}
+
+function tomorrowFirstEvent_(){
+  let d=new Date();
+  d.setDate(d.getDate()+1);
+
+  let a=futureEventsForDay_(d,false)
+    .sort((x,y)=>new Date(x.start)-new Date(y.start));
+
+  return a[0]||null;
+}
+
+function morningSummaryHtml_(){
+  let now=new Date();
+  let events=futureEventsForDay_(now,true);
+  let chores=morningChoreStats_();
+  let reminders=morningReminderStats_();
+
+  let pieces=[];
+
+  if(events.length){
+    pieces.push(
+      `${events.length} thing${events.length===1?"":"s"} left on today's calendar`
+    );
+  }else{
+    pieces.push("calendar is clear for the rest of today");
+  }
+
+  if(chores.total){
+    pieces.push(
+      chores.left
+        ? `${chores.left} chore${chores.left===1?"":"s"} remaining`
+        : "today's chores are done"
+    );
+  }
+
+  if(reminders.overdue){
+    pieces.push(
+      `${reminders.overdue} household reminder${reminders.overdue===1?" is":"s are"} overdue`
+    );
+  }else if(reminders.today){
+    pieces.push(
+      `${reminders.today} household reminder${reminders.today===1?"":"s"} due today`
+    );
+  }
+
+  return `
+    <div class="briefSummary">
+      <div class="briefSummaryIcon">☀️</div>
+      <div>
+        <b>Good ${now.getHours()<12?"morning":now.getHours()<17?"afternoon":"evening"}.</b>
+        ${esc(
+          pieces.length
+            ? pieces.join(" • ")
+            : "Everything looks pretty quiet."
+        )}
+      </div>
+    </div>
+  `;
+}
+
+function tomorrowPreviewHtml_(){
+  let e=tomorrowFirstEvent_();
+
+  if(!e){
+    return `<div class="briefLine">Nothing scheduled tomorrow yet.</div>`;
+  }
+
+  return `
+    <div class="briefTomorrow">
+      <div class="briefTomorrowLabel">UP FIRST TOMORROW</div>
+      <b>${esc(e.title)}</b>
+      <div class="briefReminderMeta">
+        ${e.allDay?"All day":esc(time(e))}
+        ${e.calendar?` • ${esc(e.calendar)}`:""}
+      </div>
+    </div>
+  `;
+}
+
+function upcomingHouseholdHtml_(){
+  let upcoming=activeBriefReminders_()
+    .filter(r=>{
+      let n=daysUntil_(r.nextDue);
+      return n>0 && n<=14;
+    })
+    .slice(0,3);
+
+  if(!upcoming.length){
+    return "";
+  }
+
+  return `
+    <div class="briefUpcoming">
+      <div class="briefTomorrowLabel">COMING UP</div>
+
+      ${upcoming.map(r=>`
+        <div class="briefUpcomingRow">
+          <span>${esc(r.name)}</span>
+          <b>${esc(reminderDueText_(r))}</b>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function morningChoreSummaryHtml_(){
+  let s=morningChoreStats_();
+
+  if(!s.total){
+    return `<div class="briefLine">No chores today.</div>`;
+  }
+
+  return `
+    <div class="briefProgressText">
+      <b>${s.done} of ${s.total}</b> done
+      ${s.left?` • ${s.left} remaining`:" • all finished 🎉"}
+    </div>
+
+    <div class="briefProgress">
+      <div style="width:${Math.round((s.done/s.total)*100)}%"></div>
+    </div>
+
+    ${morningChoresHtml_()}
+  `;
+}openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -1342,14 +1495,83 @@ function morningReminderHtml_(){
   `).join("");
 }
 
-function openMorningBrief(){
+/* V8.17.1 SMART BRIEF */
+
+.briefSummary{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid var(--theme1);
+  background:var(--p);
+  border-radius:12px;
+  padding:10px 12px;
+  margin-bottom:10px;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.briefSummaryIcon{
+  font-size:25px;
+  flex:none;
+}
+
+.briefProgressText{
+  font-size:10px;
+  color:var(--m);
+  margin-bottom:5px;
+}
+
+.briefProgress{
+  height:7px;
+  background:#00000015;
+  border-radius:999px;
+  overflow:hidden;
+  margin-bottom:7px;
+}
+
+.briefProgress div{
+  height:100%;
+  background:var(--g);
+  border-radius:999px;
+}
+
+.briefTomorrow,
+.briefUpcoming{
+  margin-top:10px;
+  border-top:1px solid var(--l);
+  padding-top:8px;
+}
+
+.briefTomorrowLabel{
+  color:var(--theme1);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.05em;
+  margin-bottom:4px;
+}
+
+.briefUpcomingRow{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  font-size:10px;
+  padding:4px 0;
+}
+
+.briefUpcomingRow b{
+  white-space:nowrap;
+}
+
+body[data-appearance="light"] .briefSummary{
+  background:#fffdf9;
+}function openMorningBrief(){
   ensureHouseholdReminders_();
 
   let now=new Date();
   let pins=S.pinnedNotes||[];
 
   openModal(`
-    <div class="briefWrap">
+    <div class="briefWrap">${morningSummaryHtml_()}
 
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px">
         <div>
@@ -1372,7 +1594,7 @@ function openMorningBrief(){
 
         <div class="briefCard">
           <h3>📅 TODAY</h3>
-          ${morningScheduleHtml_()}
+          ${morningScheduleHtml_()}${tomorrowPreviewHtml_()}
         </div>
 
         <div class="briefCard">
@@ -1390,14 +1612,15 @@ function openMorningBrief(){
         </div>
 
         <div class="briefCard">
-          <h3>✅ CHORES</h3>
-          ${morningChoresHtml_()}
-        </div>
+  <h3>✅ CHORES</h3>
+  ${morningChoreSummaryHtml_()}
+</div>
 
         <div class="briefCard">
-          <h3>🔁 HOUSEHOLD</h3>
-          ${morningReminderHtml_()}
-        </div>
+  <h3>🔁 HOUSEHOLD</h3>
+  ${morningReminderHtml_()}
+  ${upcomingHouseholdHtml_()}
+</div>
 
         <div class="briefCard">
           <h3>📌 DON'T FORGET</h3>
