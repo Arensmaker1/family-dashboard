@@ -399,7 +399,41 @@ body[data-appearance="light"] .recipeScaleBar{background:#fffaf3}
 .voiceSessionBar .voiceTranscript{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--m)}
 .voiceSessionBar.error{border-color:#d46a6a}
 @media(max-width:650px){.voiceSessionBar .voiceTranscript{display:none}}
-</style>
+/* V8.16.4 HEADER COUNTDOWN COLLISION FIX */
+@media(min-width:651px){
+  header{
+    grid-template-columns:minmax(220px,1fr) auto minmax(320px,1fr);
+    column-gap:14px;
+  }
+
+  header .clock{
+    min-width:320px;
+    max-width:430px;
+    justify-self:end;
+    overflow:hidden;
+  }
+
+  header .countdownStrip{
+    display:flex;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:3px 4px;
+    max-width:100%;
+    margin-top:2px;
+  }
+
+  header .countdownChip{
+    flex:0 0 auto;
+    font-size:8px;
+    padding:2px 6px;
+    white-space:nowrap;
+  }
+
+  #sync{
+    display:block;
+    margin-top:2px;
+  }
+}</style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
