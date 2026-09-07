@@ -445,7 +445,7 @@ body[data-appearance="light"] .reminderEditorGrid input{background:#fff;color:#2
 body[data-appearance="light"] .briefSummary{background:#fffdf9}
 
 
-/* V8.18 SPORTS CENTER */
+/* V8.18.2 SPORTS CENTER */
 .briefSportsCard{margin:10px 0}
 .briefSportsCard h3{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .briefSportsList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px}
@@ -1151,10 +1151,48 @@ function refreshSportsViews_(){
  if(m.querySelector(".sportsCenterWrap"))m.innerHTML=sportsCenterHtml_();
  else if(m.querySelector(".briefWrap"))openMorningBrief();
 }
-function loadSports(force=false){
- SPORTS.loading=true;
- if(force)refreshSportsViews_();
- google.script.run.withSuccessHandler(x=>{SPORTS=x||{ok:false,teams:[]};SPORTS.loading=false;refreshSportsViews_()}).withFailureHandler(e=>{SPORTS={loading:false,ok:false,teams:[],updatedAt:null,message:e.message||String(e)};refreshSportsViews_()}).getSportsCenter(!!force);
+const SPORTS_DIRECT_TEAMS_=[
+ {key:"lions",name:"Detroit Lions",shortName:"Lions",emoji:"🦁",sport:"football",league:"nfl",teamId:"8",abbr:"DET"},
+ {key:"tigers",name:"Detroit Tigers",shortName:"Tigers",emoji:"🐯",sport:"baseball",league:"mlb",teamId:"6",abbr:"DET"},
+ {key:"pistons",name:"Detroit Pistons",shortName:"Pistons",emoji:"🏀",sport:"basketball",league:"nba",teamId:"8",abbr:"DET"},
+ {key:"redwings",name:"Detroit Red Wings",shortName:"Red Wings",emoji:"🏒",sport:"hockey",league:"nhl",teamId:"5",abbr:"DET"},
+ {key:"notredame",name:"Notre Dame Football",shortName:"Notre Dame",emoji:"☘️",sport:"football",league:"college-football",teamId:"87",abbr:"ND",college:true},
+ {key:"msubasketball",name:"Michigan State Basketball",shortName:"Michigan State",emoji:"🏀",sport:"basketball",league:"mens-college-basketball",teamId:"127",abbr:"MSU",college:true}
+];
+const SPORTS_DIRECT_CACHE_KEY_="familyDashboardSportsDirectV182";
+function sportsDirectDateKey_(d){return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`}
+function sportsNormalizeEventDirect_(cfg,event){
+ try{
+  let comp=event?.competitions?.[0];if(!comp)return null;
+  let competitors=Array.isArray(comp.competitors)?comp.competitors:[];if(competitors.length<2)return null;
+  let ours=competitors.find(c=>String(c?.team?.id||"")===String(cfg.teamId))||competitors.find(c=>String(c?.team?.abbreviation||"").toUpperCase()===String(cfg.abbr||"").toUpperCase());
+  if(!ours)return null;let opp=competitors.find(c=>c!==ours)||{};
+  let type=comp.status?.type||{},state=String(type.state||"pre"),completed=!!type.completed||state==="post",statusName=String(type.name||"").toUpperCase(),cancelled=/CANCEL|POSTPON/.test(statusName);
+  let ourScore=String(ours.score==null?"":ours.score),opponentScore=String(opp.score==null?"":opp.score),result="";
+  if(completed&&ourScore!==""&&opponentScore!==""){let a=Number(ourScore),b=Number(opponentScore);if(Number.isFinite(a)&&Number.isFinite(b))result=a>b?"W":a<b?"L":"T"}
+  let names=(Array.isArray(comp.broadcasts)?comp.broadcasts:[]).flatMap(b=>Array.isArray(b.names)?b.names:[]),broadcast=[...new Set(names)].join(", ");
+  return {id:String(event.id||""),date:event.date||comp.date||"",name:event.name||"",shortName:event.shortName||event.name||"",opponent:opp.team?(opp.team.shortDisplayName||opp.team.displayName||opp.team.name||"Opponent"):"Opponent",opponentAbbr:opp.team?(opp.team.abbreviation||""):"",homeAway:ours.homeAway||"",state,completed,cancelled,status:type.shortDetail||type.detail||type.description||"",ourScore,opponentScore,result,winner:completed?!!ours.winner:null,venue:comp.venue?.fullName||"",broadcast};
+ }catch(_){return null}
+}
+async function sportsFetchTeamDirect_(cfg,force){
+ let now=new Date(),from=new Date(now.getTime()-21*86400000),to=new Date(now.getTime()+35*86400000),range=`${sportsDirectDateKey_(from)}-${sportsDirectDateKey_(to)}`;
+ let params=new URLSearchParams({dates:range,limit:cfg.college?"500":"1000"});if(cfg.college)params.set("groups","50");
+ let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/scoreboard?${params.toString()}`;
+ let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json"}});if(!res.ok)throw new Error(`ESPN ${cfg.league} returned HTTP ${res.status}`);
+ let data=await res.json(),events=Array.isArray(data.events)?data.events:[];
+ let teamEvents=events.filter(e=>{let cs=e?.competitions?.[0]?.competitors||[];return cs.some(c=>String(c?.team?.id||"")===String(cfg.teamId)||String(c?.team?.abbreviation||"").toUpperCase()===String(cfg.abbr||"").toUpperCase())});
+ let normalized=teamEvents.map(e=>sportsNormalizeEventDirect_(cfg,e)).filter(Boolean).sort((a,b)=>new Date(a.date)-new Date(b.date)),nowMs=Date.now();
+ let live=normalized.find(e=>e.state==="in")||null,last=normalized.filter(e=>e.completed&&new Date(e.date).getTime()<=nowMs).sort((a,b)=>new Date(b.date)-new Date(a.date))[0]||null,next=normalized.find(e=>!e.completed&&e.state!=="in"&&new Date(e.date).getTime()>=nowMs-10800000&&!e.cancelled)||null;
+ return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||"",record:"",eventCount:normalized.length};
+}
+function sportsReadDirectCache_(){try{let x=JSON.parse(localStorage.getItem(SPORTS_DIRECT_CACHE_KEY_)||"null");if(x&&Date.now()-Number(x.savedAt||0)<600000)return x.data}catch(_){}return null}
+function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CACHE_KEY_,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
+async function loadSports(force=false){
+ SPORTS.loading=true;if(force)refreshSportsViews_();
+ if(!force){let cached=sportsReadDirectCache_();if(cached){SPORTS=cached;SPORTS.loading=false;refreshSportsViews_();return}}
+ let settled=await Promise.allSettled(SPORTS_DIRECT_TEAMS_.map(cfg=>sportsFetchTeamDirect_(cfg,force))),teams=settled.map((r,i)=>r.status==="fulfilled"?r.value:{key:SPORTS_DIRECT_TEAMS_[i].key,name:SPORTS_DIRECT_TEAMS_[i].name,shortName:SPORTS_DIRECT_TEAMS_[i].shortName,emoji:SPORTS_DIRECT_TEAMS_[i].emoji,league:SPORTS_DIRECT_TEAMS_[i].league,ok:false,error:r.reason?.message||String(r.reason||"Unknown error"),live:null,last:null,next:null}),anyOk=teams.some(t=>t.ok);
+ SPORTS={loading:false,ok:anyOk,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:anyOk?"":teams.map(t=>`${t.shortName}: ${t.error||"unknown error"}`).join(" | ")};
+ if(anyOk)sportsWriteDirectCache_(SPORTS);refreshSportsViews_();
 }
 
 function morningBriefAutoKey_(){return "familyDashboardMorningBrief-"+key(new Date())}
