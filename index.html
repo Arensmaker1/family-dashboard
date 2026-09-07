@@ -432,7 +432,138 @@ body[data-appearance="light"] .recipeScaleBar{background:#fffaf3}
   #sync{
     display:block;
     margin-top:2px;
+  }/* V8.17 MORNING BRIEF + HOUSEHOLD REMINDERS */
+
+.briefWrap{
+  max-width:850px;
+  margin:auto;
+}
+
+.briefHero{
+  display:grid;
+  grid-template-columns:1.3fr .7fr;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.briefCard{
+  border:1px solid var(--l);
+  border-radius:12px;
+  padding:12px;
+  background:var(--p);
+}
+
+.briefCard h3{
+  margin:0 0 8px;
+  color:var(--theme1);
+  font-size:12px;
+}
+
+.briefBig{
+  font-size:20px;
+  font-weight:900;
+}
+
+.briefLine{
+  padding:6px 0;
+  border-bottom:1px solid #ffffff10;
+  font-size:12px;
+  line-height:1.35;
+}
+
+.briefLine:last-child{
+  border-bottom:0;
+}
+
+.briefGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.briefReminder{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:8px 9px;
+  margin:5px 0;
+  border:1px solid var(--l);
+  border-radius:9px;
+}
+
+.briefReminder.due{
+  border-color:var(--o);
+  background:#ff9b3d10;
+}
+
+.briefReminder.soon{
+  border-color:#ffd84a;
+}
+
+.briefReminderName{
+  font-size:12px;
+  font-weight:800;
+}
+
+.briefReminderMeta{
+  color:var(--m);
+  font-size:9px;
+  margin-top:2px;
+}
+
+.briefReminder button{
+  padding:6px 9px;
+  font-size:10px;
+}
+
+.reminderEditor{
+  border:1px solid var(--l);
+  border-radius:10px;
+  padding:9px;
+  margin:7px 0;
+}
+
+.reminderEditorGrid{
+  display:grid;
+  grid-template-columns:minmax(180px,1fr) 100px 145px 34px;
+  gap:6px;
+  align-items:center;
+}
+
+.reminderEditorGrid input{
+  min-width:0;
+  background:#071018;
+  color:var(--t);
+  border:1px solid #344657;
+  border-radius:7px;
+  padding:8px;
+}
+
+body[data-appearance="light"] .briefCard{
+  background:#fffdf9;
+}
+
+body[data-appearance="light"] .reminderEditorGrid input{
+  background:#fff;
+  color:#292722;
+  border-color:#cfc4b5;
+}
+
+@media(max-width:650px){
+  .briefHero,
+  .briefGrid{
+    grid-template-columns:1fr;
   }
+
+  .reminderEditorGrid{
+    grid-template-columns:1fr 85px;
+  }
+
+  .reminderEditorGrid input[type="date"]{
+    grid-column:1/-1;
+  }
+}
 }</style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -666,7 +797,7 @@ let familyDashboardTokenTimer = null;
 <div id="glanceStrip" class="glanceStrip"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -1026,7 +1157,393 @@ function dinnerCommandHtml_(d){
  return `<div class="dinnerCommand"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dinnerSub">${esc(dinner.planName||"")}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${m?kitchenIntelHtml_(d,m):""}${actions}</div>`;
 }
 function openRecipeGroceryFromDinner_(source,id){openRecipes();setTimeout(()=>openRecipeGroceryPreview(source,id),80)}
-function renderGlance(){
+/* =========================================================
+   V8.17 MORNING BRIEF + HOUSEHOLD REMINDERS
+   ========================================================= */
+
+function ensureHouseholdReminders_(){
+  if(!Array.isArray(S.householdReminders)){
+    S.householdReminders=[];
+  }
+}
+
+function dateOnly_(v){
+  let d=v ? new Date(v+"T12:00:00") : new Date();
+  d.setHours(12,0,0,0);
+  return d;
+}
+
+function daysUntil_(dateString){
+  if(!dateString)return 99999;
+  let now=new Date();
+  now.setHours(12,0,0,0);
+  let d=dateOnly_(dateString);
+  return Math.round((d-now)/86400000);
+}
+
+function reminderDueText_(r){
+  let n=daysUntil_(r.nextDue);
+
+  if(n<0){
+    let x=Math.abs(n);
+    return `${x} day${x===1?"":"s"} overdue`;
+  }
+
+  if(n===0)return "Due today";
+  if(n===1)return "Due tomorrow";
+
+  return `Due in ${n} days`;
+}
+
+function reminderClass_(r){
+  let n=daysUntil_(r.nextDue);
+  if(n<=0)return "due";
+  if(n<=7)return "soon";
+  return "";
+}
+
+function activeBriefReminders_(){
+  ensureHouseholdReminders_();
+
+  return S.householdReminders
+    .filter(r=>r && r.name && r.nextDue)
+    .sort((a,b)=>String(a.nextDue).localeCompare(String(b.nextDue)));
+}
+
+function markHouseholdReminderDone_(id){
+  ensureHouseholdReminders_();
+
+  let r=S.householdReminders.find(x=>x.id===id);
+  if(!r)return;
+
+  let days=Math.max(1,Number(r.intervalDays)||1);
+  let d=new Date();
+
+  d.setDate(d.getDate()+days);
+
+  r.lastDone=key(new Date());
+  r.nextDue=key(d);
+
+  persist(()=>{
+    openMorningBrief();
+    renderGlance();
+  });
+}
+
+function morningWeatherHtml_(){
+  if(!W || !W.ok || !W.current){
+    return `<div class="briefLine">Weather unavailable.</div>`;
+  }
+
+  let today=key(new Date());
+  let i=W.daily && W.daily.time
+    ? W.daily.time.indexOf(today)
+    : -1;
+
+  let current=Math.round(W.current.temperature_2m);
+  let condition=icon(W.current.weather_code);
+
+  let hi=i>=0
+    ? Math.round(W.daily.temperature_2m_max[i])
+    : "—";
+
+  let lo=i>=0
+    ? Math.round(W.daily.temperature_2m_min[i])
+    : "—";
+
+  let rain=i>=0
+    ? (W.daily.precipitation_probability_max[i]||0)
+    : 0;
+
+  return `
+    <div class="briefBig">${condition} ${current}°</div>
+    <div class="briefLine">High ${hi}° • Low ${lo}°</div>
+    <div class="briefLine">${rain}% chance of precipitation</div>
+    <div class="briefLine">${esc(W.location||"")}</div>
+  `;
+}
+
+function morningScheduleHtml_(){
+  let now=new Date();
+  let events=futureEventsForDay_(now,true);
+
+  if(!events.length){
+    return `<div class="briefLine">Nothing else scheduled today.</div>`;
+  }
+
+  return events.slice(0,6).map(e=>`
+    <div class="briefLine">
+      ${e.allDay ? "All day" : esc(time(e))}
+      &nbsp;•&nbsp;
+      <b>${esc(e.title)}</b>
+    </div>
+  `).join("");
+}
+
+function morningChoresHtml_(){
+  let d=new Date();
+  let C=choresFor(d);
+
+  if(!C.length){
+    return `<div class="briefLine">No chores today. Somebody got lucky.</div>`;
+  }
+
+  return C.map(x=>{
+    let done=!!S.completions[key(d)+"-"+x.i];
+
+    return `
+      <div class="briefLine">
+        ${done?"✅":"⬜"}
+        ${esc(x.name)}
+        ${x.who?` • ${esc(x.who)}`:""}
+      </div>
+    `;
+  }).join("");
+}
+
+function morningDinnerHtml_(){
+  let dinner=dinnerForDate_(new Date());
+
+  if(!dinner){
+    return `<div class="briefLine">No dinner is planned yet.</div>`;
+  }
+
+  return `
+    <div class="briefBig">${esc(dinner.name)}</div>
+    <div class="briefLine">
+      ${dinner.planName ? esc(dinner.planName) : "Tonight's dinner"}
+    </div>
+  `;
+}
+
+function morningReminderHtml_(){
+  let reminders=activeBriefReminders_();
+  let useful=reminders.filter(r=>daysUntil_(r.nextDue)<=14);
+
+  if(!useful.length){
+    return `<div class="briefLine">Nothing due in the next two weeks. 🎉</div>`;
+  }
+
+  return useful.slice(0,8).map(r=>`
+    <div class="briefReminder ${reminderClass_(r)}">
+      <div>
+        <div class="briefReminderName">${esc(r.name)}</div>
+        <div class="briefReminderMeta">
+          ${esc(reminderDueText_(r))}
+          • every ${Number(r.intervalDays)||1} days
+        </div>
+      </div>
+
+      <button class="btn"
+        onclick="markHouseholdReminderDone_('${r.id}')">
+        ✓ Done
+      </button>
+    </div>
+  `).join("");
+}
+
+function openMorningBrief(){
+  ensureHouseholdReminders_();
+
+  let now=new Date();
+  let pins=S.pinnedNotes||[];
+
+  openModal(`
+    <div class="briefWrap">
+
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px">
+        <div>
+          <h2 style="margin:0">☀️ Morning Brief</h2>
+          <div class="note">
+            ${now.toLocaleDateString([],{
+              weekday:"long",
+              month:"long",
+              day:"numeric"
+            })}
+          </div>
+        </div>
+
+        <button class="btn" onclick="openHouseholdReminders()">
+          🔁 Reminders
+        </button>
+      </div>
+
+      <div class="briefHero">
+
+        <div class="briefCard">
+          <h3>📅 TODAY</h3>
+          ${morningScheduleHtml_()}
+        </div>
+
+        <div class="briefCard">
+          <h3>🌤️ WEATHER</h3>
+          ${morningWeatherHtml_()}
+        </div>
+
+      </div>
+
+      <div class="briefGrid">
+
+        <div class="briefCard">
+          <h3>🍽️ DINNER</h3>
+          ${morningDinnerHtml_()}
+        </div>
+
+        <div class="briefCard">
+          <h3>✅ CHORES</h3>
+          ${morningChoresHtml_()}
+        </div>
+
+        <div class="briefCard">
+          <h3>🔁 HOUSEHOLD</h3>
+          ${morningReminderHtml_()}
+        </div>
+
+        <div class="briefCard">
+          <h3>📌 DON'T FORGET</h3>
+
+          ${
+            pins.length
+            ? pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join("")
+            : `<div class="briefLine">Nothing pinned.</div>`
+          }
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="closeModal()">Done</button>
+      </div>
+
+    </div>
+  `);
+
+  activity();
+}
+
+function openHouseholdReminders(){
+  ensureHouseholdReminders_();
+
+  openModal(`
+    <h2>🔁 Household Reminders</h2>
+
+    <div class="note">
+      Set repeating jobs like furnace filters, water-softener salt,
+      smoke-detector batteries, HVAC maintenance, and anything else
+      nobody wants to remember manually.
+    </div>
+
+    <div id="householdReminderEditor" style="margin-top:12px">
+
+      ${
+        S.householdReminders.length
+        ? S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join("")
+        : `<div class="empty">No recurring reminders yet.</div>`
+      }
+
+    </div>
+
+    <button class="btn" onclick="addHouseholdReminder_()">
+      + Add Reminder
+    </button>
+
+    <div class="actions">
+      <button class="btn" onclick="openMorningBrief()">Cancel</button>
+      <button class="btn primaryAction" onclick="saveHouseholdReminders_()">
+        Save Reminders
+      </button>
+    </div>
+  `);
+}
+
+function householdReminderEditorRow_(r,i){
+  return `
+    <div class="reminderEditor">
+
+      <div class="reminderEditorGrid">
+
+        <input
+          id="hrName${i}"
+          value="${esc(r.name||"")}"
+          placeholder="Furnace filter">
+
+        <input
+          id="hrDays${i}"
+          type="number"
+          min="1"
+          max="3650"
+          value="${Number(r.intervalDays)||90}"
+          title="Repeat every X days">
+
+        <input
+          id="hrDue${i}"
+          type="date"
+          value="${esc(r.nextDue||key(new Date()))}">
+
+        <button class="x" onclick="deleteHouseholdReminder_(${i})">
+          ×
+        </button>
+
+      </div>
+
+      <div class="note" style="margin-top:5px">
+        Repeat every X days • Next due date
+      </div>
+
+    </div>
+  `;
+}
+
+function captureHouseholdReminders_(){
+  ensureHouseholdReminders_();
+
+  return S.householdReminders.map((r,i)=>({
+    id:r.id || ("hr_"+Date.now()+"_"+i),
+    name:(document.getElementById("hrName"+i)?.value||"").trim(),
+    intervalDays:Math.max(
+      1,
+      Number(document.getElementById("hrDays"+i)?.value)||1
+    ),
+    nextDue:document.getElementById("hrDue"+i)?.value || key(new Date()),
+    lastDone:r.lastDone||""
+  })).filter(r=>r.name);
+}
+
+function addHouseholdReminder_(){
+  S.householdReminders=captureHouseholdReminders_();
+
+  S.householdReminders.push({
+    id:"hr_"+Date.now(),
+    name:"",
+    intervalDays:90,
+    nextDue:key(new Date()),
+    lastDone:""
+  });
+
+  openHouseholdReminders();
+
+  setTimeout(()=>{
+    let n=document.getElementById(
+      "hrName"+(S.householdReminders.length-1)
+    );
+    if(n)n.focus();
+  },40);
+}
+
+function deleteHouseholdReminder_(i){
+  S.householdReminders=captureHouseholdReminders_();
+  S.householdReminders.splice(i,1);
+  openHouseholdReminders();
+}
+
+function saveHouseholdReminders_(){
+  S.householdReminders=captureHouseholdReminders_();
+
+  persist(()=>{
+    openMorningBrief();
+    renderGlance();
+  });
+}function renderGlance(){
  let e=document.getElementById("glanceStrip");if(!e)return;
  let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
  let E=futureEventsForDay_(now,true).slice(0,3),T=futureEventsForDay_(tom,false).slice(0,3),
