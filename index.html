@@ -1159,7 +1159,7 @@ const SPORTS_DIRECT_TEAMS_=[
  {key:"notredame",name:"Notre Dame Football",shortName:"Notre Dame",emoji:"☘️",sport:"football",league:"college-football",teamId:"87",abbr:"ND",college:true},
  {key:"msubasketball",name:"Michigan State Basketball",shortName:"Michigan State",emoji:"🏀",sport:"basketball",league:"mens-college-basketball",teamId:"127",abbr:"MSU",college:true}
 ];
-const SPORTS_DIRECT_CACHE_KEY_="familyDashboardSportsDirectV183";
+const SPORTS_DIRECT_CACHE_KEY_="familyDashboardSportsDirectV184";
 function sportsDirectDateKey_(d){return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`}
 function sportsNormalizeEventDirect_(cfg,event){
  try{
@@ -1168,7 +1168,8 @@ function sportsNormalizeEventDirect_(cfg,event){
   let ours=competitors.find(c=>String(c?.team?.id||"")===String(cfg.teamId))||competitors.find(c=>String(c?.team?.abbreviation||"").toUpperCase()===String(cfg.abbr||"").toUpperCase());
   if(!ours)return null;let opp=competitors.find(c=>c!==ours)||{};
   let type=comp.status?.type||{},state=String(type.state||"pre"),completed=!!type.completed||state==="post",statusName=String(type.name||"").toUpperCase(),cancelled=/CANCEL|POSTPON/.test(statusName);
-  let ourScore=String(ours.score==null?"":ours.score),opponentScore=String(opp.score==null?"":opp.score),result="";
+  const scoreText_=c=>{let s=c?.score;if(s==null)return "";if(typeof s==="object")return String(s.displayValue??s.value??s.score??"");return String(s)};
+  let ourScore=scoreText_(ours),opponentScore=scoreText_(opp),result="";
   if(completed&&ourScore!==""&&opponentScore!==""){let a=Number(ourScore),b=Number(opponentScore);if(Number.isFinite(a)&&Number.isFinite(b))result=a>b?"W":a<b?"L":"T"}
   let names=(Array.isArray(comp.broadcasts)?comp.broadcasts:[]).flatMap(b=>Array.isArray(b.names)?b.names:[]),broadcast=[...new Set(names)].join(", ");
   return {id:String(event.id||""),date:event.date||comp.date||"",name:event.name||"",shortName:event.shortName||event.name||"",opponent:opp.team?(opp.team.shortDisplayName||opp.team.displayName||opp.team.name||"Opponent"):"Opponent",opponentAbbr:opp.team?(opp.team.abbreviation||""):"",homeAway:ours.homeAway||"",state,completed,cancelled,status:type.shortDetail||type.detail||type.description||"",ourScore,opponentScore,result,winner:completed?!!ours.winner:null,venue:comp.venue?.fullName||"",broadcast};
