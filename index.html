@@ -707,7 +707,7 @@ let familyDashboardTokenTimer = null;
 <div id="glanceStrip" class="glanceStrip"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="openVoiceControl()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Voice</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -741,7 +741,7 @@ let familyDashboardTokenTimer = null;
 </div>
 
 <div id="cookOverlay">
- <div class="cookTop"><button class="v4back" onclick="hideCookMode_()">← Dashboard</button><div class="cookTitle"><h1 id="cookRecipeTitle">Cook Mode</h1><div id="cookRecipeMeta" class="cookMeta"></div><div id="cookScaleBar" class="cookScaleBar"></div></div><div class="cookTopActions"><button class="btn" onclick="openVoiceControl()">🎙️ Listen While Cooking</button><div class="cookQuickTimers"><button class="btn" onclick="startCookTimer(5)">5m</button><button class="btn" onclick="startCookTimer(10)">10m</button><button class="btn" onclick="startCookTimer(15)">15m</button><button class="btn" onclick="startCookTimer(30)">30m</button></div><button id="cookWakeBtn" class="btn cookWakeBtn" onclick="toggleCookWakeLock()">☀️ Keep Awake</button><button id="cookAllStepsBtn" class="btn" onclick="toggleCookAllSteps()">☷ All Steps</button><button class="btn" onclick="openTimers()">⏱️ Timers</button></div><div id="cookTimerStrip" class="cookTimerStrip"></div></div>
+ <div class="cookTop"><button class="v4back" onclick="hideCookMode_()">← Dashboard</button><div class="cookTitle"><h1 id="cookRecipeTitle">Cook Mode</h1><div id="cookRecipeMeta" class="cookMeta"></div><div id="cookScaleBar" class="cookScaleBar"></div></div><div class="cookTopActions"><button id="cookVoiceBtn" class="btn" onclick="toggleVoiceListening_()">🎙️ Tap to Listen</button><div class="cookQuickTimers"><button class="btn" onclick="startCookTimer(5)">5m</button><button class="btn" onclick="startCookTimer(10)">10m</button><button class="btn" onclick="startCookTimer(15)">15m</button><button class="btn" onclick="startCookTimer(30)">30m</button></div><button id="cookWakeBtn" class="btn cookWakeBtn" onclick="toggleCookWakeLock()">☀️ Keep Awake</button><button id="cookAllStepsBtn" class="btn" onclick="toggleCookAllSteps()">☷ All Steps</button><button class="btn" onclick="openTimers()">⏱️ Timers</button></div><div id="cookTimerStrip" class="cookTimerStrip"></div></div>
  <div class="cookBody"><div class="cookIngredients"><h2>INGREDIENTS</h2><div id="cookIngredients"></div></div><div class="cookStepPanel"><div class="cookProgress"><span id="cookStepCount" class="cookStepCount"></span><div class="cookProgressBar"><div id="cookProgressBar"></div></div></div><div id="cookSingleStep" class="cookStepSingle"><div id="cookStepText" class="cookStepText"></div><div id="cookDetectedTimers" class="cookDetectedTimers"></div></div><div id="cookAllSteps" class="cookAllSteps"></div><div class="cookNav"><button id="cookPrevBtn" class="btn" onclick="cookPrevStep()">← Previous</button><button id="cookNextBtn" class="btn primaryAction" onclick="cookNextStep()">Next →</button><button class="btn" onclick="closeCookMode()">✓ Finish Cooking</button></div></div></div>
 </div>
 <div id="modalbg" class="modalbg" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div>
@@ -1341,20 +1341,29 @@ function speak_(text){text=String(text||"").trim();if(!text||!("speechSynthesis"
    u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);
  }catch(e){voiceSpeaking=false;if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250)}
 }
-function openVoiceControl(){if(!voiceSupported_()){openModal('<h2>🎙️ Voice Assistant</h2><div class="rError">Speech recognition is not available in this browser. Use Chrome on the kitchen PC.</div><div class="actions"><button class="btn" onclick="closeModal()">Close</button></div>');return}openModal(`<h2>🎙️ Voice Assistant 2.0</h2><div class="note">Quick Listen hears one command. Voice Session keeps listening temporarily while you cook or move around the kitchen.</div><div class="voiceChoices"><button class="btn primaryAction" onclick="startVoiceSession(0,true)">Quick Listen</button><button class="btn" onclick="startVoiceSession(5)">5 min</button><button class="btn" onclick="startVoiceSession(10)">10 min</button><button class="btn" onclick="startVoiceSession(30)">30 min</button><button class="btn" onclick="startVoiceSession(45)">45 min</button><button class="btn" onclick="startVoiceSession(60)">60 min</button><button class="btn" onclick="startVoiceSession(-1)">Until I Stop It</button></div><div class="voiceHelp"><b>Try:</b> “What’s going on today?” • “What’s going on tomorrow?” • “What’s for dinner?” • “What chores are left?” • “Anything due around the house?” • “What’s the weather?” • “When do the Lions play?” • “Did Notre Dame win?” • “Start a 10 minute timer” • “Add milk to groceries” • “Read this step” • “Next step”</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button></div>`)}
-function startVoiceSession(minutes,quick=false){
- closeModal();stopVoiceSession(false);
- voiceWanted=true;voiceSessionUnlimited=minutes<0;
- voiceSessionEnd=quick?Date.now()+90000:(voiceSessionUnlimited?0:Date.now()+Math.max(1,minutes)*60000);
- window._voiceQuick=quick;
+function openVoiceControl(){toggleVoiceListening_()}
+function toggleVoiceListening_(){
+ if(voiceWanted){stopVoiceSession(false);return}
+ if(!voiceSupported_()){alert("Speech recognition is not available in this browser. Use Chrome on the kitchen PC.");return}
+ startVoiceSession(-1,false);
+}
+function startVoiceSession(minutes=-1,quick=false){
+ stopVoiceSession(false);
+ voiceWanted=true;voiceSessionUnlimited=true;voiceSessionEnd=0;window._voiceQuick=false;
  updateVoiceUI_();
- voiceSessionTick=setInterval(updateVoiceUI_,1000);
- // IMPORTANT: Chrome wants recognition.start() directly from the tap/click gesture.
- // Do not speak first and delay microphone startup.
+ clearInterval(voiceSessionTick);voiceSessionTick=setInterval(updateVoiceUI_,1000);
  ensureVoiceListening_();
 }
 function stopVoiceSession(announce=false){voiceWanted=false;voiceSessionUnlimited=false;voiceSessionEnd=0;window._voiceQuick=false;clearInterval(voiceSessionTick);voiceSessionTick=null;try{voiceRecognition?.stop()}catch(e){}voiceRecognition=null;updateVoiceUI_();if(announce)speak_("Voice session ended.")}
-function updateVoiceUI_(){if(voiceWanted&&!voiceSessionUnlimited&&Date.now()>=voiceSessionEnd){stopVoiceSession(false);speak_("Voice session ended.");return}document.getElementById("voiceFab")?.classList.toggle("listening",voiceWanted);document.getElementById("voiceNavBtn")?.classList.toggle("active",voiceWanted);let vl=document.getElementById("voiceNavLabel");if(vl)vl.textContent=voiceWanted?"Listening":"Voice";document.getElementById("voiceSessionBar")?.classList.toggle("open",voiceWanted);let e=document.getElementById("voiceSessionTime");if(e&&voiceWanted)e.textContent=voiceSessionUnlimited?"Until stopped":fmtTimer(voiceSessionEnd-Date.now());if(!voiceWanted){setVoiceState_("🎙️ Ready");let t=document.getElementById("voiceTranscript");if(t)t.textContent=""}}
+function updateVoiceUI_(){
+ document.getElementById("voiceFab")?.classList.toggle("listening",voiceWanted);
+ document.getElementById("voiceNavBtn")?.classList.toggle("active",voiceWanted);
+ let vl=document.getElementById("voiceNavLabel");if(vl)vl.textContent=voiceWanted?"Stop Listening":"Tap to Listen";
+ let cb=document.getElementById("cookVoiceBtn");if(cb){cb.classList.toggle("active",voiceWanted);cb.textContent=voiceWanted?"⏹ Stop Listening":"🎙️ Tap to Listen"}
+ document.getElementById("voiceSessionBar")?.classList.toggle("open",voiceWanted);
+ let e=document.getElementById("voiceSessionTime");if(e&&voiceWanted)e.textContent="Listening";
+ if(!voiceWanted){setVoiceState_("🎙️ Ready");let t=document.getElementById("voiceTranscript");if(t)t.textContent=""}
+}
 function setVoiceState_(text,error=false){
  let s=document.getElementById("voiceState"),bar=document.getElementById("voiceSessionBar");
  if(s)s.textContent=text;
@@ -1365,15 +1374,16 @@ function ensureVoiceListening_(){
  let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){setVoiceState_("🎙️ Unsupported",true);return}
  let r=new SR();voiceRecognition=r;
- r.lang="en-US";r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
+ r.lang="en-US";r.continuous=false;r.interimResults=false;r.maxAlternatives=5;
  r.onstart=()=>setVoiceState_("🎙️ Listening");
  r.onspeechstart=()=>setVoiceState_("🎙️ Hearing you…");
  r.onresult=e=>{
-   let text=e.results?.[0]?.[0]?.transcript||"";
+   let result=e.results?.[0],alts=result?Array.from(result).map(x=>x.transcript||"").filter(Boolean):[];
+   let text=alts[0]||"";
    let t=document.getElementById("voiceTranscript");if(t)t.textContent=text?`“${text}”`:"";
    setVoiceState_("✓ Heard");
-   handleVoiceCommand_(text);
-   if(window._voiceQuick)setTimeout(()=>stopVoiceSession(false),700);
+   let handled=false;for(let candidate of alts){if(handleVoiceCommand_(candidate)){handled=true;break}}
+   if(!handled)speak_("I didn't recognize that command.");
  };
  r.onerror=e=>{
    let code=e?.error||"unknown";
@@ -1414,19 +1424,56 @@ function voiceOverview_(d){let isToday=same(d,new Date()),parts=[];let events=fu
 function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
 function voiceStartTimer_(m){m=Number(m)||1;primeTimerAudio();kitchenTimers.push({name:nextTimerName(),end:Date.now()+m*60000,ringing:false});saveKitchenTimers();updateTimers();speak_(`${m} minute timer started.`)}
 function voiceStopTimer_(){if(!kitchenTimers.length){speak_("There are no active timers.");return}let i=kitchenTimers.findIndex(x=>x.ringing);if(i<0){let now=Date.now(),best=Infinity;i=0;kitchenTimers.forEach((x,n)=>{let left=Math.max(0,(Number(x.end)||0)-now);if(left<best){best=left;i=n}})}let name=kitchenTimers[i]?.name||"Timer";kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();updateTimers();updateCookTimerBar();speak_(`${name} stopped.`)}
-function handleVoiceCommand_(raw){let s=String(raw).toLowerCase().replace(/[?.!]/g,"").trim(),m;if(/stop listening|voice off|microphone off/.test(s)){stopVoiceSession(false);speak_("Voice session ended.");return}if((m=s.match(/keep listening(?: for)? (\d+) (?:minutes?|mins?)/))){setVoiceDuration_(m[1]);return}if((m=s.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return}if(/^(?:stop|cancel|end)(?: the| a)? timer$|^(?:stop|silence|dismiss)(?: the)? alarm$/.test(s)){voiceStopTimer_();return}
- if(/what(?:'s| is) going on today|what do we have today|what(?:'s| is) happening today|tell me about today|morning brief/.test(s)){speak_(voiceOverview_(new Date()));return}
- if(/what(?:'s| is) going on tomorrow|what do we have tomorrow|what(?:'s| is) happening tomorrow|tell me about tomorrow/.test(s)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return}
- if(/what(?:'s| is) for dinner tomorrow|what are we having tomorrow|dinner tomorrow/.test(s)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceDinnerForDate_(d));return}
- if(/what(?:'s| is) for dinner|what are we having for dinner|dinner tonight/.test(s)){speak_(voiceDinner_());return}
- if(/what chores are left|chores left|what chores do we have|what are the chores/.test(s)){speak_(voiceChoresForDate_(new Date()));return}
- if(/anything due around the house|what(?:'s| is) due around the house|household reminders|any reminders due/.test(s)){speak_(voiceReminderSummary_());return}
- if(/what(?:'s| is) the weather|weather today|how(?:'s| is) the weather|temperature outside/.test(s)){speak_(voiceWeather_());return}
- if(/when do .* play|when(?:'s| is) .* (?:game|playing)|next .* game/.test(s)){speak_(voiceSportsNext_(voiceSportsTeamFromText_(s)));return}
- if(/did .* win|how did .* do|what was the .* score|score of the .* game/.test(s)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(s)));return}
- if(/calendar today|schedule today|what(?:'s| is) on the calendar today/.test(s)){speak_(voiceEvents_(new Date(),true));return}
- if(/calendar tomorrow|schedule tomorrow|what(?:'s| is) on the calendar tomorrow/.test(s)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return}
- if((m=s.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return}if(/open (?:the )?grocer/.test(s)){openGroceries();speak_("Opening groceries.");return}if(/open (?:the )?recipe/.test(s)){openRecipes();speak_("Opening recipes.");return}if(/open (?:the )?(?:brief|morning brief)/.test(s)){openMorningBrief();speak_("Opening the morning brief.");return}if(/open (?:the )?sports/.test(s)){openSportsCenter();speak_("Opening sports center.");return}if(/go home|open (?:the )?dashboard/.test(s)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return}if(cookRecipe){let steps=cookRecipe.steps||[];if(/(?:read|what(?:'s| is)|tell me|give me|go to|move to|show me).*(?:next|following).*(?:step|instruction|direction)|^(?:next|next step|next instruction|continue|keep going|move on)$/.test(s)){if(cookStep<steps.length-1)cookNextStep();speak_(`Step ${cookStep+1}. ${steps[cookStep]||""}`);return}if(/(?:read|what(?:'s| is)|tell me|give me|go to|move to|show me).*(?:previous|last|prior).*(?:step|instruction|direction)|^(?:previous|previous step|back|go back|go back a step)$/.test(s)){cookPrevStep();speak_(`Step ${cookStep+1}. ${steps[cookStep]||""}`);return}if(/(?:repeat|say that again|again|read|tell me|what(?:'s| is)).*(?:this|the|current)?\s*(?:step|instruction|direction)|^(?:repeat|again)$/.test(s)){speak_(`Step ${cookStep+1}. ${steps[cookStep]||""}`);return}if((m=s.match(/(?:read|go to|show me|tell me) (?:step|instruction) (\d+)/))){let n=Math.max(1,Math.min(steps.length,Number(m[1])))-1;cookJumpStep(n);speak_(`Step ${n+1}. ${steps[n]||""}`);return}if(/read (?:all )?(?:the )?(?:steps|instructions|directions)|read the whole recipe|read all/.test(s)){speak_(steps.map((x,i)=>`Step ${i+1}. ${x}`).join(" "));return}if(/read (?:the )?ingredients|what ingredients|ingredient list/.test(s)){speak_((cookRecipe.ingredients||[]).join(". "));return}if((m=s.match(/how much (.+)$/))){let x=(cookRecipe.ingredients||[]).filter(i=>i.toLowerCase().includes(m[1])).slice(0,3);speak_(x.length?x.join(". "):`I couldn't find ${m[1]} in this recipe.`);return}if(/start (?:the )?timer|timer for (?:this|the current) step/.test(s)){let x=cookTimerMatches_(steps[cookStep]||"");if(x.length){startCookTimer(x[0].minutes);speak_(`${x[0].label} timer started.`)}else speak_("I don't see a timer in this step.");return}}speak_("I didn't recognize that command.")}
+function handleVoiceCommand_(raw){
+ let s=String(raw||"").toLowerCase().replace(/[’‘]/g,"'").replace(/[?.!,]/g,"").replace(/\s+/g," ").trim(),m;
+ let n=s.replace(/what's/g,"what is").replace(/that's/g,"that is").replace(/i'm/g,"i am").replace(/\bplease\b/g,"").replace(/\s+/g," ").trim();
+ if(/stop listening|voice off|microphone off|stop voice/.test(n)){stopVoiceSession(false);return true}
+ if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return true}
+ if(/^(?:stop|cancel|end)(?: the| a)? timer$|^(?:stop|silence|dismiss)(?: the)? alarm$/.test(n)){voiceStopTimer_();return true}
+ if(/what is going on today|what do we have today|what is happening today|tell me about today|morning brief/.test(n)){speak_(voiceOverview_(new Date()));return true}
+ if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return true}
+ if(/what is for dinner tomorrow|what are we having tomorrow|dinner tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceDinnerForDate_(d));return true}
+ if(/what is for dinner|what are we having for dinner|dinner tonight/.test(n)){speak_(voiceDinner_());return true}
+ if(/what chores are left|chores left|what chores do we have|what are the chores/.test(n)){speak_(voiceChoresForDate_(new Date()));return true}
+ if(/anything due around the house|what is due around the house|household reminders|any reminders due/.test(n)){speak_(voiceReminderSummary_());return true}
+ if(/what is the weather|weather today|how is the weather|temperature outside/.test(n)){speak_(voiceWeather_());return true}
+ if(/when do .* play|when is .* (?:game|playing)|next .* game/.test(n)){speak_(voiceSportsNext_(voiceSportsTeamFromText_(n)));return true}
+ if(/did .* win|how did .* do|what was the .* score|score of the .* game/.test(n)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(n)));return true}
+ if(/calendar today|schedule today|what is on the calendar today/.test(n)){speak_(voiceEvents_(new Date(),true));return true}
+ if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
+ if((m=n.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return true}
+ if(/open (?:the )?grocer/.test(n)){openGroceries();speak_("Opening groceries.");return true}
+ if(/open (?:the )?recipe/.test(n)){openRecipes();speak_("Opening recipes.");return true}
+ if(/open (?:the )?(?:brief|morning brief)/.test(n)){openMorningBrief();speak_("Opening the morning brief.");return true}
+ if(/open (?:the )?sports/.test(n)){openSportsCenter();speak_("Opening sports center.");return true}
+ if(/go home|open (?:the )?dashboard/.test(n)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return true}
+ if(cookRecipe){
+   let steps=cookRecipe.steps||[], current=()=>steps[cookStep]||"";
+   // Current step: deliberately broad, because speech recognition often drops small words.
+   if(/^(?:read|say|tell me|repeat)(?: me)?(?: this| the| current)?(?: cooking)? (?:step|instruction|direction)$/.test(n)||
+      /^(?:read|say|tell me|repeat)(?: this| that| it| the step| current step)$/.test(n)||
+      /^(?:what is|whats) (?:this|the|current) (?:step|instruction|direction)$/.test(n)){
+      speak_(`Step ${cookStep+1}. ${current()}`);return true
+   }
+   // Next step / what's next / continue.
+   if(/^(?:what is next|whats next|what next|next|next step|next instruction|next direction|continue|keep going|move on|go on)$/.test(n)||
+      /(?:read|say|tell me|give me|go to|move to|show me).*(?:next|following).*(?:step|instruction|direction)?/.test(n)){
+      if(cookStep<steps.length-1)cookNextStep();speak_(`Step ${cookStep+1}. ${current()}`);return true
+   }
+   // Previous step.
+   if(/^(?:previous|previous step|last step|back|go back|go back a step|what was the last step)$/.test(n)||
+      /(?:read|say|tell me|give me|go to|move to|show me).*(?:previous|last|prior).*(?:step|instruction|direction)?/.test(n)){
+      cookPrevStep();speak_(`Step ${cookStep+1}. ${current()}`);return true
+   }
+   if(/^(?:repeat|again|say that again|read that again|repeat that|repeat step)$/.test(n)){speak_(`Step ${cookStep+1}. ${current()}`);return true}
+   if((m=n.match(/(?:read|go to|show me|tell me|step) (?:step|instruction)? ?(\d+)/))){let x=Math.max(1,Math.min(steps.length,Number(m[1])))-1;cookJumpStep(x);speak_(`Step ${x+1}. ${steps[x]||""}`);return true}
+   if(/read (?:all )?(?:the )?(?:steps|instructions|directions)|read the whole recipe|read all/.test(n)){speak_(steps.map((x,i)=>`Step ${i+1}. ${x}`).join(" "));return true}
+   if(/read (?:the )?ingredients|what ingredients|ingredient list/.test(n)){speak_((cookRecipe.ingredients||[]).join(". "));return true}
+   if((m=n.match(/how much (.+)$/))){let x=(cookRecipe.ingredients||[]).filter(i=>i.toLowerCase().includes(m[1])).slice(0,3);speak_(x.length?x.join(". "):`I couldn't find ${m[1]} in this recipe.`);return true}
+   if(/start (?:the )?timer|timer for (?:this|the current) step/.test(n)){let x=cookTimerMatches_(current());if(x.length){startCookTimer(x[0].minutes);speak_(`${x[0].label} timer started.`)}else speak_("I don't see a timer in this step.");return true}
+ }
+ return false
+}
 
 function cookLines_(text){return String(text||"").replace(/\r/g,"").split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/^\s*(?:step\s*)?\d+[.)\-:]?\s*/i,"").replace(/^[-•]\s*/,"").trim()).filter(Boolean)}
 function cookSteps_(text){let raw=String(text||"").replace(/\r/g,"").trim();if(!raw)return ["No instructions were provided for this recipe."];let lines=cookLines_(raw);if(lines.length>1)return lines;let parts=raw.split(/(?<=[.!?])\s+(?=(?:Then|Next|Meanwhile|After|Add|Place|Cook|Bake|Roast|Grill|Smoke|Stir|Mix|Heat|Reduce|Remove|Serve|Let|Rest|Season|Pour|Transfer|Return|Cover|Uncover)\b)/i).map(x=>x.trim()).filter(Boolean);return parts.length?parts:[raw]}
@@ -1449,7 +1496,7 @@ function hideCookMode_(){if(!cookRecipe)return;releaseCookWakeLock_();document.g
 function resumeCookFromMini_(){if(!cookRecipe)return;document.getElementById("cookOverlay").classList.add("open");document.getElementById("cookMiniBar")?.classList.remove("open");renderCookMode();if(cookKeepAwake)requestCookWakeLock_();activity()}
 function updateCookMiniBar_(){let bar=document.getElementById("cookMiniBar");if(!bar)return;if(!cookRecipe||document.getElementById("cookOverlay").classList.contains("open")){bar.classList.remove("open");return}let n=Math.max(1,cookRecipe.steps?.length||1),active=kitchenTimers.filter(x=>x.end>Date.now()).sort((a,b)=>a.end-b.end)[0];document.getElementById("cookMiniName").textContent="👨‍🍳 "+cookRecipe.name;document.getElementById("cookMiniMeta").textContent=`Step ${cookStep+1}/${n}${active?" • ⏱ "+fmtTimer(active.end-Date.now()):""}`;bar.classList.add("open")}
 function closeCookMode(force){if(!cookRecipe)return;if(!force&&!confirm("Finish Cook Mode? This clears the current cooking session and adds the recipe to Recently Cooked."))return;recordRecentCooked_(cookRecipe);releaseCookWakeLock_();document.getElementById("cookOverlay").classList.remove("open");document.getElementById("cookMiniBar")?.classList.remove("open");cookRecipe=null;cookScale=1;cookAllStepsOpen=false;cookCheckedIngredients=new Set();cookCompletedSteps=new Set();cookKeepAwake=false;clearCookSession_();activity()}
-function renderCookMode(){if(!cookRecipe)return;let steps=cookRecipe.steps||[],n=Math.max(1,steps.length);cookStep=Math.max(0,Math.min(cookStep,n-1));document.getElementById("cookRecipeTitle").textContent="👨‍🍳 "+cookRecipe.name;document.getElementById("cookRecipeMeta").textContent=cookRecipe.meta||"Cook Mode";document.getElementById("cookScaleBar").innerHTML=cookScaleBarHtml_();document.getElementById("cookIngredients").innerHTML=(cookRecipe.ingredients||[]).map((x,i)=>`<label class="cookIngredient ${cookCheckedIngredients.has(i)?"checked":""}"><input type="checkbox" ${cookCheckedIngredients.has(i)?"checked":""} onchange="toggleCookIngredient(${i},this.checked)"><span>${esc(x)}</span></label>`).join("")||'<div class="empty">No ingredient list provided.</div>';document.getElementById("cookStepCount").textContent=`Step ${cookStep+1} of ${n}`;document.getElementById("cookProgressBar").style.width=((cookStep+1)/n*100)+"%";document.getElementById("cookStepText").textContent=steps[cookStep]||"—";let timers=cookTimerMatches_(steps[cookStep]||"");document.getElementById("cookDetectedTimers").innerHTML=timers.map(t=>`<button class="btn" onclick="startCookTimer(${t.minutes})">⏱️ Start ${esc(t.label)} Timer</button>`).join("");document.getElementById("cookPrevBtn").disabled=cookStep<=0;let next=document.getElementById("cookNextBtn");next.disabled=cookStep>=n-1;next.textContent=cookStep>=n-1?"✓ Last Step":"Next →";document.getElementById("cookAllStepsBtn").textContent=cookAllStepsOpen?"▣ One Step":"☷ All Steps";document.getElementById("cookSingleStep").classList.toggle("hidden",cookAllStepsOpen);let all=document.getElementById("cookAllSteps");all.classList.toggle("open",cookAllStepsOpen);all.innerHTML=steps.map((x,i)=>`<div class="cookAllStep ${i===cookStep?"current":""} ${cookCompletedSteps.has(i)?"done":""}" onclick="cookJumpStep(${i})"><b>${i+1}.</b>${esc(x)}${cookCompletedSteps.has(i)?'<span class="cookDoneBadge">✓</span>':""}</div>`).join("");updateCookTimerBar();updateCookWakeButton_();saveCookSession_()}
+function renderCookMode(){if(!cookRecipe)return;let steps=cookRecipe.steps||[],n=Math.max(1,steps.length);cookStep=Math.max(0,Math.min(cookStep,n-1));document.getElementById("cookRecipeTitle").textContent="👨‍🍳 "+cookRecipe.name;document.getElementById("cookRecipeMeta").textContent=cookRecipe.meta||"Cook Mode";document.getElementById("cookScaleBar").innerHTML=cookScaleBarHtml_();document.getElementById("cookIngredients").innerHTML=(cookRecipe.ingredients||[]).map((x,i)=>`<label class="cookIngredient ${cookCheckedIngredients.has(i)?"checked":""}"><input type="checkbox" ${cookCheckedIngredients.has(i)?"checked":""} onchange="toggleCookIngredient(${i},this.checked)"><span>${esc(x)}</span></label>`).join("")||'<div class="empty">No ingredient list provided.</div>';document.getElementById("cookStepCount").textContent=`Step ${cookStep+1} of ${n}`;document.getElementById("cookProgressBar").style.width=((cookStep+1)/n*100)+"%";document.getElementById("cookStepText").textContent=steps[cookStep]||"—";let timers=cookTimerMatches_(steps[cookStep]||"");document.getElementById("cookDetectedTimers").innerHTML=timers.map(t=>`<button class="btn" onclick="startCookTimer(${t.minutes})">⏱️ Start ${esc(t.label)} Timer</button>`).join("");document.getElementById("cookPrevBtn").disabled=cookStep<=0;let next=document.getElementById("cookNextBtn");next.disabled=cookStep>=n-1;next.textContent=cookStep>=n-1?"✓ Last Step":"Next →";document.getElementById("cookAllStepsBtn").textContent=cookAllStepsOpen?"▣ One Step":"☷ All Steps";document.getElementById("cookSingleStep").classList.toggle("hidden",cookAllStepsOpen);let all=document.getElementById("cookAllSteps");all.classList.toggle("open",cookAllStepsOpen);all.innerHTML=steps.map((x,i)=>`<div class="cookAllStep ${i===cookStep?"current":""} ${cookCompletedSteps.has(i)?"done":""}" onclick="cookJumpStep(${i})"><b>${i+1}.</b>${esc(x)}${cookCompletedSteps.has(i)?'<span class="cookDoneBadge">✓</span>':""}</div>`).join("");updateCookTimerBar();updateCookWakeButton_();updateVoiceUI_();saveCookSession_()}
 function toggleCookIngredient(i,on){on?cookCheckedIngredients.add(i):cookCheckedIngredients.delete(i);let rows=document.querySelectorAll(".cookIngredient");if(rows[i])rows[i].classList.toggle("checked",on);saveCookSession_()}
 function cookPrevStep(){if(cookStep>0){cookStep--;renderCookMode()}}
 function cookNextStep(){if(cookRecipe&&cookStep<cookRecipe.steps.length-1){cookCompletedSteps.add(cookStep);cookStep++;renderCookMode()}}
