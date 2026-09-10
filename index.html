@@ -608,7 +608,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.4 — Morning Brief restored section polish */
+/* V9.6.5 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -1690,9 +1690,9 @@ function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return 
 function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
 
 function morningDinnerHtml_(){
- let d=morningDinnerData_();
- if(!d||!d.name)return `<div class="briefLine">Nothing planned for dinner yet.</div>`;
- return `<div class="briefDinnerSimple"><span>Tonight</span><b>${esc(d.name)}</b></div>`;
+ let d=morningDinnerData_(),dinner=d&&d.dinner;
+ if(!dinner||!dinner.name)return `<div class="briefLine">Nothing planned for dinner yet.</div>`;
+ return `<div class="briefDinnerSimple"><span>Tonight</span><b>${esc(dinner.name)}</b></div>`;
 }
 
 function renderGlance(){
