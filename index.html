@@ -1206,6 +1206,21 @@ function sportsNormalizeEventDirect_(cfg,event){
   return {id:String(event.id||""),date:event.date||comp.date||"",name:event.name||"",shortName:event.shortName||event.name||"",opponent:opp.team?(opp.team.shortDisplayName||opp.team.displayName||opp.team.name||"Opponent"):"Opponent",opponentAbbr:opp.team?(opp.team.abbreviation||""):"",homeAway:ours.homeAway||"",state,completed,cancelled,status:type.shortDetail||type.detail||type.description||"",ourScore,opponentScore,result,winner:completed?!!ours.winner:null,venue:comp.venue?.fullName||"",broadcast};
  }catch(_){return null}
 }
+async function sportsFetchJson_(url,force,timeoutMs=4500){
+ let controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+  let res=await fetch(url,{
+   cache:force?"no-store":"default",
+   headers:{Accept:"application/json, text/plain, */*"},
+   signal:controller.signal
+  });
+  if(!res.ok)throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+ }catch(err){
+  if(err&&err.name==="AbortError")throw new Error(`Timed out after ${Math.round(timeoutMs/1000)}s`);
+  throw err;
+ }finally{clearTimeout(timer)}
+}
 async function sportsFetchTeamDirect_(cfg,force){
  let now=new Date(),events=[],data={};
 
@@ -1216,17 +1231,13 @@ async function sportsFetchTeamDirect_(cfg,force){
   let season=now.getFullYear();
   if(cfg.league==="mens-college-basketball"&&now.getMonth()>=7)season+=1;
   let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/teams/${encodeURIComponent(cfg.teamId)}/schedule?season=${season}`;
-  let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json, text/plain, */*"}});
-  if(!res.ok)throw new Error(`ESPN ${cfg.league} schedule returned HTTP ${res.status}`);
-  data=await res.json();
+  data=await sportsFetchJson_(url,force);
   events=Array.isArray(data.events)?data.events:[];
  }else{
   let from=new Date(now.getTime()-21*86400000),to=new Date(now.getTime()+35*86400000),range=`${sportsDirectDateKey_(from)}-${sportsDirectDateKey_(to)}`;
   let params=new URLSearchParams({dates:range,limit:"1000"});
   let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/scoreboard?${params.toString()}`;
-  let res=await fetch(url,{cache:force?"no-store":"default",headers:{Accept:"application/json"}});
-  if(!res.ok)throw new Error(`ESPN ${cfg.league} returned HTTP ${res.status}`);
-  data=await res.json();
+  data=await sportsFetchJson_(url,force);
   events=Array.isArray(data.events)?data.events:[];
  }
 
@@ -1235,14 +1246,50 @@ async function sportsFetchTeamDirect_(cfg,force){
  let live=normalized.find(e=>e.state==="in")||null,last=normalized.filter(e=>e.completed&&new Date(e.date).getTime()<=nowMs).sort((a,b)=>new Date(b.date)-new Date(a.date))[0]||null,next=normalized.find(e=>!e.completed&&e.state!=="in"&&new Date(e.date).getTime()>=nowMs-10800000&&!e.cancelled)||null;
  return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||data.season?.year||"",record:"",eventCount:normalized.length};
 }
-function sportsReadDirectCache_(){try{let x=JSON.parse(localStorage.getItem(SPORTS_DIRECT_CACHE_KEY_)||"null");if(x&&Date.now()-Number(x.savedAt||0)<600000)return x.data}catch(_){}return null}
+function sportsReadDirectCache_(allowStale=false){
+ try{
+  let x=JSON.parse(localStorage.getItem(SPORTS_DIRECT_CACHE_KEY_)||"null");
+  if(!x||!x.data)return null;
+  let age=Date.now()-Number(x.savedAt||0);
+  if(age<600000||allowStale)return {data:x.data,age};
+ }catch(_){}
+ return null;
+}
 function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CACHE_KEY_,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
 async function loadSports(force=false){
- SPORTS.loading=true;if(force)refreshSportsViews_();
- if(!force){let cached=sportsReadDirectCache_();if(cached){SPORTS=cached;SPORTS.loading=false;refreshSportsViews_();return}}
- let settled=await Promise.allSettled(SPORTS_DIRECT_TEAMS_.map(cfg=>sportsFetchTeamDirect_(cfg,force))),teams=settled.map((r,i)=>r.status==="fulfilled"?r.value:{key:SPORTS_DIRECT_TEAMS_[i].key,name:SPORTS_DIRECT_TEAMS_[i].name,shortName:SPORTS_DIRECT_TEAMS_[i].shortName,emoji:SPORTS_DIRECT_TEAMS_[i].emoji,league:SPORTS_DIRECT_TEAMS_[i].league,ok:false,error:r.reason?.message||String(r.reason||"Unknown error"),live:null,last:null,next:null}),anyOk=teams.some(t=>t.ok);
- SPORTS={loading:false,ok:anyOk,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:anyOk?"":teams.map(t=>`${t.shortName}: ${t.error||"unknown error"}`).join(" | ")};
- if(anyOk)sportsWriteDirectCache_(SPORTS);refreshSportsViews_();
+ let cached=!force?sportsReadDirectCache_(true):null;
+ if(cached){
+  SPORTS=cached.data;
+  SPORTS.loading=false;
+  refreshSportsViews_();
+  if(cached.age<600000)return;
+ }else{
+  SPORTS.loading=true;
+  refreshSportsViews_();
+ }
+ let settled=await Promise.allSettled(SPORTS_DIRECT_TEAMS_.map(cfg=>sportsFetchTeamDirect_(cfg,force)));
+ let teams=settled.map((r,i)=>r.status==="fulfilled"?r.value:{
+  key:SPORTS_DIRECT_TEAMS_[i].key,
+  name:SPORTS_DIRECT_TEAMS_[i].name,
+  shortName:SPORTS_DIRECT_TEAMS_[i].shortName,
+  emoji:SPORTS_DIRECT_TEAMS_[i].emoji,
+  league:SPORTS_DIRECT_TEAMS_[i].league,
+  ok:false,
+  error:r.reason?.message||String(r.reason||"Unknown error"),
+  live:null,last:null,next:null
+ });
+ let anyOk=teams.some(t=>t.ok);
+ if(anyOk){
+  SPORTS={loading:false,ok:true,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:""};
+  sportsWriteDirectCache_(SPORTS);
+ }else if(cached){
+  SPORTS=cached.data;
+  SPORTS.loading=false;
+  SPORTS.message="Showing cached sports data; live refresh timed out.";
+ }else{
+  SPORTS={loading:false,ok:false,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:teams.map(t=>`${t.shortName}: ${t.error||"unknown error"}`).join(" | ")};
+ }
+ refreshSportsViews_();
 }
 
 function morningBriefAutoKey_(){return "familyDashboardMorningBrief-"+key(new Date())}
