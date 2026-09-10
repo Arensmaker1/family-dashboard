@@ -562,6 +562,14 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .dc2Status{font-size:7px;padding:3px 6px}
  .dc2MetaChip{font-size:7px}
 }
+
+/* V9.5.1 — Dinner Ingredients quick preview */
+.dcIngredientHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dcIngredientHead h2{margin:0 0 3px}
+.dcIngredientList{margin-top:12px;border:1px solid var(--l);border-radius:12px;overflow:hidden}
+.dcIngredientRow{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:9px 10px;border-bottom:1px solid var(--l);font-size:12px;line-height:1.35}
+.dcIngredientRow:last-child{border-bottom:0}
+.dcIngredientRow>span:first-child{color:var(--m);font-size:14px}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1233,7 +1241,34 @@ function dinnerCommandHtml_(d){
    :`<div class="dinnerActions dc2Actions"><button class="btn" onclick="event.stopPropagation();openRecipes()">🔎 Find Recipe</button></div>`;
  return `<div class="dinnerCommand dc2Command"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${dinnerCommandMetaHtml_(d,m,need)}${actions}</div>`;
 }
-function openRecipeGroceryFromDinner_(source,id){openRecipes();setTimeout(()=>openRecipeGroceryPreview(source,id),80)}
+function openRecipeGroceryFromDinner_(source,id){
+ let x=recipeBySource_(source,id);
+ if(!x){
+  openModal(`<h2>🛒 Ingredients</h2><div class="empty">Couldn’t find the linked recipe.</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div>`);
+  return;
+ }
+ let scale=recipeScaleFor_(source,id),
+     ingredients=scaleIngredientText_(x.ingredients||"—",scale),
+     rows=cookIngredients_(ingredients);
+ openModal(`
+  <div class="dcIngredientModal">
+   <div class="dcIngredientHead">
+    <div>
+     <h2>🛒 ${esc(x.name||"Dinner Ingredients")}</h2>
+     <div class="rMeta">Ingredients • ${esc(scale===1?"1×":scale+"×")} recipe scale</div>
+    </div>
+    <button class="btn" onclick="closeModal()">✕</button>
+   </div>
+   <div class="dcIngredientList">
+    ${rows.length?rows.map(v=>`<div class="dcIngredientRow"><span>□</span><span>${esc(v)}</span></div>`).join(""):`<div class="empty">No ingredient list found.</div>`}
+   </div>
+   <div class="actions">
+    <button class="btn" onclick="closeModal()">Done</button>
+    <button class="btn" onclick="closeModal();openDinnerRecipe_('${source}','${esc(id)}')">🍽️ Open Recipe</button>
+    <button class="btn primaryAction" onclick="closeModal();openCookMode('${source}','${esc(id)}',${scale})">👨‍🍳 Start Cook Mode</button>
+   </div>
+  </div>`);
+}
 
 /* =========================================================
    V8.17 MORNING BRIEF + HOUSEHOLD REMINDERS
