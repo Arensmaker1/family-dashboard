@@ -1274,7 +1274,6 @@ function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CA
 async function loadSports(force=false){
  let cached=!force?sportsReadDirectCache_(true):null;
 
- // Show whatever we already know immediately while the backend refreshes.
  if(cached){
   SPORTS=cached.data;
   SPORTS.loading=false;
@@ -1284,47 +1283,84 @@ async function loadSports(force=false){
   refreshSportsViews_();
  }
 
- // V9.3.7: use the authenticated Apps Script backend for ESPN instead of
- // browser-to-ESPN fetches. This avoids CORS/hanging browser requests.
+ // V9.3.8: primary sports source is a same-origin JSON file refreshed by
+ // GitHub Actions. This avoids ESPN blocking Google Apps Script with HTTP 403.
+ try{
+  let url="sports-data.json"+(force?("?v="+Date.now()):"");
+  let controller=new AbortController();
+  let timer=setTimeout(()=>controller.abort(),5000);
+  let response;
+  try{
+    response=await fetch(url,{
+      cache:force?"no-store":"default",
+      headers:{Accept:"application/json"},
+      signal:controller.signal
+    });
+  }finally{
+    clearTimeout(timer);
+  }
+  if(!response.ok)throw new Error(`Sports relay returned HTTP ${response.status}.`);
+
+  let result=await response.json();
+  let teams=Array.isArray(result?.teams)?result.teams:[];
+  if(!teams.length)throw new Error(result?.message||"Sports relay returned no team data.");
+
+  SPORTS={
+    loading:false,
+    ok:!!result?.ok || teams.some(t=>t&&t.ok),
+    teams,
+    updatedAt:result?.updatedAt||new Date().toISOString(),
+    source:result?.source||"GitHub sports relay",
+    message:result?.message||""
+  };
+  sportsWriteDirectCache_(SPORTS);
+  refreshSportsViews_();
+  return;
+ }catch(err){
+  console.warn("GitHub sports relay unavailable",err);
+ }
+
+ // Fallback to the existing Apps Script backend so the dashboard degrades
+ // gracefully if sports-data.json has not been generated yet.
  try{
   if(!(window.google&&google.script&&google.script.run))throw new Error("Dashboard backend bridge unavailable.");
 
-  await new Promise((resolve,reject)=>{
-   let finished=false;
-   let timer=setTimeout(()=>{
-    if(finished)return;
-    finished=true;
-    reject(new Error("Sports backend timed out."));
-   },9000);
+  let result=await new Promise((resolve,reject)=>{
+    let finished=false;
+    let timer=setTimeout(()=>{
+      if(finished)return;
+      finished=true;
+      reject(new Error("Sports backend timed out."));
+    },7000);
 
-   google.script.run
-    .withSuccessHandler(result=>{
-      if(finished)return;
-      finished=true;
-      clearTimeout(timer);
-      resolve(result);
-    })
-    .withFailureHandler(err=>{
-      if(finished)return;
-      finished=true;
-      clearTimeout(timer);
-      reject(err instanceof Error?err:new Error(err?.message||String(err||"Sports backend failed.")));
-    })
-    .getSportsCenter(!!force);
-  }).then(result=>{
-    let teams=Array.isArray(result?.teams)?result.teams:[];
-    SPORTS={
-      loading:false,
-      ok:!!result?.ok || teams.some(t=>t&&t.ok),
-      teams,
-      updatedAt:result?.updatedAt||new Date().toISOString(),
-      source:result?.source||"Apps Script sports feed",
-      message:result?.message||""
-    };
-    if(teams.length)sportsWriteDirectCache_(SPORTS);
+    google.script.run
+      .withSuccessHandler(result=>{
+        if(finished)return;
+        finished=true;
+        clearTimeout(timer);
+        resolve(result);
+      })
+      .withFailureHandler(err=>{
+        if(finished)return;
+        finished=true;
+        clearTimeout(timer);
+        reject(err instanceof Error?err:new Error(err?.message||String(err||"Sports backend failed.")));
+      })
+      .getSportsCenter(!!force);
   });
+
+  let teams=Array.isArray(result?.teams)?result.teams:[];
+  SPORTS={
+    loading:false,
+    ok:!!result?.ok || teams.some(t=>t&&t.ok),
+    teams,
+    updatedAt:result?.updatedAt||new Date().toISOString(),
+    source:result?.source||"Apps Script sports feed",
+    message:result?.message||""
+  };
+  if(teams.length)sportsWriteDirectCache_(SPORTS);
  }catch(err){
-  console.warn("Sports backend refresh failed",err);
+  console.warn("Sports fallback failed",err);
   if(cached){
     SPORTS=cached.data;
     SPORTS.loading=false;
@@ -1335,7 +1371,7 @@ async function loadSports(force=false){
       ok:false,
       teams:[],
       updatedAt:new Date().toISOString(),
-      source:"Apps Script sports feed",
+      source:"Sports relay",
       message:err?.message||String(err||"Sports unavailable.")
     };
   }
