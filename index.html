@@ -509,6 +509,16 @@ body[data-appearance="light"] .briefPriority{background:linear-gradient(145deg,#
   .glanceStrip>.glanceBox b{font-size:10px}
   .glanceStrip>.dinnerCommand{flex:2.05 1 500px}
 }
+
+/* V9.4.1 — Morning Brief top-right close button */
+.briefCloseBtn{
+ width:38px;height:38px;padding:0;
+ display:inline-flex;align-items:center;justify-content:center;
+ border:1px solid var(--l);border-radius:10px;
+ background:transparent;color:var(--t);
+ font-size:18px;font-weight:800;line-height:1;cursor:pointer;
+}
+.briefCloseBtn:hover{background:#ffffff0b}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1412,7 +1422,7 @@ function buildMorningBriefHtml_(){
  let upcoming=briefSafe_("Coming Up",()=>upcomingHouseholdHtml_(),"");
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=briefSafe_("Pinned Notes",()=>pins.length?pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join(""):`<div class="briefLine">Nothing pinned.</div>`);
- return `<div class="briefWrap">${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+ return `<div class="briefWrap">${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div style="display:flex;gap:7px;align-items:center"><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button><button class="briefCloseBtn" onclick="closeModal()" aria-label="Close Morning Brief" title="Close">✕</button></div></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
 }
 function refreshMorningBrief_(){
  let modal=document.getElementById("modal");
