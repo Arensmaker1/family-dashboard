@@ -608,7 +608,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.5 — Morning Brief restored section polish */
+/* V9.6.6 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -624,6 +624,34 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
 .briefCountOnly{display:flex;align-items:baseline;gap:7px;padding:4px 0}
 .briefCountOnly b{font-size:24px;line-height:1}
 .briefCountOnly span{font-size:10px;color:var(--m);font-weight:700}
+
+/* V9.6.6 — Renderer diagnostics + reminder top-right close */
+body.fdRendererSafe .decor{animation:none!important;transform:none!important}
+body.fdRendererSafe .ufoBeam{animation:none!important}
+.hr2Wrap{position:relative}
+.hr2CloseFloat{
+ position:absolute;top:0;right:0;z-index:25;
+ width:36px;height:36px;border-radius:10px;
+ display:grid;place-items:center;
+}
+.fdDiagBtn{
+ position:fixed;right:10px;bottom:10px;z-index:95;
+ width:38px;height:38px;border-radius:999px;
+ border:1px solid var(--l);background:var(--p);color:var(--t);
+ opacity:.7;font-size:17px;
+}
+.fdDiagPanel{max-width:760px;margin:auto}
+.fdDiagGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.fdDiagGrid>div{border:1px solid var(--l);border-radius:10px;padding:10px;background:var(--p)}
+.fdDiagGrid b{display:block;font-size:18px}.fdDiagGrid span{font-size:9px;color:var(--m)}
+.fdDiagLog{max-height:320px;overflow:auto;border:1px solid var(--l);border-radius:10px;padding:8px}
+.fdDiagRow{display:grid;grid-template-columns:72px 72px 72px 72px 1fr;gap:7px;padding:5px 0;border-bottom:1px solid var(--l);font-size:9px}
+.fdDiagRow:last-child{border-bottom:0}
+@media(max-width:720px){
+ .fdDiagGrid{grid-template-columns:repeat(2,1fr)}
+ .fdDiagRow{grid-template-columns:60px 60px 60px 1fr}
+ .fdDiagRow span:nth-child(4){display:none}
+}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -718,6 +746,11 @@ let familyDashboardTokenTimer = null;
       }
     }
   });
+
+
+  window.__fdBridgeDiag = function(){
+    return {pending:pending.size, queued:queued.length, ready:!!bridgeReady};
+  };
 
   function callBackend_(method, args, success, failure){
     const id = "fd-" + Date.now() + "-" + (++seq);
@@ -905,6 +938,111 @@ let planWeekDraft=[],randomDinnerDraft=[],WG={items:[],recipes:[],loaded:false};
 let cookRecipe=null,cookStep=0,cookAllStepsOpen=false,cookCheckedIngredients=new Set(),cookCompletedSteps=new Set(),cookWakeLock=null,cookKeepAwake=false,cookScale=1;
 let coreLoadInFlight_=false,weatherLoadInFlight_=false,pantryLoadInFlight_=false,groceryLoadInFlight_=false;
 let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0;
+let fdDiagLongTasks_=0,fdDiagLongestTask_=0,fdDiagLastHeartbeat_=Date.now(),fdDiagHeartbeatLag_=0,fdDiagSampler_=null,fdDiagHeartbeatTimer_=null;
+function fdDiagStore_(sample){
+ try{
+  let a=JSON.parse(localStorage.getItem("familyDashboardRendererDiagV1")||"[]");
+  if(!Array.isArray(a))a=[];
+  a.push(sample);
+  a=a.slice(-90);
+  localStorage.setItem("familyDashboardRendererDiagV1",JSON.stringify(a));
+ }catch(_){}
+}
+function fdDiagSamples_(){
+ try{let a=JSON.parse(localStorage.getItem("familyDashboardRendererDiagV1")||"[]");return Array.isArray(a)?a:[]}catch(_){return[]}
+}
+function fdDiagHeapMb_(){
+ try{return performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null}catch(_){return null}
+}
+function fdDiagSample_(){
+ let bridge={pending:null,queued:null,ready:null};
+ try{if(typeof window.__fdBridgeDiag==="function")bridge=window.__fdBridgeDiag()||bridge}catch(_){}
+ let s={
+  ts:Date.now(),
+  nodes:document.getElementsByTagName("*").length,
+  heap:fdDiagHeapMb_(),
+  longTasks:fdDiagLongTasks_,
+  longest:Math.round(fdDiagLongestTask_),
+  lag:Math.round(fdDiagHeartbeatLag_),
+  bridgePending:bridge.pending,
+  bridgeQueued:bridge.queued,
+  core:!!coreLoadInFlight_,
+  weather:!!weatherLoadInFlight_,
+  pantry:!!pantryLoadInFlight_,
+  groceries:!!groceryLoadInFlight_,
+  voice:!!voiceWanted,
+  recognition:!!voiceRecognition,
+  timers:Array.isArray(kitchenTimers)?kitchenTimers.length:0,
+  modal:!!modalOrOverlayOpen_()
+ };
+ fdDiagStore_(s);
+ return s;
+}
+function startRendererDiagnostics_(){
+ document.body.classList.add("fdRendererSafe");
+ try{
+  if("PerformanceObserver" in window){
+   let po=new PerformanceObserver(list=>{
+    list.getEntries().forEach(e=>{
+      fdDiagLongTasks_++;
+      fdDiagLongestTask_=Math.max(fdDiagLongestTask_,Number(e.duration)||0);
+    });
+   });
+   po.observe({entryTypes:["longtask"]});
+  }
+ }catch(_){}
+ clearInterval(fdDiagHeartbeatTimer_);
+ fdDiagHeartbeatTimer_=setInterval(()=>{
+  let now=Date.now(),expected=fdDiagLastHeartbeat_+5000;
+  fdDiagHeartbeatLag_=Math.max(0,now-expected);
+  fdDiagLastHeartbeat_=now;
+ },5000);
+ clearInterval(fdDiagSampler_);
+ fdDiagSampler_=setInterval(()=>{if(dashboardVisible_())fdDiagSample_()},60000);
+ setTimeout(fdDiagSample_,12000);
+}
+function rendererDiagSummary_(){
+ let a=fdDiagSamples_(),last=a[a.length-1]||fdDiagSample_(),first=a[0]||last;
+ let heapDelta=(last.heap!=null&&first.heap!=null)?last.heap-first.heap:null;
+ let nodeDelta=(last.nodes||0)-(first.nodes||0);
+ return {a,last,first,heapDelta,nodeDelta};
+}
+function clearRendererDiagnostics_(){
+ try{localStorage.removeItem("familyDashboardRendererDiagV1")}catch(_){}
+ fdDiagLongTasks_=0;fdDiagLongestTask_=0;fdDiagHeartbeatLag_=0;fdDiagLastHeartbeat_=Date.now();
+ openRendererDiagnostics_();
+}
+function toggleRendererSafe_(){
+ document.body.classList.toggle("fdRendererSafe");
+ openRendererDiagnostics_();
+}
+function openRendererDiagnostics_(){
+ let x=rendererDiagSummary_(),last=x.last||{},rows=(x.a||[]).slice(-18).reverse();
+ openModal(`<div class="fdDiagPanel">
+  <h2>🩺 Renderer Diagnostics</h2>
+  <div class="note">Lightweight crash logging. Safe Motion pauses the always-running decorative animation while we isolate Chrome's renderer problem.</div>
+  <div class="fdDiagGrid">
+   <div><b>${last.nodes??"—"}</b><span>DOM nodes</span></div>
+   <div><b>${last.heap==null?"—":last.heap+" MB"}</b><span>JS heap</span></div>
+   <div><b>${last.longTasks??0}</b><span>long tasks</span></div>
+   <div><b>${last.lag??0} ms</b><span>heartbeat lag</span></div>
+   <div><b>${last.bridgePending??"—"}</b><span>bridge pending</span></div>
+   <div><b>${last.bridgeQueued??"—"}</b><span>bridge queued</span></div>
+   <div><b>${x.nodeDelta>=0?"+":""}${x.nodeDelta}</b><span>node change</span></div>
+   <div><b>${x.heapDelta==null?"—":(x.heapDelta>=0?"+":"")+x.heapDelta+" MB"}</b><span>heap change</span></div>
+  </div>
+  <div class="actions" style="justify-content:flex-start">
+   <button class="btn" onclick="toggleRendererSafe_()">${document.body.classList.contains("fdRendererSafe")?"✓ Safe Motion ON":"Safe Motion OFF"}</button>
+   <button class="btn" onclick="fdDiagSample_();openRendererDiagnostics_()">Sample Now</button>
+   <button class="btn" onclick="clearRendererDiagnostics_()">Clear Log</button>
+   <button class="btn" onclick="closeModal()">Close</button>
+  </div>
+  <div class="fdDiagLog">
+   ${rows.length?rows.map(s=>`<div class="fdDiagRow"><span>${new Date(s.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${s.nodes} nodes</span><span>${s.heap==null?"—":s.heap+"MB"}</span><span>${s.lag||0}ms lag</span><span>${s.voice?"voice • ":""}${s.recognition?"mic • ":""}${s.bridgePending?`${s.bridgePending} bridge pending • `:""}${s.core||s.weather||s.pantry||s.groceries?"request active":""}</span></div>`).join(""):`<div class="empty">No samples yet.</div>`}
+  </div>
+ </div>`);
+}
+
 function dashboardVisible_(){return !document.hidden}
 function calendarSignature_(x){
  try{
@@ -1851,9 +1989,9 @@ function openHouseholdReminders(){
  ensureHouseholdReminders_();
  let stats=reminderStats2_();
  openModal(`<div class="hr2Wrap">
+  <button class="btn hr2CloseFloat" onclick="openMorningBrief()" aria-label="Close Household Reminders" title="Close">✕</button>
   <div class="hr2Head">
    <div><h2>🔁 Household Reminders 2.0</h2><div class="note">Recurring maintenance that actually remembers itself.</div></div>
-   <button class="btn" onclick="openMorningBrief()">✕</button>
   </div>
   <div class="hr2Stats">
    <div><b>${stats.overdue}</b><span>Overdue</span></div>
@@ -2340,7 +2478,7 @@ function minuteDashboardTick_(){
  let fm=document.getElementById("fridayMode");if(fm)fm.textContent=fridayModeText();
  renderCountdowns();
  if(!modalOrOverlayOpen_())renderGlance();
- maybeRareCreature();
+ if(!document.body.classList.contains("fdRendererSafe"))maybeRareCreature();
 }
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){
@@ -2356,9 +2494,11 @@ setInterval(()=>{if(dashboardVisible_()||kitchenTimers.some(x=>x.ringing))update
 clock();
 setInterval(()=>{if(dashboardVisible_())clock()},30000);
 setupCalendarSwipe();
+startRendererDiagnostics_();
 load(true);
 setInterval(()=>load(false),300000);
 setInterval(minuteDashboardTick_,60000);
-setTimeout(()=>{if(dashboardVisible_())maybeRareCreature()},9000);
+setTimeout(()=>{if(dashboardVisible_()&&!document.body.classList.contains("fdRendererSafe"))maybeRareCreature()},9000);
 document.addEventListener("keydown",cryptidTestKey);
-</script></body></html>
+</script><button class="fdDiagBtn" onclick="openRendererDiagnostics_()" title="Renderer diagnostics" aria-label="Renderer diagnostics">🩺</button>
+</body></html>
