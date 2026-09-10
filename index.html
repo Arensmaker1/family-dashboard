@@ -608,10 +608,22 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.3 — Morning Brief restored section polish */
+/* V9.6.4 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
+
+/* V9.6.4 — Morning Brief cleanup on stable V9.6.3 baseline */
+.briefPersonRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #ffffff10}
+.briefPersonRow:last-child{border-bottom:0}
+.briefPersonRow b{font-size:11px}
+.briefPersonRow span{font-size:10px;color:var(--m);font-weight:700}
+.briefDinnerSimple{display:flex;flex-direction:column;gap:3px;padding:3px 0}
+.briefDinnerSimple span{font-size:9px;color:var(--m);font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.briefDinnerSimple b{font-size:18px;line-height:1.15}
+.briefCountOnly{display:flex;align-items:baseline;gap:7px;padding:4px 0}
+.briefCountOnly b{font-size:24px;line-height:1}
+.briefCountOnly span{font-size:10px;color:var(--m);font-weight:700}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1678,31 +1690,9 @@ function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return 
 function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
 
 function morningDinnerHtml_(){
- let x=morningDinnerData_();
- if(!x.dinner)return `<div class="briefLine">No dinner is planned yet.</div>`;
-
- let status=dinnerCommandStatus_(x.match,x.need),details=[];
-
- if(x.mins)details.push(`⏱️ ${formatCookEstimate_(x.mins)}`);
- if(x.prep.length)details.push(`🧂 ${x.prep[0]}`);
- if(x.busy)details.push(`📅 ${x.busy.count>1?x.busy.count+" evening events":x.busy.time+" "+x.busy.title}`);
-
- let linked=x.match
-  ?((x.match.match==="fuzzy"||x.match.match==="title")&&x.match.recipe?.name!==x.dinner.name
-     ?`<div class="briefLine">🔗 Linked recipe: <b>${esc(x.match.recipe.name)}</b></div>`:"")
-  :`<div class="briefLine briefWarn">🔗 No recipe linked yet.</div>`;
-
- let grocery=x.need
-  ?(x.need.missing
-    ?`<div class="briefLine briefWarn">🛒 ${x.need.missing} ingredient${x.need.missing===1?"":"s"} may still be needed.</div>`
-    :`<div class="briefLine briefGood">✓ Grocery list looks covered.</div>`)
-  :"";
-
- let buttons=x.match
-  ?`<div class="dc2BriefActions"><button class="btn primaryAction" onclick="openCookMode('${x.match.source}','${esc(x.match.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openDinnerRecipe_('${x.match.source}','${esc(x.match.id)}')">🍽️ Recipe</button><button class="btn" onclick="openRecipeGroceryFromDinner_('${x.match.source}','${esc(x.match.id)}')">🛒 Ingredients</button></div>`
-  :`<div class="dc2BriefActions"><button class="btn" onclick="closeModal();openRecipes()">🔎 Find Recipe</button></div>`;
-
- return `<div class="dc2BriefHead"><div class="briefBig">${esc(x.dinner.name)}</div><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="briefLine">${esc(x.dinner.planName||"Tonight's dinner")}</div>${details.length?`<div class="dc2BriefMeta">${details.map(v=>`<span>${esc(v)}</span>`).join("")}</div>`:""}${linked}${grocery}${buttons}`;
+ let d=morningDinnerData_();
+ if(!d||!d.name)return `<div class="briefLine">Nothing planned for dinner yet.</div>`;
+ return `<div class="briefDinnerSimple"><span>Tonight</span><b>${esc(d.name)}</b></div>`;
 }
 
 function renderGlance(){
@@ -1746,18 +1736,26 @@ function tomorrowPreviewHtml_(){
 }
 function morningChoreSummaryHtml_(){
  let d=new Date(),C=choresFor(d);
- if(!C.length)return `<div class="briefLine">No chores today. Somebody got lucky.</div>`;
- let left=C.filter(x=>!S.completions[key(d)+"-"+x.i]);
- if(!left.length)return `<div class="briefLine briefGood">✓ All chores are done for today.</div>`;
- let shown=left.slice(0,5).map(x=>`<div class="briefLine">⬜ ${esc(x.name)}${x.who?` • ${esc(x.who)}`:""}</div>`).join("");
- return `<div class="briefLine"><b>${left.length} remaining</b></div>${shown}${left.length>5?`<div class="briefLine">+ ${left.length-5} more</div>`:""}`;
+ if(!C.length)return `<div class="briefLine briefGood">✓ No chores assigned today.</div>`;
+ let people={};
+ C.forEach(x=>{
+  let who=String(x.who||"Household").trim()||"Household",
+      done=!!S.completions[key(d)+"-"+x.i];
+  if(!people[who])people[who]={total:0,left:0};
+  people[who].total++;
+  if(!done)people[who].left++;
+ });
+ return Object.keys(people).sort((a,b)=>a.localeCompare(b)).map(who=>{
+  let p=people[who];
+  return `<div class="briefPersonRow"><b>${esc(who)}</b><span>${p.left===0?`all done ✓`:`${p.left} chore${p.left===1?"":"s"}`}</span></div>`;
+ }).join("");
 }
 function morningGroceryHtml_(){
  if(!G||!Array.isArray(G.items))return `<div class="briefLine">Grocery list is still loading.</div>`;
  let active=G.items.filter(x=>!x.checked);
- if(!active.length)return `<div class="briefLine briefGood">✓ Grocery list is clear.</div>`;
- let shown=active.slice(0,5).map(x=>`<div class="briefLine">• ${x.qty?`<b>${esc(x.qty)}</b> `:""}${esc(x.name)}</div>`).join("");
- return `<div class="briefLine"><b>${active.length} item${active.length===1?"":"s"} to get</b></div>${shown}${active.length>5?`<div class="briefLine">+ ${active.length-5} more</div>`:""}`;
+ return active.length
+  ? `<div class="briefCountOnly"><b>${active.length}</b><span>grocery item${active.length===1?"":"s"} remaining</span></div>`
+  : `<div class="briefLine briefGood">✓ Grocery list clear.</div>`;
 }
 
 function morningReminderHtml_(){
