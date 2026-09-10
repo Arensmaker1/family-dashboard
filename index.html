@@ -533,6 +533,35 @@ body[data-appearance="light"] .briefPriority{background:linear-gradient(145deg,#
  background:var(--card,#fffdf8);
  box-shadow:0 1px 3px rgba(0,0,0,.12);
 }
+
+/* V9.5.0 — Dinner Command 2.0 */
+.dc2Command{position:relative}
+.dc2Status{
+ display:inline-flex;align-items:center;justify-content:center;
+ padding:3px 7px;border-radius:999px;font-size:8px;font-weight:900;
+ letter-spacing:.35px;white-space:nowrap;border:1px solid var(--l);
+}
+.dc2Status.ready{color:#66d987;background:#3bbf6820;border-color:#55c77866}
+.dc2Status.shop{color:#f0a84c;background:#e79b3920;border-color:#e79b3966}
+.dc2Status.link{color:var(--m);background:#ffffff0a}
+.dc2Meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.dc2MetaChip{
+ display:inline-flex;align-items:center;border:1px solid var(--l);border-radius:999px;
+ padding:3px 6px;font-size:8px;color:var(--m);background:#ffffff08;
+}
+.dc2MetaChip.dc2Prep{color:#f0bd67}
+.dc2MetaChip.dc2Shop{color:#f0a84c}
+.dc2MetaChip.dc2Ready{color:#79d891}
+.dc2Actions{margin-top:6px}
+.dc2BriefHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dc2BriefMeta{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.dc2BriefMeta span{border:1px solid var(--l);border-radius:999px;padding:4px 7px;font-size:9px;color:var(--m)}
+.dc2BriefActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+body[data-appearance="light"] .dc2MetaChip{background:#fff}
+@media(max-width:650px){
+ .dc2Status{font-size:7px;padding:3px 6px}
+ .dc2MetaChip{font-size:7px}
+}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1058,18 +1087,65 @@ function dinnerForDate_(d){
  let m=raw.match(/(?:🌙\s*)?([^•]+)$/),name=(m?m[1]:raw).replace(/^🌙\s*/,"").trim();
  return name?{name:name,id:"",source:"",planName:"Weekly Menu"}:null;
 }
+function normalizeDinnerRecipeName_(v){
+ return String(v||"")
+  .toLowerCase()
+  .replace(/\([^)]*\)/g," ")
+  .replace(/&/g," and ")
+  .replace(/[^\w\s]/g," ")
+  .replace(/\b(?:the|recipe|family|style|version|dinner|meal)\b/g," ")
+  .replace(/\s+/g," ")
+  .trim();
+}
+function dinnerRecipeTokens_(v){
+ const stop=new Set(["with","and","for","from","into","style","recipe","family","dinner","meal","easy","best"]);
+ return normalizeDinnerRecipeName_(v).split(" ").filter(x=>x.length>2&&!stop.has(x));
+}
 function recipeMatchForDinner_(dinner){
  if(!dinner)return null;
  if(dinner.id){
-   let pool=dinner.source==="plan"?(MP.recipes||[]):(R.recipes||[]),x=pool.find(r=>String(r.id)===String(dinner.id));
-   if(x)return {source:dinner.source,id:x.id,recipe:x};
+  let pool=dinner.source==="plan"?(MP.recipes||[]):(R.recipes||[]),
+      x=pool.find(r=>String(r.id)===String(dinner.id));
+  if(x)return {source:dinner.source,id:x.id,recipe:x,match:"id"};
  }
- let n=String(dinner.name||"").toLowerCase().replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim();
+
+ let dn=normalizeDinnerRecipeName_(dinner.name);
+ if(!dn)return null;
+
  for(let source of ["library","plan"]){
-   let pool=source==="library"?(R.recipes||[]):(MP.recipes||[]);
-   let x=pool.find(r=>String(r.name||"").toLowerCase().replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim()===n);
-   if(x)return {source,id:x.id,recipe:x};
+  let pool=source==="library"?(R.recipes||[]):(MP.recipes||[]);
+  let x=pool.find(r=>normalizeDinnerRecipeName_(r.name)===dn);
+  if(x)return {source,id:x.id,recipe:x,match:"exact"};
  }
+
+ if(dn.length>=5){
+  for(let source of ["library","plan"]){
+   let pool=source==="library"?(R.recipes||[]):(MP.recipes||[]);
+   let hits=pool.filter(r=>{
+    let rn=normalizeDinnerRecipeName_(r.name);
+    return rn&&rn.length>=5&&(rn.includes(dn)||dn.includes(rn));
+   });
+   if(hits.length===1)return {source,id:hits[0].id,recipe:hits[0],match:"title"};
+  }
+ }
+
+ let dt=dinnerRecipeTokens_(dinner.name),best=null,second=0;
+ if(dt.length){
+  for(let source of ["library","plan"]){
+   let pool=source==="library"?(R.recipes||[]):(MP.recipes||[]);
+   pool.forEach(r=>{
+    let rt=dinnerRecipeTokens_(r.name);
+    if(!rt.length)return;
+    let shared=dt.filter(t=>rt.includes(t)).length;
+    let score=shared/Math.max(dt.length,Math.min(rt.length,3));
+    if(shared>=1&&score>0){
+      if(!best||score>best.score){second=best?best.score:second;best={source,id:r.id,recipe:r,score}}
+      else if(score>second)second=score;
+    }
+   });
+  }
+ }
+ if(best&&best.score>=.67&&(best.score-second)>=.15)return {...best,match:"fuzzy"};
  return null;
 }
 function groceryNeedForRecipe_(recipe){
@@ -1127,12 +1203,35 @@ function kitchenIntelHtml_(d,m){
  if(tp.length)chips.push(`<span class="kitchenIntelChip tomorrow">➡️ Tomorrow: ${esc(tp[0])}</span>`);
  return chips.length?`<div class="kitchenIntel">${chips.slice(0,4).join("")}</div>`:"";
 }
+
+function dinnerCommandStatus_(m,need){
+ if(!m)return {cls:"link",text:"LINK RECIPE",icon:"🔗"};
+ if(need&&need.missing>0)return {cls:"shop",text:`SHOP ${need.missing}`,icon:"🛒"};
+ return {cls:"ready",text:"READY",icon:"✓"};
+}
+function dinnerCommandMetaHtml_(d,m,need){
+ if(!m||!m.recipe)return "";
+ let mins=durationMinutesFromText_(m.recipe.instructions||""),
+     prep=prepIntelForRecipe_(m.recipe),
+     bits=[];
+ if(mins)bits.push(`<span class="dc2MetaChip">⏱️ ${esc(formatCookEstimate_(mins))}</span>`);
+ if(prep.length)bits.push(`<span class="dc2MetaChip dc2Prep">🧂 ${esc(prep[0])}</span>`);
+ if(need)bits.push(need.missing
+   ?`<span class="dc2MetaChip dc2Shop">🛒 ${need.missing} to check</span>`
+   :`<span class="dc2MetaChip dc2Ready">✓ groceries covered</span>`);
+ return bits.length?`<div class="dc2Meta">${bits.slice(0,3).join("")}</div>`:"";
+}
+
 function dinnerCommandHtml_(d){
  let dinner=dinnerForDate_(d);if(!dinner)return "";
- let m=recipeMatchForDinner_(dinner),need=m?groceryNeedForRecipe_(m.recipe):null;
- let sub=m?(need?(need.missing?`<span class="dinnerMissing">🛒 ${need.missing} ingredient${need.missing===1?"":"s"} may still be needed</span>`:`<span class="dinnerReady">✓ Grocery list looks covered</span>`):"Recipe ready"):"No linked recipe found yet";
- let actions=m?`<div class="dinnerActions"><button class="btn primaryAction" onclick="event.stopPropagation();openDinnerRecipe_('${m.source}','${esc(m.id)}')">🍽️ Recipe</button><button class="btn" onclick="event.stopPropagation();openCookMode('${m.source}','${esc(m.id)}')">👨‍🍳 Start Dinner</button><button class="btn" onclick="event.stopPropagation();openRecipeGroceryFromDinner_('${m.source}','${esc(m.id)}')">🛒 Ingredients</button></div>`:"";
- return `<div class="dinnerCommand"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dinnerSub">${esc(dinner.planName||"")}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${m?kitchenIntelHtml_(d,m):""}${actions}</div>`;
+ let m=recipeMatchForDinner_(dinner),need=m?groceryNeedForRecipe_(m.recipe):null,status=dinnerCommandStatus_(m,need);
+ let sub=m
+   ?((m.match==="fuzzy"||m.match==="title")&&m.recipe?.name!==dinner.name?`Linked to ${esc(m.recipe.name)}`:(dinner.planName||"Recipe linked"))
+   :"No linked recipe found yet";
+ let actions=m
+   ?`<div class="dinnerActions dc2Actions"><button class="btn primaryAction" onclick="event.stopPropagation();openCookMode('${m.source}','${esc(m.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="event.stopPropagation();openDinnerRecipe_('${m.source}','${esc(m.id)}')">🍽️ Recipe</button><button class="btn" onclick="event.stopPropagation();openRecipeGroceryFromDinner_('${m.source}','${esc(m.id)}')">🛒 Ingredients</button></div>`
+   :`<div class="dinnerActions dc2Actions"><button class="btn" onclick="event.stopPropagation();openRecipes()">🔎 Find Recipe</button></div>`;
+ return `<div class="dinnerCommand dc2Command"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${dinnerCommandMetaHtml_(d,m,need)}${actions}</div>`;
 }
 function openRecipeGroceryFromDinner_(source,id){openRecipes();setTimeout(()=>openRecipeGroceryPreview(source,id),80)}
 
@@ -1153,29 +1252,32 @@ function morningChoreStats_(){let d=new Date(),C=choresFor(d),done=C.filter(x=>S
 function morningReminderStats_(){let all=activeBriefReminders_(),overdue=all.filter(r=>daysUntil_(r.nextDue)<0).length,today=all.filter(r=>daysUntil_(r.nextDue)===0).length,week=all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=7}).length;return{overdue,today,week}}
 function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return futureEventsForDay_(d,false).sort((x,y)=>new Date(x.start)-new Date(y.start))[0]||null}
 function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
-function morningDinnerHtml_(){let x=morningDinnerData_();if(!x.dinner)return `<div class="briefLine">No dinner is planned yet.</div>`;let details=[];if(x.mins)details.push(`⏱️ ${formatCookEstimate_(x.mins)}`);if(x.prep.length)details.push(`🧂 ${x.prep[0]}`);if(x.busy)details.push(`📅 ${x.busy.count>1?x.busy.count+" evening events":x.busy.time+" "+x.busy.title}`);let grocery=x.need?(x.need.missing?`<span class="briefWarn">🛒 ${x.need.missing} ingredient${x.need.missing===1?"":"s"} may still be needed</span>`:`<span class="briefGood">✓ Grocery list looks covered</span>`):"";let buttons=x.match?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn" onclick="openDinnerRecipe_('${x.match.source}','${esc(x.match.id)}')">🍽️ Recipe</button><button class="btn" onclick="openCookMode('${x.match.source}','${esc(x.match.id)}')">👨‍🍳 Cook</button></div>`:"";return `<div class="briefBig">${esc(x.dinner.name)}</div><div class="briefLine">${x.dinner.planName?esc(x.dinner.planName):"Tonight's dinner"}${details.length?` • ${esc(details.join(" • "))}`:""}</div>${grocery?`<div class="briefLine">${grocery}</div>`:""}${buttons}`}
-function morningReminderHtml_(){let useful=activeBriefReminders_().filter(r=>daysUntil_(r.nextDue)<=14);if(!useful.length)return `<div class="briefLine">Nothing due in the next two weeks. 🎉</div>`;return useful.slice(0,8).map(r=>`<div class="briefReminder ${reminderClass_(r)}"><div><div class="briefReminderName">${esc(r.name)}</div><div class="briefReminderMeta">${esc(reminderDueText_(r))} • every ${Number(r.intervalDays)||1} days</div></div><button class="btn" onclick="markHouseholdReminderDone_('${r.id}')">✓ Done</button></div>`).join("")}
-function morningSummaryHtml_(){let now=new Date(),events=futureEventsForDay_(now,true),chores=morningChoreStats_(),reminders=morningReminderStats_(),pieces=[];if(events.length)pieces.push(`${events.length} thing${events.length===1?"":"s"} left on today's calendar`);else pieces.push("calendar is clear for the rest of today");if(chores.total)pieces.push(chores.left?`${chores.left} chore${chores.left===1?"":"s"} remaining`:"today's chores are done");if(reminders.overdue)pieces.push(`${reminders.overdue} household reminder${reminders.overdue===1?" is":"s are"} overdue`);else if(reminders.today)pieces.push(`${reminders.today} household reminder${reminders.today===1?"":"s"} due today`);let greeting=now.getHours()<12?"morning":now.getHours()<17?"afternoon":"evening";return `<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>Good ${greeting}.</b> ${esc(pieces.length?pieces.join(" • "):"Everything looks pretty quiet.")}</div></div>`}
-function morningPriorityHtml_(){let rows=[],r=morningReminderStats_(),d=morningDinnerData_(),today=key(new Date()),wi=W&&W.daily&&W.daily.time?W.daily.time.indexOf(today):-1,rain=wi>=0?(W.daily.precipitation_probability_max[wi]||0):0;if(r.overdue)rows.push(`🔁 <b>${r.overdue} household reminder${r.overdue===1?" is":"s are"} overdue.</b>`);else if(r.today)rows.push(`🔁 <b>${r.today} household reminder${r.today===1?"":"s"} due today.</b>`);if(d.prep.length)rows.push(`🍽️ <b>Dinner prep:</b> ${esc(d.prep.join(" • "))}.`);if(d.busy)rows.push(`📅 <b>Busy evening:</b> ${d.busy.count>1?d.busy.count+" events":esc(d.busy.time+" "+d.busy.title)}.`);if(rain>=60)rows.push(`🌧️ <b>${rain}% chance of precipitation today.</b>`);let tom=new Date();tom.setDate(tom.getDate()+1);let td=dinnerForDate_(tom),tm=recipeMatchForDinner_(td),tp=tm?prepIntelForRecipe_(tm.recipe):[];if(tp.length)rows.push(`➡️ <b>Tomorrow's dinner needs:</b> ${esc(tp[0])}.`);if(!rows.length)return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3><div class="briefPriorityRow">✅ Nothing urgent is fighting for your attention right now.</div></div>`;return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3>${rows.slice(0,4).map(x=>`<div class="briefPriorityRow">${x}</div>`).join("")}</div>`}
-function tomorrowPreviewHtml_(){let e=tomorrowFirstEvent_();if(!e)return `<div class="briefLine">Nothing scheduled tomorrow yet.</div>`;return `<div class="briefTomorrow"><div class="briefTomorrowLabel">UP FIRST TOMORROW</div><b>${esc(e.title)}</b><div class="briefReminderMeta">${e.allDay?"All day":esc(time(e))}${e.calendar?` • ${esc(e.calendar)}`:""}</div></div>`}
-function upcomingHouseholdHtml_(){let upcoming=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=14}).slice(0,3);if(!upcoming.length)return "";return `<div class="briefUpcoming"><div class="briefTomorrowLabel">COMING UP</div>${upcoming.map(r=>`<div class="briefUpcomingRow"><span>${esc(r.name)}</span><b>${esc(reminderDueText_(r))}</b></div>`).join("")}</div>`}
-function morningChoreSummaryHtml_(){let s=morningChoreStats_();if(!s.total)return `<div class="briefLine">No chores today.</div>`;return `<div class="briefProgressText"><b>${s.done} of ${s.total}</b> done${s.left?` • ${s.left} remaining`:" • all finished 🎉"}</div><div class="briefProgress"><div style="width:${Math.round((s.done/s.total)*100)}%"></div></div>${morningChoresHtml_()}`}
-function morningGroceryHtml_(){let items=(G&&Array.isArray(G.items))?G.items:[],active=items.filter(x=>!x.checked),checked=items.length-active.length;if(!items.length)return `<div class="briefLine briefGood">✓ Grocery list is empty.</div>`;let preview=active.length?`<div class="briefLine">${esc(active.slice(0,4).map(x=>(x.qty?x.qty+" ":"")+x.name).join(" • "))}${active.length>4?` • +${active.length-4} more`:""}</div>`:`<div class="briefLine briefGood">Shopping is done. 🎉</div>`;return `<div class="briefActionLine"><div><div class="briefGroceryCount">${active.length}</div><div class="briefMini">item${active.length===1?"":"s"} still to get${checked?` • ${checked} checked`:""}</div></div><button class="btn" onclick="closeModal();openGroceries()">Open List →</button></div>${preview}`}
+function morningDinnerHtml_(){
+ let x=morningDinnerData_();
+ if(!x.dinner)return `<div class="briefLine">No dinner is planned yet.</div>`;
 
-function sportsWhen_(dateValue){
- try{
-  if(!dateValue)return "";
-  let d=new Date(dateValue);
-  if(Number.isNaN(d.getTime()))return "";
-  let now=new Date();
-  let sameDay=d.toDateString()===now.toDateString();
-  let tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);
-  let isTomorrow=d.toDateString()===tomorrow.toDateString();
-  let time=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
-  if(sameDay)return `Today • ${time}`;
-  if(isTomorrow)return `Tomorrow • ${time}`;
-  return `${d.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})} • ${time}`;
- }catch(_){return ""}
+ let status=dinnerCommandStatus_(x.match,x.need),details=[];
+
+ if(x.mins)details.push(`⏱️ ${formatCookEstimate_(x.mins)}`);
+ if(x.prep.length)details.push(`🧂 ${x.prep[0]}`);
+ if(x.busy)details.push(`📅 ${x.busy.count>1?x.busy.count+" evening events":x.busy.time+" "+x.busy.title}`);
+
+ let linked=x.match
+  ?((x.match.match==="fuzzy"||x.match.match==="title")&&x.match.recipe?.name!==x.dinner.name
+     ?`<div class="briefLine">🔗 Linked recipe: <b>${esc(x.match.recipe.name)}</b></div>`:"")
+  :`<div class="briefLine briefWarn">🔗 No recipe linked yet.</div>`;
+
+ let grocery=x.need
+  ?(x.need.missing
+    ?`<div class="briefLine briefWarn">🛒 ${x.need.missing} ingredient${x.need.missing===1?"":"s"} may still be needed.</div>`
+    :`<div class="briefLine briefGood">✓ Grocery list looks covered.</div>`)
+  :"";
+
+ let buttons=x.match
+  ?`<div class="dc2BriefActions"><button class="btn primaryAction" onclick="openCookMode('${x.match.source}','${esc(x.match.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openDinnerRecipe_('${x.match.source}','${esc(x.match.id)}')">🍽️ Recipe</button><button class="btn" onclick="openRecipeGroceryFromDinner_('${x.match.source}','${esc(x.match.id)}')">🛒 Ingredients</button></div>`
+  :`<div class="dc2BriefActions"><button class="btn" onclick="closeModal();openRecipes()">🔎 Find Recipe</button></div>`;
+
+ return `<div class="dc2BriefHead"><div class="briefBig">${esc(x.dinner.name)}</div><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="briefLine">${esc(x.dinner.planName||"Tonight's dinner")}</div>${details.length?`<div class="dc2BriefMeta">${details.map(v=>`<span>${esc(v)}</span>`).join("")}</div>`:""}${linked}${grocery}${buttons}`;
 }
 function sportsOpponentText_(g){
  if(!g)return "Opponent";
