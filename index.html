@@ -730,7 +730,7 @@ let familyDashboardTokenTimer = null;
 <div id="glanceStrip" class="glanceStrip"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="openMorningBrief()"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 2.0</h2><div class=&quot;briefLine&quot;>Loading today\'s household rundown…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -1245,24 +1245,24 @@ function refreshMorningBrief_(){
  try{modal.innerHTML=buildMorningBriefHtml_()}catch(err){console.error("Morning Brief refresh failed",err)}
 }
 function openMorningBrief(){
- markMorningBriefSeen_();
- ensureHouseholdReminders_();
  try{
-  openModal(`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`);
-  setTimeout(refreshMorningBrief_,0);
- }catch(err){
-  console.error("Morning Brief open failed",err);
-  let bg=document.getElementById("modalbg"),modal=document.getElementById("modal");
-  if(modal)modal.innerHTML=`<div class="briefWrap"><h2>☀️ Morning Brief 2.0</h2><div class="briefLine briefWarn">⚠️ The brief hit an error while opening.</div><div class="briefLine">${esc(err&&err.message?err.message:String(err))}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+  let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
+  if(modal&&!modal.querySelector(".briefWrap"))modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`;
   if(bg)bg.style.display="grid";
- }
- try{ensureDinnerData_(()=>refreshMorningBrief_())}catch(err){console.error("Dinner refresh failed",err)}
+ }catch(_){}
+ try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
+ try{ensureHouseholdReminders_()}catch(err){console.warn("Morning Brief reminders prep failed",err)}
+ try{refreshMorningBrief_()}catch(err){console.error("Morning Brief initial render failed",err)}
+ try{ensureDinnerData_(()=>{try{refreshMorningBrief_()}catch(_){}})}catch(err){console.warn("Morning Brief dinner refresh failed",err)}
  try{
   if(window.google&&google.script&&google.script.run){
-   google.script.run.withSuccessHandler(g=>{G=g||{items:[]};refreshMorningBrief_()}).withFailureHandler(err=>console.warn("Morning Brief groceries refresh failed",err)).getGroceries();
+   google.script.run
+    .withSuccessHandler(g=>{try{G=g||{items:[]};refreshMorningBrief_()}catch(_){}})
+    .withFailureHandler(err=>console.warn("Morning Brief groceries refresh failed",err))
+    .getGroceries();
   }
- }catch(err){console.error("Grocery refresh failed",err)}
- activity();
+ }catch(err){console.warn("Morning Brief grocery refresh setup failed",err)}
+ try{activity()}catch(_){}
 }
 
 function openHouseholdReminders(){ensureHouseholdReminders_();openModal(`<h2>🔁 Household Reminders</h2><div class="note">Set repeating jobs like furnace filters, water-softener salt, smoke-detector batteries, HVAC maintenance, and anything else nobody wants to remember manually.</div><div id="householdReminderEditor" style="margin-top:12px">${S.householdReminders.length?S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join(""):`<div class="empty">No recurring reminders yet.</div>`}</div><button class="btn" onclick="addHouseholdReminder_()">+ Add Reminder</button><div class="actions"><button class="btn" onclick="openMorningBrief()">Cancel</button><button class="btn primaryAction" onclick="saveHouseholdReminders_()">Save Reminders</button></div>`)}
