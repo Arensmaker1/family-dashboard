@@ -1202,7 +1202,7 @@ function sportsMiniTileHtml_(t){
 function morningSportsHtml_(){
  try{
   let root = (typeof SPORTS!=="undefined" && SPORTS) ? SPORTS : null;
-  if(!root)return `<div class="briefLine briefWarn">⚠️ Sports data is still loading.</div>`;
+  if(!root)return `<div class="briefLine briefWarn">⚠️ Sports data is loading… <span style="opacity:.55">v9.4</span></div>`;
 
   let teams = [];
   if(Array.isArray(root)) teams = root;
@@ -1211,7 +1211,7 @@ function morningSportsHtml_(){
   else if(root.results && Array.isArray(root.results)) teams = root.results;
 
   if(!teams.length){
-   if(root.loading)return `<div class="briefLine briefWarn">⚠️ Sports data is loading…</div>`;
+   if(root.loading)return `<div class="briefLine briefWarn">⚠️ Sports data is loading… <span style="opacity:.55">v9.4</span></div>`;
    return `<div class="briefLine briefWarn">⚠️ ${esc(root.message||"Sports data unavailable right now.")}</div>`;
   }
 
@@ -1334,108 +1334,54 @@ function sportsReadDirectCache_(allowStale=false){
 }
 function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CACHE_KEY_,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
 async function loadSports(force=false){
- let cached=!force?sportsReadDirectCache_(true):null;
-
- if(cached){
-  SPORTS=cached.data;
-  SPORTS.loading=false;
-  refreshSportsViews_();
- }else{
+ const SPORTS_JSON_URL="https://raw.githubusercontent.com/Arensmaker1/family-dashboard/main/sports-data.json";
+ try{
   SPORTS.loading=true;
   refreshSportsViews_();
- }
 
- // V9.3.8: primary sports source is a same-origin JSON file refreshed by
- // GitHub Actions. This avoids ESPN blocking Google Apps Script with HTTP 403.
- try{
-  let url="sports-data.json"+(force?("?v="+Date.now()):"");
-  let controller=new AbortController();
-  let timer=setTimeout(()=>controller.abort(),5000);
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),6000);
   let response;
   try{
-    response=await fetch(url,{
-      cache:force?"no-store":"default",
-      headers:{Accept:"application/json"},
-      signal:controller.signal
-    });
+   response=await fetch(SPORTS_JSON_URL+(force?("?v="+Date.now()):""),{
+    cache:"no-store",
+    headers:{Accept:"application/json"},
+    signal:controller.signal
+   });
   }finally{
-    clearTimeout(timer);
+   clearTimeout(timer);
   }
-  if(!response.ok)throw new Error(`Sports relay returned HTTP ${response.status}.`);
 
-  let result=await response.json();
-  let teams=Array.isArray(result?.teams)?result.teams:[];
-  if(!teams.length)throw new Error(result?.message||"Sports relay returned no team data.");
+  if(!response.ok)throw new Error(`Sports JSON returned HTTP ${response.status}.`);
+  const result=await response.json();
+  const teams=Array.isArray(result?.teams)?result.teams:[];
+  if(!teams.length)throw new Error("Sports JSON returned no teams.");
 
   SPORTS={
-    loading:false,
-    ok:!!result?.ok || teams.some(t=>t&&t.ok),
-    teams,
-    updatedAt:result?.updatedAt||new Date().toISOString(),
-    source:result?.source||"GitHub sports relay",
-    message:result?.message||""
+   loading:false,
+   ok:true,
+   teams,
+   updatedAt:result.updatedAt||new Date().toISOString(),
+   source:result.source||"GitHub sports JSON",
+   message:result.message||""
   };
   sportsWriteDirectCache_(SPORTS);
-  refreshSportsViews_();
-  return;
  }catch(err){
-  console.warn("GitHub sports relay unavailable",err);
- }
-
- // Fallback to the existing Apps Script backend so the dashboard degrades
- // gracefully if sports-data.json has not been generated yet.
- try{
-  if(!(window.google&&google.script&&google.script.run))throw new Error("Dashboard backend bridge unavailable.");
-
-  let result=await new Promise((resolve,reject)=>{
-    let finished=false;
-    let timer=setTimeout(()=>{
-      if(finished)return;
-      finished=true;
-      reject(new Error("Sports backend timed out."));
-    },7000);
-
-    google.script.run
-      .withSuccessHandler(result=>{
-        if(finished)return;
-        finished=true;
-        clearTimeout(timer);
-        resolve(result);
-      })
-      .withFailureHandler(err=>{
-        if(finished)return;
-        finished=true;
-        clearTimeout(timer);
-        reject(err instanceof Error?err:new Error(err?.message||String(err||"Sports backend failed.")));
-      })
-      .getSportsCenter(!!force);
-  });
-
-  let teams=Array.isArray(result?.teams)?result.teams:[];
-  SPORTS={
-    loading:false,
-    ok:!!result?.ok || teams.some(t=>t&&t.ok),
-    teams,
-    updatedAt:result?.updatedAt||new Date().toISOString(),
-    source:result?.source||"Apps Script sports feed",
-    message:result?.message||""
-  };
-  if(teams.length)sportsWriteDirectCache_(SPORTS);
- }catch(err){
-  console.warn("Sports fallback failed",err);
-  if(cached){
-    SPORTS=cached.data;
-    SPORTS.loading=false;
-    SPORTS.message="Showing cached sports data; live refresh unavailable.";
+  console.error("Direct sports JSON load failed",err);
+  let cached=sportsReadDirectCache_(true);
+  if(cached&&cached.data){
+   SPORTS=cached.data;
+   SPORTS.loading=false;
+   SPORTS.message="Showing cached sports data.";
   }else{
-    SPORTS={
-      loading:false,
-      ok:false,
-      teams:[],
-      updatedAt:new Date().toISOString(),
-      source:"Sports relay",
-      message:err?.message||String(err||"Sports unavailable.")
-    };
+   SPORTS={
+    loading:false,
+    ok:false,
+    teams:[],
+    updatedAt:new Date().toISOString(),
+    source:"GitHub sports JSON",
+    message:err?.message||String(err||"Sports unavailable.")
+   };
   }
  }
  refreshSportsViews_();
@@ -1474,6 +1420,7 @@ function refreshMorningBrief_(){
  try{modal.innerHTML=buildMorningBriefHtml_()}catch(err){console.error("Morning Brief refresh failed",err)}
 }
 function openMorningBrief(){
+ try{if(!SPORTS||SPORTS.loading||!Array.isArray(SPORTS.teams)||!SPORTS.teams.length){loadSports(false)}}catch(e){console.warn("Brief sports kickoff failed",e)}
  try{
   let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
   if(modal&&!modal.querySelector(".briefWrap"))modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`;
