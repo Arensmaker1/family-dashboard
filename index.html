@@ -570,6 +570,43 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
 .dcIngredientRow{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:9px 10px;border-bottom:1px solid var(--l);font-size:12px;line-height:1.35}
 .dcIngredientRow:last-child{border-bottom:0}
 .dcIngredientRow>span:first-child{color:var(--m);font-size:14px}
+
+/* V9.6.0 — Household Reminders 2.0 */
+.hr2Wrap{max-width:900px;margin:auto}
+.hr2Head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hr2Head h2{margin:0 0 3px}
+.hr2Stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.hr2Stats>div{border:1px solid var(--l);border-radius:11px;padding:9px;text-align:center;background:var(--p)}
+.hr2Stats b{display:block;font-size:20px}.hr2Stats span{font-size:9px;color:var(--m)}
+.hr2Presets{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:12px}
+.hr2Presets>span{font-size:9px;font-weight:800;color:var(--m)}
+.hr2List{display:grid;gap:9px;margin-bottom:10px}
+.hr2Item{border:1px solid var(--l);border-radius:12px;padding:10px;background:var(--p)}
+.hr2Item.overdue{border-color:#ef6464;background:#ef64640d}
+.hr2Item.due{border-color:#f0a84c;background:#f0a84c0d}
+.hr2Item.soon{border-color:#e8c46a}
+.hr2ItemTop{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:8px}
+.hr2Status{font-size:8px;font-weight:900;letter-spacing:.45px;border:1px solid var(--l);padding:3px 6px;border-radius:999px;width:max-content}
+.hr2Item.overdue .hr2Status{color:#ff7c7c}.hr2Item.due .hr2Status{color:#f0a84c}.hr2Item.soon .hr2Status{color:#e8c46a}
+.hr2Due{text-align:right;font-size:9px;color:var(--m)}
+.hr2EditorGrid{display:grid;grid-template-columns:2fr .8fr .9fr 1fr;gap:7px;align-items:end}
+.hr2EditorGrid label{display:grid;gap:3px}.hr2EditorGrid label>span{font-size:8px;color:var(--m);font-weight:800}
+.hr2EditorGrid label>div{display:flex;align-items:center;gap:4px}.hr2EditorGrid small{color:var(--m)}
+.hr2Notes{width:100%;margin-top:7px}
+.hr2ItemActions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+.hr2Last{font-size:8px;color:var(--m)}
+.hrBriefItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #ffffff10}
+.hrBriefItem:last-child{border-bottom:0}.hrBriefItem.overdue b{color:#ff7c7c}.hrBriefItem.due b{color:#f0a84c}.hrBriefItem.soon b{color:#e8c46a}
+.hrBriefDue{font-size:9px;color:var(--m);margin-top:2px}.hrBriefBtns{display:flex;gap:4px}
+.hrUpcoming{margin-top:8px;padding-top:7px;border-top:1px solid #ffffff10;display:flex;flex-direction:column;gap:3px}
+.hrUpcoming>b{font-size:8px;color:var(--m);letter-spacing:.4px}.hrUpcoming span{font-size:9px}
+@media(max-width:720px){
+ .hr2Stats{grid-template-columns:repeat(2,1fr)}
+ .hr2EditorGrid{grid-template-columns:1fr 1fr}
+ .hr2EditorGrid>input:first-child{grid-column:1/-1}
+ .hr2ItemActions{align-items:flex-start;flex-direction:column}
+ .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
+}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1273,47 +1310,79 @@ function openRecipeGroceryFromDinner_(source,id){
 /* =========================================================
    V8.17 MORNING BRIEF + HOUSEHOLD REMINDERS
    ========================================================= */
-function ensureHouseholdReminders_(){if(!Array.isArray(S.householdReminders))S.householdReminders=[]}
+function ensureHouseholdReminders_(){
+ if(!Array.isArray(S.householdReminders))S.householdReminders=[];
+ S.householdReminders=S.householdReminders.map((r,i)=>({
+  id:r.id||("hr_"+Date.now()+"_"+i),
+  name:String(r.name||"").trim(),
+  intervalDays:Math.max(1,Number(r.intervalDays)||90),
+  nextDue:r.nextDue||key(new Date()),
+  lastDone:r.lastDone||"",
+  category:r.category||"Home",
+  notes:r.notes||""
+ }));
+}
 function dateOnly_(v){let d=v?new Date(v+"T12:00:00"):new Date();d.setHours(12,0,0,0);return d}
 function daysUntil_(dateString){if(!dateString)return 99999;let now=new Date();now.setHours(12,0,0,0);let d=dateOnly_(dateString);return Math.round((d-now)/86400000)}
-function reminderDueText_(r){let n=daysUntil_(r.nextDue);if(n<0){let x=Math.abs(n);return `${x} day${x===1?"":"s"} overdue`}if(n===0)return "Due today";if(n===1)return "Due tomorrow";return `Due in ${n} days`}
-function reminderClass_(r){let n=daysUntil_(r.nextDue);if(n<=0)return "due";if(n<=7)return "soon";return ""}
-function activeBriefReminders_(){ensureHouseholdReminders_();return S.householdReminders.filter(r=>r&&r.name&&r.nextDue).sort((a,b)=>String(a.nextDue).localeCompare(String(b.nextDue)))}
-function markHouseholdReminderDone_(id){ensureHouseholdReminders_();let r=S.householdReminders.find(x=>x.id===id);if(!r)return;let days=Math.max(1,Number(r.intervalDays)||1),d=new Date();d.setDate(d.getDate()+days);r.lastDone=key(new Date());r.nextDue=key(d);persist(()=>{openMorningBrief();renderGlance()})}
-function morningWeatherHtml_(){if(!W||!W.ok||!W.current)return `<div class="briefLine">Weather unavailable.</div>`;let today=key(new Date()),i=W.daily&&W.daily.time?W.daily.time.indexOf(today):-1,current=Math.round(W.current.temperature_2m),condition=icon(W.current.weather_code),hi=i>=0?Math.round(W.daily.temperature_2m_max[i]):"—",lo=i>=0?Math.round(W.daily.temperature_2m_min[i]):"—",rain=i>=0?(W.daily.precipitation_probability_max[i]||0):0,advice=rain>=70?"Rain is likely today.":rain>=40?"Keep an eye on the sky today.":"No major rain concern today.";return `<div class="briefBig">${condition} ${current}°</div><div class="briefLine">High ${hi}° • Low ${lo}°</div><div class="briefLine">${rain}% precipitation • ${esc(advice)}</div><div class="briefLine">${esc(W.location||"")}</div>`}
-function morningScheduleHtml_(){let events=futureEventsForDay_(new Date(),true);if(!events.length)return `<div class="briefLine">Nothing else scheduled today.</div>`;return events.slice(0,6).map(e=>`<div class="briefLine">${e.allDay?"All day":esc(time(e))}&nbsp;•&nbsp;<b>${esc(e.title)}</b></div>`).join("")}
-function morningChoresHtml_(){let d=new Date(),C=choresFor(d);if(!C.length)return `<div class="briefLine">No chores today. Somebody got lucky.</div>`;return C.map(x=>{let done=!!S.completions[key(d)+"-"+x.i];return `<div class="briefLine">${done?"✅":"⬜"} ${esc(x.name)}${x.who?` • ${esc(x.who)}`:""}</div>`}).join("")}
-function morningChoreStats_(){let d=new Date(),C=choresFor(d),done=C.filter(x=>S.completions[key(d)+"-"+x.i]).length;return{total:C.length,done,left:Math.max(0,C.length-done)}}
-function morningReminderStats_(){let all=activeBriefReminders_(),overdue=all.filter(r=>daysUntil_(r.nextDue)<0).length,today=all.filter(r=>daysUntil_(r.nextDue)===0).length,week=all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=7}).length;return{overdue,today,week}}
-function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return futureEventsForDay_(d,false).sort((x,y)=>new Date(x.start)-new Date(y.start))[0]||null}
-function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
-function morningDinnerHtml_(){
- let x=morningDinnerData_();
- if(!x.dinner)return `<div class="briefLine">No dinner is planned yet.</div>`;
-
- let status=dinnerCommandStatus_(x.match,x.need),details=[];
-
- if(x.mins)details.push(`⏱️ ${formatCookEstimate_(x.mins)}`);
- if(x.prep.length)details.push(`🧂 ${x.prep[0]}`);
- if(x.busy)details.push(`📅 ${x.busy.count>1?x.busy.count+" evening events":x.busy.time+" "+x.busy.title}`);
-
- let linked=x.match
-  ?((x.match.match==="fuzzy"||x.match.match==="title")&&x.match.recipe?.name!==x.dinner.name
-     ?`<div class="briefLine">🔗 Linked recipe: <b>${esc(x.match.recipe.name)}</b></div>`:"")
-  :`<div class="briefLine briefWarn">🔗 No recipe linked yet.</div>`;
-
- let grocery=x.need
-  ?(x.need.missing
-    ?`<div class="briefLine briefWarn">🛒 ${x.need.missing} ingredient${x.need.missing===1?"":"s"} may still be needed.</div>`
-    :`<div class="briefLine briefGood">✓ Grocery list looks covered.</div>`)
-  :"";
-
- let buttons=x.match
-  ?`<div class="dc2BriefActions"><button class="btn primaryAction" onclick="openCookMode('${x.match.source}','${esc(x.match.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openDinnerRecipe_('${x.match.source}','${esc(x.match.id)}')">🍽️ Recipe</button><button class="btn" onclick="openRecipeGroceryFromDinner_('${x.match.source}','${esc(x.match.id)}')">🛒 Ingredients</button></div>`
-  :`<div class="dc2BriefActions"><button class="btn" onclick="closeModal();openRecipes()">🔎 Find Recipe</button></div>`;
-
- return `<div class="dc2BriefHead"><div class="briefBig">${esc(x.dinner.name)}</div><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="briefLine">${esc(x.dinner.planName||"Tonight's dinner")}</div>${details.length?`<div class="dc2BriefMeta">${details.map(v=>`<span>${esc(v)}</span>`).join("")}</div>`:""}${linked}${grocery}${buttons}`;
+function reminderDueText_(r){
+ let n=daysUntil_(r.nextDue);
+ if(n<0){let x=Math.abs(n);return `${x} day${x===1?"":"s"} overdue`}
+ if(n===0)return "Due today";
+ if(n===1)return "Due tomorrow";
+ if(n<=7)return `Due in ${n} days`;
+ return `Due ${dateOnly_(r.nextDue).toLocaleDateString([],{month:"short",day:"numeric"})}`;
 }
+function reminderClass_(r){
+ let n=daysUntil_(r.nextDue);
+ if(n<0)return "overdue";
+ if(n===0)return "due";
+ if(n<=7)return "soon";
+ return "future";
+}
+function activeBriefReminders_(){
+ ensureHouseholdReminders_();
+ return S.householdReminders.filter(r=>r&&r.name&&r.nextDue)
+  .sort((a,b)=>String(a.nextDue).localeCompare(String(b.nextDue)));
+}
+function reminderStats2_(){
+ let all=activeBriefReminders_();
+ return {
+  total:all.length,
+  overdue:all.filter(r=>daysUntil_(r.nextDue)<0).length,
+  today:all.filter(r=>daysUntil_(r.nextDue)===0).length,
+  soon:all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=7}).length
+ };
+}
+function reminderNextDate_(r,baseDate){
+ let d=baseDate?new Date(baseDate):new Date();
+ d.setHours(12,0,0,0);
+ d.setDate(d.getDate()+Math.max(1,Number(r.intervalDays)||1));
+ return key(d);
+}
+function markHouseholdReminderDone_(id,returnTo){
+ ensureHouseholdReminders_();
+ let r=S.householdReminders.find(x=>x.id===id);if(!r)return;
+ let now=new Date();
+ r.lastDone=key(now);
+ r.nextDue=reminderNextDate_(r,now);
+ persist(()=>{
+  renderGlance();
+  if(returnTo==="manager")openHouseholdReminders();
+  else openMorningBrief();
+ });
+}
+function snoozeHouseholdReminder_(id,days,returnTo){
+ ensureHouseholdReminders_();
+ let r=S.householdReminders.find(x=>x.id===id);if(!r)return;
+ let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+Math.max(1,Number(days)||1));
+ r.nextDue=key(d);
+ persist(()=>{
+  renderGlance();
+  if(returnTo==="manager")openHouseholdReminders();
+  else openMorningBrief();
+ });
+}
+
 function sportsOpponentText_(g){
  if(!g)return "Opponent";
  let opp=g.opponent||"Opponent";
@@ -1559,6 +1628,37 @@ function briefSafe_(label,fn,fallback){
   return fallback||`<div class="briefLine briefWarn">⚠️ ${esc(label)} unavailable right now.</div>`;
  }
 }
+
+function morningReminderHtml_(){
+ let all=activeBriefReminders_(),due=all.filter(r=>daysUntil_(r.nextDue)<=7);
+ if(!due.length)return `<div class="briefLine">✓ No household jobs due this week.</div>`;
+ return due.slice(0,4).map(r=>{
+  let cls=reminderClass_(r),n=daysUntil_(r.nextDue);
+  return `<div class="hrBriefItem ${cls}">
+   <div><b>${esc(r.name)}</b><div class="hrBriefDue">${esc(reminderDueText_(r))}${r.lastDone?` • Last done ${esc(dateOnly_(r.lastDone).toLocaleDateString([],{month:"short",day:"numeric"}))}`:""}</div></div>
+   <div class="hrBriefBtns">
+    <button class="btn mini" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>
+    ${n<=0?`<button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',1,'brief')">+1d</button><button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',7,'brief')">+7d</button>`:""}
+   </div>
+  </div>`;
+ }).join("");
+}
+function upcomingHouseholdHtml_(){
+ let a=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>7&&n<=30}).slice(0,3);
+ if(!a.length)return "";
+ return `<div class="hrUpcoming"><b>COMING UP</b>${a.map(r=>`<span>${esc(r.name)} • ${esc(reminderDueText_(r))}</span>`).join("")}</div>`;
+}
+function morningPriorityHtml_(){
+ let rs=reminderStats2_(),bits=[];
+ if(rs.overdue)bits.push(`🔴 ${rs.overdue} household job${rs.overdue===1?" is":"s are"} overdue`);
+ if(rs.today)bits.push(`🟠 ${rs.today} household job${rs.today===1?" is":"s are"} due today`);
+ let dinner=morningDinnerData_();
+ if(dinner?.prep?.length)bits.push(`🍽️ Dinner prep: ${dinner.prep[0]}`);
+ if(dinner?.busy)bits.push(`📅 Busy evening: ${dinner.busy.count||1} event${(dinner.busy.count||1)===1?"":"s"}`);
+ if(!bits.length)return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3><div class="briefPriorityRow">Nothing urgent is fighting for your attention right now.</div></div>`;
+ return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3>${bits.slice(0,4).map(x=>`<div class="briefPriorityRow">${esc(x)}</div>`).join("")}</div>`;
+}
+
 function buildMorningBriefHtml_(){
  let now=new Date(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[];
  let summary=briefSafe_("Summary",()=>morningSummaryHtml_(),`<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>Good ${now.getHours()<12?"morning":now.getHours()<17?"afternoon":"evening"}.</b> Here’s the household rundown.</div></div>`);
@@ -1607,23 +1707,98 @@ function openMorningBrief(){
  try{activity()}catch(_){}
 }
 
-function openHouseholdReminders(){ensureHouseholdReminders_();openModal(`<h2>🔁 Household Reminders</h2><div class="note">Set repeating jobs like furnace filters, water-softener salt, smoke-detector batteries, HVAC maintenance, and anything else nobody wants to remember manually.</div><div id="householdReminderEditor" style="margin-top:12px">${S.householdReminders.length?S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join(""):`<div class="empty">No recurring reminders yet.</div>`}</div><button class="btn" onclick="addHouseholdReminder_()">+ Add Reminder</button><div class="actions"><button class="btn" onclick="openMorningBrief()">Cancel</button><button class="btn primaryAction" onclick="saveHouseholdReminders_()">Save Reminders</button></div>`)}
-function householdReminderEditorRow_(r,i){return `<div class="reminderEditor"><div class="reminderEditorGrid"><input id="hrName${i}" value="${esc(r.name||"")}" placeholder="Furnace filter"><input id="hrDays${i}" type="number" min="1" max="3650" value="${Number(r.intervalDays)||90}" title="Repeat every X days"><input id="hrDue${i}" type="date" value="${esc(r.nextDue||key(new Date()))}"><button class="x" onclick="deleteHouseholdReminder_(${i})">×</button></div><div class="note" style="margin-top:5px">Repeat every X days • Next due date</div></div>`}
-function captureHouseholdReminders_(){ensureHouseholdReminders_();return S.householdReminders.map((r,i)=>({id:r.id||("hr_"+Date.now()+"_"+i),name:(document.getElementById("hrName"+i)?.value||"").trim(),intervalDays:Math.max(1,Number(document.getElementById("hrDays"+i)?.value)||1),nextDue:document.getElementById("hrDue"+i)?.value||key(new Date()),lastDone:r.lastDone||""})).filter(r=>r.name)}
-function addHouseholdReminder_(){S.householdReminders=captureHouseholdReminders_();S.householdReminders.push({id:"hr_"+Date.now(),name:"",intervalDays:90,nextDue:key(new Date()),lastDone:""});openHouseholdReminders();setTimeout(()=>{let n=document.getElementById("hrName"+(S.householdReminders.length-1));if(n)n.focus()},40)}
-function deleteHouseholdReminder_(i){S.householdReminders=captureHouseholdReminders_();S.householdReminders.splice(i,1);openHouseholdReminders()}
-function saveHouseholdReminders_(){S.householdReminders=captureHouseholdReminders_();persist(()=>{openMorningBrief();renderGlance()})}
-
-function renderGlance(){
- let e=document.getElementById("glanceStrip");if(!e)return;
- let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
- let E=futureEventsForDay_(now,true).slice(0,3),T=futureEventsForDay_(tom,false).slice(0,3),
- pins=(S.pinnedNotes||[]);
- let line=a=>a.length?a.map(x=>(x.allDay?"":time(x)+" ")+x.title).join(" • "):"Nothing else scheduled";
- let label=now.getHours()>=17?"TONIGHT":"TODAY",dinner=dinnerCommandHtml_(now),tomDinner=dinnerForDate_(tom);
- e.innerHTML=`${calendarIntelHtml_()}${dinner}<div class="glanceBox"><b>${label}</b><div class="glanceText">${esc(line(E))}</div></div><div class="glanceBox"><b>TOMORROW</b><div class="glanceText">${esc(line(T))}${tomDinner?` • 🍽️ ${esc(tomDinner.name)}`:""}</div></div>${pins.length?`<div class="glanceBox"><b>📌 IMPORTANT</b><div class="glanceText">${esc(pins[0])}${pins.length>1?` • +${pins.length-1} more`:""}</div></div>`:""}`;
- if((!R.loaded||!MP.loaded||!G?.updatedAt)&&!window._dinnerDataLoading){window._dinnerDataLoading=true;ensureDinnerData_(()=>window._dinnerDataLoading=false)}
+function reminderCategoryOptions_(selected){
+ let cats=["Home","HVAC","Water","Safety","Kitchen","Pool","Lawn","Auto","Other"];
+ return cats.map(c=>`<option ${c===selected?"selected":""}>${c}</option>`).join("");
 }
+function reminderPreset_(name,days,category){
+ ensureHouseholdReminders_();
+ try{S.householdReminders=captureHouseholdReminders_()}catch(_){}
+ let d=new Date();d.setDate(d.getDate()+days);
+ S.householdReminders.push({id:"hr_"+Date.now(),name,intervalDays:days,nextDue:key(d),lastDone:"",category,notes:""});
+ openHouseholdReminders();
+}
+function openHouseholdReminders(){
+ ensureHouseholdReminders_();
+ let stats=reminderStats2_();
+ openModal(`<div class="hr2Wrap">
+  <div class="hr2Head">
+   <div><h2>🔁 Household Reminders 2.0</h2><div class="note">Recurring maintenance that actually remembers itself.</div></div>
+   <button class="btn" onclick="openMorningBrief()">✕</button>
+  </div>
+  <div class="hr2Stats">
+   <div><b>${stats.overdue}</b><span>Overdue</span></div>
+   <div><b>${stats.today}</b><span>Due today</span></div>
+   <div><b>${stats.soon}</b><span>Next 7 days</span></div>
+   <div><b>${stats.total}</b><span>Tracked</span></div>
+  </div>
+  <div class="hr2Presets">
+   <span>Quick add:</span>
+   <button class="btn mini" onclick="reminderPreset_('Change furnace filter',90,'HVAC')">Furnace filter • 90d</button>
+   <button class="btn mini" onclick="reminderPreset_('Buy water softener salt',30,'Water')">Softener salt • 30d</button>
+   <button class="btn mini" onclick="reminderPreset_('Test smoke / CO detectors',30,'Safety')">Smoke/CO test • 30d</button>
+   <button class="btn mini" onclick="reminderPreset_('Replace smoke / CO detector batteries',180,'Safety')">Detector batteries • 180d</button>
+  </div>
+  <div id="householdReminderEditor" class="hr2List">
+   ${S.householdReminders.length?S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join(""):`<div class="empty">No recurring reminders yet. Add one below and let the dashboard remember the boring crap.</div>`}
+  </div>
+  <button class="btn" onclick="addHouseholdReminder_()">+ Add Custom Reminder</button>
+  <div class="actions"><button class="btn" onclick="openMorningBrief()">Cancel</button><button class="btn primaryAction" onclick="saveHouseholdReminders_()">Save Reminders</button></div>
+ </div>`);
+}
+function householdReminderEditorRow_(r,i){
+ let cls=reminderClass_(r),due=reminderDueText_(r);
+ return `<div class="reminderEditor hr2Item ${cls}">
+  <div class="hr2ItemTop">
+   <div class="hr2Status">${cls==="overdue"?"OVERDUE":cls==="due"?"DUE TODAY":cls==="soon"?"DUE SOON":"SCHEDULED"}</div>
+   <div class="hr2Due">${esc(due)}</div>
+   <button class="x" onclick="deleteHouseholdReminder_(${i})">×</button>
+  </div>
+  <div class="hr2EditorGrid">
+   <input id="hrName${i}" value="${esc(r.name||"")}" placeholder="What needs doing?">
+   <select id="hrCat${i}">${reminderCategoryOptions_(r.category||"Home")}</select>
+   <label><span>Repeat every</span><div><input id="hrDays${i}" type="number" min="1" max="3650" value="${Number(r.intervalDays)||90}"> <small>days</small></div></label>
+   <label><span>Next due</span><input id="hrDue${i}" type="date" value="${esc(r.nextDue||key(new Date()))}"></label>
+  </div>
+  <input id="hrNotes${i}" class="hr2Notes" value="${esc(r.notes||"")}" placeholder="Optional note — filter size, brand, location, etc.">
+  <div class="hr2ItemActions">
+   ${r.lastDone?`<span class="hr2Last">Last done ${esc(dateOnly_(r.lastDone).toLocaleDateString([],{month:"short",day:"numeric",year:"numeric"}))}</span>`:`<span class="hr2Last">Never completed</span>`}
+   <div>
+    <button class="btn mini" onclick="markHouseholdReminderDone_('${esc(r.id)}','manager')">✓ Done</button>
+    <button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',1,'manager')">+1 day</button>
+    <button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',7,'manager')">+7 days</button>
+   </div>
+  </div>
+ </div>`;
+}
+function captureHouseholdReminders_(){
+ ensureHouseholdReminders_();
+ return S.householdReminders.map((r,i)=>({
+  id:r.id||("hr_"+Date.now()+"_"+i),
+  name:(document.getElementById("hrName"+i)?.value||r.name||"").trim(),
+  intervalDays:Math.max(1,Number(document.getElementById("hrDays"+i)?.value)||Number(r.intervalDays)||1),
+  nextDue:document.getElementById("hrDue"+i)?.value||r.nextDue||key(new Date()),
+  lastDone:r.lastDone||"",
+  category:document.getElementById("hrCat"+i)?.value||r.category||"Home",
+  notes:(document.getElementById("hrNotes"+i)?.value||r.notes||"").trim()
+ })).filter(r=>r.name);
+}
+function addHouseholdReminder_(){
+ try{S.householdReminders=captureHouseholdReminders_()}catch(_){ensureHouseholdReminders_()}
+ S.householdReminders.push({id:"hr_"+Date.now(),name:"",intervalDays:90,nextDue:key(new Date()),lastDone:"",category:"Home",notes:""});
+ openHouseholdReminders();
+ setTimeout(()=>document.getElementById("hrName"+(S.householdReminders.length-1))?.focus(),40);
+}
+function deleteHouseholdReminder_(i){
+ S.householdReminders=captureHouseholdReminders_();
+ S.householdReminders.splice(i,1);
+ openHouseholdReminders();
+}
+function saveHouseholdReminders_(){
+ S.householdReminders=captureHouseholdReminders_();
+ persist(()=>{openMorningBrief();renderGlance()});
+}
+
 function openGroceries(){document.getElementById("groceryOverlay").classList.add("open");let s=document.getElementById("groceryCategory");if(!s.innerHTML)s.innerHTML=groceryCategoryOptions();refreshGroceries();clearInterval(groceryTimer);groceryTimer=setInterval(refreshGroceries,20000);setTimeout(()=>document.getElementById("groceryName")?.focus(),100);activity()}
 function closeGroceries(){document.getElementById("groceryOverlay").classList.remove("open");clearInterval(groceryTimer);groceryTimer=null;activity()}
 function renderGroceries(){let body=document.getElementById("groceryBody");if(!body)return;let active=G.items.filter(x=>!x.checked).length,checked=G.items.length-active;document.getElementById("groceryCount").innerHTML=`${active} to get${checked?` • ${checked} checked`:""}<div class="gMergeNote">Recipe and weekly-plan adds automatically merge matching items.</div>`;document.getElementById("grocerySync").textContent=G.updatedAt?"Synced "+new Date(G.updatedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";if(!G.items.length){body.innerHTML='<div class="gEmpty">Your list is empty. Add something delicious. 😈</div>';return}let html="";GROCERY_CATEGORIES.forEach(cat=>{let a=G.items.filter(x=>x.category===cat).sort((a,b)=>Number(a.checked)-Number(b.checked)||a.name.localeCompare(b.name));if(!a.length)return;html+=`<section class="gSection"><div class="gSectionTitle">${esc(cat)}</div>${a.map(x=>`<div class="gItem ${x.checked?"checked":""}"><input type="checkbox" ${x.checked?"checked":""} onchange="setGroceryCheckedUI('${x.id}',this.checked)"><span class="gName">${x.qty?`<span class="gQty">${esc(x.qty)}</span>`:""}${esc(x.name)}${x.source?`<span class="gSource">From: ${esc(x.source)}</span>`:""}</span><div class="gItemActions"><button class="gEdit" onclick="editGroceryUI('${x.id}')" title="Edit">✎</button><button class="gDelete" onclick="deleteGroceryUI('${x.id}')" title="Delete">×</button></div></div>`).join("")}</section>`});body.innerHTML=html}
