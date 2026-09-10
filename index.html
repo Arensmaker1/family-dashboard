@@ -608,7 +608,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.6 — Morning Brief restored section polish */
+/* V9.6.7 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -714,6 +714,26 @@ let familyDashboardTokenTimer = null;
     }
   }
 
+  function removeQueuedById_(id){
+    const i=queued.findIndex(x=>x&&x.id===id);
+    if(i>=0)queued.splice(i,1);
+  }
+
+  function failExpiredQueue_(){
+    while(queued.length){
+      const payload=queued.shift();
+      const job=pending.get(payload.id);
+      if(!job)continue;
+      pending.delete(payload.id);
+      clearTimeout(job.timer);
+      const err=new Error("Family Dashboard sign-in expired before "+payload.method+" could run.");
+      try{
+        if(job.failure)job.failure(err);
+        else console.error(err);
+      }catch(e){console.error(e)}
+    }
+  }
+
   window.addEventListener("message", function(event){
     const msg = event.data || {};
     if(msg.type !== "fd-bridge-ready" && msg.type !== "fd-api-result") return;
@@ -756,17 +776,33 @@ let familyDashboardTokenTimer = null;
     const id = "fd-" + Date.now() + "-" + (++seq);
     const payload = {type:"fd-api-call", id, method, args:Array.from(args || []), idToken:familyDashboardIdToken};
 
+    const timeoutMs = method==="addMealPlanSource" ? 30000 : 45000;
     const timer = setTimeout(function(){
       pending.delete(id);
+      removeQueuedById_(id);
       const err = new Error("Family Dashboard backend timed out while calling " + method + ".");
-      if(failure) failure(err);
-      else console.error(err);
-    }, 45000);
+      try{
+        if(failure) failure(err);
+        else console.error(err);
+      }catch(e){console.error(e)}
+    }, timeoutMs);
 
     pending.set(id, {success, failure, timer});
 
-    if(bridgeReady && bridgePeer && familyDashboardIdToken) post_(payload);
-    else queued.push(payload);
+    if(bridgeReady && bridgePeer && familyDashboardIdToken){
+      post_(payload);
+    }else{
+      if(queued.length>=12){
+        const oldest=queued.shift();
+        const oldJob=oldest&&pending.get(oldest.id);
+        if(oldJob){
+          pending.delete(oldest.id);
+          clearTimeout(oldJob.timer);
+          try{oldJob.failure&&oldJob.failure(new Error("Family Dashboard backend queue was reset."));}catch(e){console.error(e)}
+        }
+      }
+      queued.push(payload);
+    }
   }
 
   function makeRunner_(){
@@ -841,10 +877,37 @@ let familyDashboardTokenTimer = null;
     const payload=decodeJwtPayload_(token);
     const expiresAt=Number(payload.exp||0)*1000;
     const refreshIn=Math.max(60000,expiresAt-Date.now()-5*60000);
-    familyDashboardTokenTimer=setTimeout(function(){
-      familyDashboardIdToken="";
-      showAuthGate_("Please refresh your Family Dashboard sign-in.");
-      try{google.accounts.id.prompt()}catch(e){}
+
+    // Ask GIS for a fresh credential before expiry, but DO NOT throw away
+    // the still-valid credential or cover the dashboard with the auth gate.
+    familyDashboardTokenTimer=setTimeout(function refreshFamilyDashboardToken_(){
+      try{
+        google.accounts.id.prompt(function(notification){
+          // If One Tap cannot refresh silently, keep the existing credential
+          // alive until its actual expiry and only then require interaction.
+          const msLeft=expiresAt-Date.now();
+          clearTimeout(familyDashboardTokenTimer);
+          familyDashboardTokenTimer=setTimeout(function(){
+            const livePayload=decodeJwtPayload_(familyDashboardIdToken);
+            const liveExp=Number(livePayload.exp||0)*1000;
+            if(liveExp>Date.now()+5000)return; // callback already refreshed us
+            familyDashboardIdToken="";
+            failExpiredQueue_();
+            showAuthGate_("Your Family Dashboard sign-in expired. Tap Google to reconnect.");
+            try{google.accounts.id.prompt()}catch(e){}
+          },Math.max(1000,msLeft+1000));
+        });
+      }catch(e){
+        clearTimeout(familyDashboardTokenTimer);
+        familyDashboardTokenTimer=setTimeout(function(){
+          const livePayload=decodeJwtPayload_(familyDashboardIdToken);
+          const liveExp=Number(livePayload.exp||0)*1000;
+          if(liveExp>Date.now()+5000)return;
+          familyDashboardIdToken="";
+          failExpiredQueue_();
+          showAuthGate_("Your Family Dashboard sign-in expired. Tap Google to reconnect.");
+        },Math.max(1000,expiresAt-Date.now()+1000));
+      }
     },refreshIn);
   }
 
@@ -937,6 +1000,7 @@ let R={recipes:[],loaded:false},MP={plans:[],recipes:[],sources:[],loaded:false}
 let planWeekDraft=[],randomDinnerDraft=[],WG={items:[],recipes:[],loaded:false};
 let cookRecipe=null,cookStep=0,cookAllStepsOpen=false,cookCheckedIngredients=new Set(),cookCompletedSteps=new Set(),cookWakeLock=null,cookKeepAwake=false,cookScale=1;
 let coreLoadInFlight_=false,weatherLoadInFlight_=false,pantryLoadInFlight_=false,groceryLoadInFlight_=false;
+let mealPlanSourceAddInFlight_=false;
 let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0;
 let fdDiagLongTasks_=0,fdDiagLongestTask_=0,fdDiagLastHeartbeat_=Date.now(),fdDiagHeartbeatLag_=0,fdDiagSampler_=null,fdDiagHeartbeatTimer_=null;
 function fdDiagStore_(sample){
@@ -2158,7 +2222,30 @@ function planMealHtml_(icon,label,id,name){if(!String(name||"").trim())return ""
 function currentPlan_(){return (MP.plans||[]).find(p=>p.id===currentPlanId)||(MP.plans||[])[0]}
 function choosePlan(id){currentPlanId=id;planWeekDraft=[];renderMealPlans()}
 function renderMealPlans(){let b=document.getElementById("recipeBody"),plans=MP.plans||[];if(!plans.length){b.innerHTML='<div class="rEmpty">No meal plans found.</div>';return}let p=currentPlan_();currentPlanId=p.id;let rc=(MP.recipes||[]).filter(r=>r.planId===p.id).length,today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");let warnings=(MP.errors||[]).map(e=>`${esc(e.source)}: ${esc(e.message)}`).join('<br>');b.innerHTML=`<div class="planSelectBar"><div><label>MEAL PLAN</label><select id="mealPlanSelect" onchange="choosePlan(this.value)">${plans.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select></div><div style="display:flex;gap:7px;align-items:end"><button class="btn" onclick="manageMealPlanSourcesUI()">⚙ Manage Sheets</button><button class="btn" onclick="addMealPlanSourceUI()">＋ Add Plan Sheet</button></div></div><div class="planHeader"><h2>${esc(p.name)}</h2><div class="rMeta">${p.days.length} scheduled days • ${rc} core recipes • Tap any meal to open its recipe</div><div class="planSourceNote">Future compatible meal-plan Sheets can be added here without changing dashboard code.</div>${warnings?`<div class="planWarning">Skipped plan source(s):<br>${warnings}</div>`:""}</div><div class="planBuilder"><h3>🍽️ Load My Week</h3><div class="planControls"><div><label>START AT PLAN DAY</label><select id="planStartDay">${p.days.map(d=>`<option value="${d.day}">Day ${d.day}</option>`).join("")}</select></div><div><label>START ON CALENDAR DATE</label><input id="planStartDate" type="date" value="${iso}"></div><button class="btn" onclick="buildPlanWeek()">Preview 7 Days</button></div><div id="planWeekPreview"></div></div><div class="planDays">${p.days.map(d=>`<div class="planDay"><h3>Day ${d.day}</h3>${planMealHtml_('🌅','Breakfast',d.breakfastId,d.breakfast)}${planMealHtml_('☀️','Lunch',d.lunchId,d.lunch)}${planMealHtml_('🌙','Dinner',d.dinnerId,d.dinner)}<div class="planNutrition">${d.calories?esc(d.calories)+" cal":""}${d.protein?` • ${esc(d.protein)}g protein`:""}${d.fiber?` • ${esc(d.fiber)}g fiber`:""}${d.servings?` • ${esc(d.servings)} household servings`:""}</div></div>`).join("")}</div>`}
-function addMealPlanSourceUI(){let link=prompt("Paste the Google Sheet link for the new meal plan:");if(!link)return;let name=prompt("What should this plan be called? (Leave blank to use the Sheet name)")||"";let b=document.getElementById("recipeBody");b.insertAdjacentHTML("afterbegin",'<div class="loadedBadge">Checking new meal plan…</div>');google.script.run.withSuccessHandler(()=>{MP.loaded=false;showPlanTab()}).withFailureHandler(e=>alert("Couldn’t add that plan: "+(e.message||e))).addMealPlanSource(name,link)}
+function addMealPlanSourceUI(){
+ if(mealPlanSourceAddInFlight_){alert("That meal-plan Sheet is already being checked.");return}
+ let link=prompt("Paste the Google Sheet link for the new meal plan:");
+ if(!link)return;
+ let name=prompt("What should this plan be called? (Leave blank to use the Sheet name)")||"";
+ let b=document.getElementById("recipeBody");
+ mealPlanSourceAddInFlight_=true;
+ let oldBadge=document.getElementById("planSourceCheckingBadge");
+ if(oldBadge)oldBadge.remove();
+ b?.insertAdjacentHTML("afterbegin",'<div id="planSourceCheckingBadge" class="loadedBadge">Checking new meal plan…</div>');
+ google.script.run
+  .withSuccessHandler(()=>{
+    mealPlanSourceAddInFlight_=false;
+    document.getElementById("planSourceCheckingBadge")?.remove();
+    MP.loaded=false;
+    showPlanTab();
+  })
+  .withFailureHandler(e=>{
+    mealPlanSourceAddInFlight_=false;
+    document.getElementById("planSourceCheckingBadge")?.remove();
+    alert("Couldn’t add that plan: "+(e.message||e));
+  })
+  .addMealPlanSource(name,link);
+}
 function manageMealPlanSourcesUI(){
   let sources=(MP.sources||[]).filter(x=>x&&x.sheetId);
   if(!sources.length){alert("No removable meal-plan Sheets are connected.");return}
