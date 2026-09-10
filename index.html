@@ -1629,6 +1629,60 @@ function briefSafe_(label,fn,fallback){
  }
 }
 
+/* V9.6.1 — restore stable Morning Brief / glance helpers accidentally removed in V9.6.0 */
+function morningWeatherHtml_(){if(!W||!W.ok||!W.current)return `<div class="briefLine">Weather unavailable.</div>`;let today=key(new Date()),i=W.daily&&W.daily.time?W.daily.time.indexOf(today):-1,current=Math.round(W.current.temperature_2m),condition=icon(W.current.weather_code),hi=i>=0?Math.round(W.daily.temperature_2m_max[i]):"—",lo=i>=0?Math.round(W.daily.temperature_2m_min[i]):"—",rain=i>=0?(W.daily.precipitation_probability_max[i]||0):0,advice=rain>=70?"Rain is likely today.":rain>=40?"Keep an eye on the sky today.":"No major rain concern today.";return `<div class="briefBig">${condition} ${current}°</div><div class="briefLine">High ${hi}° • Low ${lo}°</div><div class="briefLine">${rain}% precipitation • ${esc(advice)}</div><div class="briefLine">${esc(W.location||"")}</div>`}
+
+function morningScheduleHtml_(){let events=futureEventsForDay_(new Date(),true);if(!events.length)return `<div class="briefLine">Nothing else scheduled today.</div>`;return events.slice(0,6).map(e=>`<div class="briefLine">${e.allDay?"All day":esc(time(e))}&nbsp;•&nbsp;<b>${esc(e.title)}</b></div>`).join("")}
+
+function morningChoresHtml_(){let d=new Date(),C=choresFor(d);if(!C.length)return `<div class="briefLine">No chores today. Somebody got lucky.</div>`;return C.map(x=>{let done=!!S.completions[key(d)+"-"+x.i];return `<div class="briefLine">${done?"✅":"⬜"} ${esc(x.name)}${x.who?` • ${esc(x.who)}`:""}</div>`}).join("")}
+
+function morningChoreStats_(){let d=new Date(),C=choresFor(d),done=C.filter(x=>S.completions[key(d)+"-"+x.i]).length;return{total:C.length,done,left:Math.max(0,C.length-done)}}
+
+function morningReminderStats_(){let all=activeBriefReminders_(),overdue=all.filter(r=>daysUntil_(r.nextDue)<0).length,today=all.filter(r=>daysUntil_(r.nextDue)===0).length,week=all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=7}).length;return{overdue,today,week}}
+
+function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return futureEventsForDay_(d,false).sort((x,y)=>new Date(x.start)-new Date(y.start))[0]||null}
+
+function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
+
+function morningDinnerHtml_(){
+ let x=morningDinnerData_();
+ if(!x.dinner)return `<div class="briefLine">No dinner is planned yet.</div>`;
+
+ let status=dinnerCommandStatus_(x.match,x.need),details=[];
+
+ if(x.mins)details.push(`⏱️ ${formatCookEstimate_(x.mins)}`);
+ if(x.prep.length)details.push(`🧂 ${x.prep[0]}`);
+ if(x.busy)details.push(`📅 ${x.busy.count>1?x.busy.count+" evening events":x.busy.time+" "+x.busy.title}`);
+
+ let linked=x.match
+  ?((x.match.match==="fuzzy"||x.match.match==="title")&&x.match.recipe?.name!==x.dinner.name
+     ?`<div class="briefLine">🔗 Linked recipe: <b>${esc(x.match.recipe.name)}</b></div>`:"")
+  :`<div class="briefLine briefWarn">🔗 No recipe linked yet.</div>`;
+
+ let grocery=x.need
+  ?(x.need.missing
+    ?`<div class="briefLine briefWarn">🛒 ${x.need.missing} ingredient${x.need.missing===1?"":"s"} may still be needed.</div>`
+    :`<div class="briefLine briefGood">✓ Grocery list looks covered.</div>`)
+  :"";
+
+ let buttons=x.match
+  ?`<div class="dc2BriefActions"><button class="btn primaryAction" onclick="openCookMode('${x.match.source}','${esc(x.match.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="openDinnerRecipe_('${x.match.source}','${esc(x.match.id)}')">🍽️ Recipe</button><button class="btn" onclick="openRecipeGroceryFromDinner_('${x.match.source}','${esc(x.match.id)}')">🛒 Ingredients</button></div>`
+  :`<div class="dc2BriefActions"><button class="btn" onclick="closeModal();openRecipes()">🔎 Find Recipe</button></div>`;
+
+ return `<div class="dc2BriefHead"><div class="briefBig">${esc(x.dinner.name)}</div><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="briefLine">${esc(x.dinner.planName||"Tonight's dinner")}</div>${details.length?`<div class="dc2BriefMeta">${details.map(v=>`<span>${esc(v)}</span>`).join("")}</div>`:""}${linked}${grocery}${buttons}`;
+}
+
+function renderGlance(){
+ let e=document.getElementById("glanceStrip");if(!e)return;
+ let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
+ let E=futureEventsForDay_(now,true).slice(0,3),T=futureEventsForDay_(tom,false).slice(0,3),
+ pins=(S.pinnedNotes||[]);
+ let line=a=>a.length?a.map(x=>(x.allDay?"":time(x)+" ")+x.title).join(" • "):"Nothing else scheduled";
+ let label=now.getHours()>=17?"TONIGHT":"TODAY",dinner=dinnerCommandHtml_(now),tomDinner=dinnerForDate_(tom);
+ e.innerHTML=`${calendarIntelHtml_()}${dinner}<div class="glanceBox"><b>${label}</b><div class="glanceText">${esc(line(E))}</div></div><div class="glanceBox"><b>TOMORROW</b><div class="glanceText">${esc(line(T))}${tomDinner?` • 🍽️ ${esc(tomDinner.name)}`:""}</div></div>${pins.length?`<div class="glanceBox"><b>📌 IMPORTANT</b><div class="glanceText">${esc(pins[0])}${pins.length>1?` • +${pins.length-1} more`:""}</div></div>`:""}`;
+ if((!R.loaded||!MP.loaded||!G?.updatedAt)&&!window._dinnerDataLoading){window._dinnerDataLoading=true;ensureDinnerData_(()=>window._dinnerDataLoading=false)}
+}
+
 function morningReminderHtml_(){
  let all=activeBriefReminders_(),due=all.filter(r=>daysUntil_(r.nextDue)<=7);
  if(!due.length)return `<div class="briefLine">✓ No household jobs due this week.</div>`;
