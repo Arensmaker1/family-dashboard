@@ -497,6 +497,18 @@ body[data-appearance="light"] .sportsTeamCard{background:#fffdf9}
 .briefCard.clickable{cursor:pointer}.briefCard.clickable:hover{border-color:var(--theme1)}.briefActionLine{display:flex;justify-content:space-between;gap:10px;align-items:center}.briefActionLine .btn{padding:5px 8px;font-size:9px}.briefGood{color:var(--g);font-weight:800}.briefWarn{color:var(--o);font-weight:800}.briefGroceryCount{font-size:22px;font-weight:900}.briefMini{font-size:9px;color:var(--m);margin-top:3px;line-height:1.35}
 body[data-appearance="light"] .briefPriority{background:linear-gradient(145deg,#fffdf9,#f8f3ea)}
 @media(max-width:650px){.briefPriorityRow{font-size:10px}.briefActionLine{align-items:flex-start}.briefGroceryCount{font-size:19px}}
+
+/* V9.3.7 — restore readable Today/Tomorrow glance width on the dashboard strip */
+@media(min-width:901px){
+  .glanceStrip>.glanceBox{
+    flex:0 1 125px;
+    min-width:112px;
+    padding:8px 10px;
+    font-size:10px;
+  }
+  .glanceStrip>.glanceBox b{font-size:10px}
+  .glanceStrip>.dinnerCommand{flex:2.05 1 500px}
+}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1136,7 +1148,10 @@ function morningSportsHtml_(){
   else if(root.data && Array.isArray(root.data.teams)) teams = root.data.teams;
   else if(root.results && Array.isArray(root.results)) teams = root.results;
 
-  if(!teams.length)return `<div class="briefLine briefWarn">⚠️ Sports data is still loading.</div>`;
+  if(!teams.length){
+   if(root.loading)return `<div class="briefLine briefWarn">⚠️ Sports data is loading…</div>`;
+   return `<div class="briefLine briefWarn">⚠️ ${esc(root.message||"Sports data unavailable right now.")}</div>`;
+  }
 
   let relevant = teams.filter(t=>{
     try{
@@ -1258,36 +1273,72 @@ function sportsReadDirectCache_(allowStale=false){
 function sportsWriteDirectCache_(data){try{localStorage.setItem(SPORTS_DIRECT_CACHE_KEY_,JSON.stringify({savedAt:Date.now(),data}))}catch(_){}}
 async function loadSports(force=false){
  let cached=!force?sportsReadDirectCache_(true):null;
+
+ // Show whatever we already know immediately while the backend refreshes.
  if(cached){
   SPORTS=cached.data;
   SPORTS.loading=false;
   refreshSportsViews_();
-  if(cached.age<600000)return;
  }else{
   SPORTS.loading=true;
   refreshSportsViews_();
  }
- let settled=await Promise.allSettled(SPORTS_DIRECT_TEAMS_.map(cfg=>sportsFetchTeamDirect_(cfg,force)));
- let teams=settled.map((r,i)=>r.status==="fulfilled"?r.value:{
-  key:SPORTS_DIRECT_TEAMS_[i].key,
-  name:SPORTS_DIRECT_TEAMS_[i].name,
-  shortName:SPORTS_DIRECT_TEAMS_[i].shortName,
-  emoji:SPORTS_DIRECT_TEAMS_[i].emoji,
-  league:SPORTS_DIRECT_TEAMS_[i].league,
-  ok:false,
-  error:r.reason?.message||String(r.reason||"Unknown error"),
-  live:null,last:null,next:null
- });
- let anyOk=teams.some(t=>t.ok);
- if(anyOk){
-  SPORTS={loading:false,ok:true,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:""};
-  sportsWriteDirectCache_(SPORTS);
- }else if(cached){
-  SPORTS=cached.data;
-  SPORTS.loading=false;
-  SPORTS.message="Showing cached sports data; live refresh timed out.";
- }else{
-  SPORTS={loading:false,ok:false,teams,updatedAt:new Date().toISOString(),source:"ESPN browser feed",message:teams.map(t=>`${t.shortName}: ${t.error||"unknown error"}`).join(" | ")};
+
+ // V9.3.7: use the authenticated Apps Script backend for ESPN instead of
+ // browser-to-ESPN fetches. This avoids CORS/hanging browser requests.
+ try{
+  if(!(window.google&&google.script&&google.script.run))throw new Error("Dashboard backend bridge unavailable.");
+
+  await new Promise((resolve,reject)=>{
+   let finished=false;
+   let timer=setTimeout(()=>{
+    if(finished)return;
+    finished=true;
+    reject(new Error("Sports backend timed out."));
+   },9000);
+
+   google.script.run
+    .withSuccessHandler(result=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      resolve(result);
+    })
+    .withFailureHandler(err=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      reject(err instanceof Error?err:new Error(err?.message||String(err||"Sports backend failed.")));
+    })
+    .getSportsCenter(!!force);
+  }).then(result=>{
+    let teams=Array.isArray(result?.teams)?result.teams:[];
+    SPORTS={
+      loading:false,
+      ok:!!result?.ok || teams.some(t=>t&&t.ok),
+      teams,
+      updatedAt:result?.updatedAt||new Date().toISOString(),
+      source:result?.source||"Apps Script sports feed",
+      message:result?.message||""
+    };
+    if(teams.length)sportsWriteDirectCache_(SPORTS);
+  });
+ }catch(err){
+  console.warn("Sports backend refresh failed",err);
+  if(cached){
+    SPORTS=cached.data;
+    SPORTS.loading=false;
+    SPORTS.message="Showing cached sports data; live refresh unavailable.";
+  }else{
+    SPORTS={
+      loading:false,
+      ok:false,
+      teams:[],
+      updatedAt:new Date().toISOString(),
+      source:"Apps Script sports feed",
+      message:err?.message||String(err||"Sports unavailable.")
+    };
+  }
  }
  refreshSportsViews_();
 }
@@ -1333,6 +1384,11 @@ function openMorningBrief(){
  try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
  try{ensureHouseholdReminders_()}catch(err){console.warn("Morning Brief reminders prep failed",err)}
  try{refreshMorningBrief_()}catch(err){console.error("Morning Brief initial render failed",err)}
+ try{
+  if(!SPORTS || SPORTS.loading || !Array.isArray(SPORTS.teams) || !SPORTS.teams.length){
+   loadSports(false);
+  }
+ }catch(err){console.warn("Morning Brief sports refresh failed",err)}
  try{ensureDinnerData_(()=>{try{refreshMorningBrief_()}catch(_){}})}catch(err){console.warn("Morning Brief dinner refresh failed",err)}
  try{
   if(window.google&&google.script&&google.script.run){
