@@ -1216,8 +1216,54 @@ function morningBriefAutoKey_(){return "familyDashboardMorningBrief-"+key(new Da
 function inMorningBriefWindow_(){let h=new Date().getHours();return h>=5&&h<11}
 function markMorningBriefSeen_(){if(!inMorningBriefWindow_())return;try{localStorage.setItem(morningBriefAutoKey_(),"1")}catch(_){}}
 function maybeAutoOpenMorningBrief_(){if(!inMorningBriefWindow_())return;try{if(localStorage.getItem(morningBriefAutoKey_())==="1")return}catch(_){};let modal=document.getElementById("modalbg");if(modal&&modal.style.display==="grid")return;openMorningBrief()}
-function buildMorningBriefHtml_(){let now=new Date(),pins=S.pinnedNotes||[];return `<div class="briefWrap">${morningSummaryHtml_()}${morningPriorityHtml_()}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${morningScheduleHtml_()}${tomorrowPreviewHtml_()}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${morningWeatherHtml_()}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${morningSportsHtml_()}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${morningDinnerHtml_()}</div><div class="briefCard"><h3>✅ CHORES</h3>${morningChoreSummaryHtml_()}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${morningReminderHtml_()}${upcomingHouseholdHtml_()}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${morningGroceryHtml_()}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${pins.length?pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join(""):`<div class="briefLine">Nothing pinned.</div>`}</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`}
-function openMorningBrief(){markMorningBriefSeen_();ensureHouseholdReminders_();openModal(buildMorningBriefHtml_());ensureDinnerData_(()=>{let modal=document.getElementById("modal");if(modal&&modal.querySelector(".briefWrap"))modal.innerHTML=buildMorningBriefHtml_()});google.script.run.withSuccessHandler(g=>{G=g||{items:[]};let modal=document.getElementById("modal");if(modal&&modal.querySelector(".briefWrap"))modal.innerHTML=buildMorningBriefHtml_()}).withFailureHandler(()=>{}).getGroceries();activity()}
+function briefSafe_(label,fn,fallback){
+ try{return fn()}
+ catch(err){
+  console.error("Morning Brief section failed:",label,err);
+  return fallback||`<div class="briefLine briefWarn">⚠️ ${esc(label)} unavailable right now.</div>`;
+ }
+}
+function buildMorningBriefHtml_(){
+ let now=new Date(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[];
+ let summary=briefSafe_("Summary",()=>morningSummaryHtml_(),`<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>Good ${now.getHours()<12?"morning":now.getHours()<17?"afternoon":"evening"}.</b> Here’s the household rundown.</div></div>`);
+ let priority=briefSafe_("What Matters",()=>morningPriorityHtml_(),`<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3><div class="briefPriorityRow">Dashboard data is still loading.</div></div>`);
+ let schedule=briefSafe_("Today",()=>morningScheduleHtml_());
+ let tomorrow=briefSafe_("Tomorrow",()=>tomorrowPreviewHtml_());
+ let weather=briefSafe_("Weather",()=>morningWeatherHtml_());
+ let sports=briefSafe_("Sports",()=>morningSportsHtml_());
+ let dinner=briefSafe_("Dinner Command",()=>morningDinnerHtml_());
+ let chores=briefSafe_("Chores",()=>morningChoreSummaryHtml_());
+ let reminders=briefSafe_("Household",()=>morningReminderHtml_());
+ let upcoming=briefSafe_("Coming Up",()=>upcomingHouseholdHtml_(),"");
+ let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
+ let notes=briefSafe_("Pinned Notes",()=>pins.length?pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join(""):`<div class="briefLine">Nothing pinned.</div>`);
+ return `<div class="briefWrap">${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+}
+function refreshMorningBrief_(){
+ let modal=document.getElementById("modal");
+ if(!modal||!modal.querySelector(".briefWrap"))return;
+ try{modal.innerHTML=buildMorningBriefHtml_()}catch(err){console.error("Morning Brief refresh failed",err)}
+}
+function openMorningBrief(){
+ markMorningBriefSeen_();
+ ensureHouseholdReminders_();
+ try{
+  openModal(`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`);
+  setTimeout(refreshMorningBrief_,0);
+ }catch(err){
+  console.error("Morning Brief open failed",err);
+  let bg=document.getElementById("modalbg"),modal=document.getElementById("modal");
+  if(modal)modal.innerHTML=`<div class="briefWrap"><h2>☀️ Morning Brief 2.0</h2><div class="briefLine briefWarn">⚠️ The brief hit an error while opening.</div><div class="briefLine">${esc(err&&err.message?err.message:String(err))}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+  if(bg)bg.style.display="grid";
+ }
+ try{ensureDinnerData_(()=>refreshMorningBrief_())}catch(err){console.error("Dinner refresh failed",err)}
+ try{
+  if(window.google&&google.script&&google.script.run){
+   google.script.run.withSuccessHandler(g=>{G=g||{items:[]};refreshMorningBrief_()}).withFailureHandler(err=>console.warn("Morning Brief groceries refresh failed",err)).getGroceries();
+  }
+ }catch(err){console.error("Grocery refresh failed",err)}
+ activity();
+}
 
 function openHouseholdReminders(){ensureHouseholdReminders_();openModal(`<h2>🔁 Household Reminders</h2><div class="note">Set repeating jobs like furnace filters, water-softener salt, smoke-detector batteries, HVAC maintenance, and anything else nobody wants to remember manually.</div><div id="householdReminderEditor" style="margin-top:12px">${S.householdReminders.length?S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join(""):`<div class="empty">No recurring reminders yet.</div>`}</div><button class="btn" onclick="addHouseholdReminder_()">+ Add Reminder</button><div class="actions"><button class="btn" onclick="openMorningBrief()">Cancel</button><button class="btn primaryAction" onclick="saveHouseholdReminders_()">Save Reminders</button></div>`)}
 function householdReminderEditorRow_(r,i){return `<div class="reminderEditor"><div class="reminderEditorGrid"><input id="hrName${i}" value="${esc(r.name||"")}" placeholder="Furnace filter"><input id="hrDays${i}" type="number" min="1" max="3650" value="${Number(r.intervalDays)||90}" title="Repeat every X days"><input id="hrDue${i}" type="date" value="${esc(r.nextDue||key(new Date()))}"><button class="x" onclick="deleteHouseholdReminder_(${i})">×</button></div><div class="note" style="margin-top:5px">Repeat every X days • Next due date</div></div>`}
