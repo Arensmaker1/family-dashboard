@@ -607,6 +607,11 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hr2ItemActions{align-items:flex-start;flex-direction:column}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
+
+/* V9.6.2 — Morning Brief restored section polish */
+.briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
+.briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
+.briefTomorrow>span{font-size:10px}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1681,6 +1686,50 @@ function renderGlance(){
  let label=now.getHours()>=17?"TONIGHT":"TODAY",dinner=dinnerCommandHtml_(now),tomDinner=dinnerForDate_(tom);
  e.innerHTML=`${calendarIntelHtml_()}${dinner}<div class="glanceBox"><b>${label}</b><div class="glanceText">${esc(line(E))}</div></div><div class="glanceBox"><b>TOMORROW</b><div class="glanceText">${esc(line(T))}${tomDinner?` • 🍽️ ${esc(tomDinner.name)}`:""}</div></div>${pins.length?`<div class="glanceBox"><b>📌 IMPORTANT</b><div class="glanceText">${esc(pins[0])}${pins.length>1?` • +${pins.length-1} more`:""}</div></div>`:""}`;
  if((!R.loaded||!MP.loaded||!G?.updatedAt)&&!window._dinnerDataLoading){window._dinnerDataLoading=true;ensureDinnerData_(()=>window._dinnerDataLoading=false)}
+}
+
+
+/* V9.6.2 — Morning Brief section helpers */
+function morningSummaryHtml_(){
+ let now=new Date(),
+     events=futureEventsForDay_(now,true),
+     cs=morningChoreStats_(),
+     rs=reminderStats2_(),
+     parts=[];
+ if(events.length)parts.push(`${events.length} thing${events.length===1?"":"s"} left on calendar`);
+ if(cs.left)parts.push(`${cs.left} chore${cs.left===1?"":"s"} remaining`);
+ if(rs.overdue)parts.push(`${rs.overdue} household job${rs.overdue===1?"":"s"} overdue`);
+ if(!parts.length)parts.push("the household is looking pretty clear");
+ let greeting=now.getHours()<12?"Good morning":now.getHours()<17?"Good afternoon":"Good evening";
+ return `<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>${greeting}.</b> ${esc(parts.join(" • "))}</div></div>`;
+}
+function tomorrowPreviewHtml_(){
+ let d=new Date();d.setDate(d.getDate()+1);
+ let events=futureEventsForDay_(d,false).sort((a,b)=>new Date(a.start)-new Date(b.start)),
+     dinner=dinnerForDate_(d);
+ if(!events.length&&!dinner)return `<div class="briefTomorrow"><b>UP FIRST TOMORROW</b><span>Nothing major on deck yet.</span></div>`;
+ let bits=[];
+ if(events.length){
+  let e=events[0];
+  bits.push(`${e.allDay?"All day":time(e)} • ${e.title}`);
+ }
+ if(dinner)bits.push(`🍽️ ${dinner.name}`);
+ return `<div class="briefTomorrow"><b>UP FIRST TOMORROW</b>${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`;
+}
+function morningChoreSummaryHtml_(){
+ let d=new Date(),C=choresFor(d);
+ if(!C.length)return `<div class="briefLine">No chores today. Somebody got lucky.</div>`;
+ let left=C.filter(x=>!S.completions[key(d)+"-"+x.i]);
+ if(!left.length)return `<div class="briefLine briefGood">✓ All chores are done for today.</div>`;
+ let shown=left.slice(0,5).map(x=>`<div class="briefLine">⬜ ${esc(x.name)}${x.who?` • ${esc(x.who)}`:""}</div>`).join("");
+ return `<div class="briefLine"><b>${left.length} remaining</b></div>${shown}${left.length>5?`<div class="briefLine">+ ${left.length-5} more</div>`:""}`;
+}
+function morningGroceryHtml_(){
+ if(!G||!Array.isArray(G.items))return `<div class="briefLine">Grocery list is still loading.</div>`;
+ let active=G.items.filter(x=>!x.checked);
+ if(!active.length)return `<div class="briefLine briefGood">✓ Grocery list is clear.</div>`;
+ let shown=active.slice(0,5).map(x=>`<div class="briefLine">• ${x.qty?`<b>${esc(x.qty)}</b> `:""}${esc(x.name)}</div>`).join("");
+ return `<div class="briefLine"><b>${active.length} item${active.length===1?"":"s"} to get</b></div>${shown}${active.length>5?`<div class="briefLine">+ ${active.length-5} more</div>`:""}`;
 }
 
 function morningReminderHtml_(){
