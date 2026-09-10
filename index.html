@@ -1137,6 +1137,68 @@ function tomorrowPreviewHtml_(){let e=tomorrowFirstEvent_();if(!e)return `<div c
 function upcomingHouseholdHtml_(){let upcoming=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=14}).slice(0,3);if(!upcoming.length)return "";return `<div class="briefUpcoming"><div class="briefTomorrowLabel">COMING UP</div>${upcoming.map(r=>`<div class="briefUpcomingRow"><span>${esc(r.name)}</span><b>${esc(reminderDueText_(r))}</b></div>`).join("")}</div>`}
 function morningChoreSummaryHtml_(){let s=morningChoreStats_();if(!s.total)return `<div class="briefLine">No chores today.</div>`;return `<div class="briefProgressText"><b>${s.done} of ${s.total}</b> done${s.left?` • ${s.left} remaining`:" • all finished 🎉"}</div><div class="briefProgress"><div style="width:${Math.round((s.done/s.total)*100)}%"></div></div>${morningChoresHtml_()}`}
 function morningGroceryHtml_(){let items=(G&&Array.isArray(G.items))?G.items:[],active=items.filter(x=>!x.checked),checked=items.length-active.length;if(!items.length)return `<div class="briefLine briefGood">✓ Grocery list is empty.</div>`;let preview=active.length?`<div class="briefLine">${esc(active.slice(0,4).map(x=>(x.qty?x.qty+" ":"")+x.name).join(" • "))}${active.length>4?` • +${active.length-4} more`:""}</div>`:`<div class="briefLine briefGood">Shopping is done. 🎉</div>`;return `<div class="briefActionLine"><div><div class="briefGroceryCount">${active.length}</div><div class="briefMini">item${active.length===1?"":"s"} still to get${checked?` • ${checked} checked`:""}</div></div><button class="btn" onclick="closeModal();openGroceries()">Open List →</button></div>${preview}`}
+
+function sportsWhen_(dateValue){
+ try{
+  if(!dateValue)return "";
+  let d=new Date(dateValue);
+  if(Number.isNaN(d.getTime()))return "";
+  let now=new Date();
+  let sameDay=d.toDateString()===now.toDateString();
+  let tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);
+  let isTomorrow=d.toDateString()===tomorrow.toDateString();
+  let time=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  if(sameDay)return `Today • ${time}`;
+  if(isTomorrow)return `Tomorrow • ${time}`;
+  return `${d.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})} • ${time}`;
+ }catch(_){return ""}
+}
+function sportsOpponentText_(g){
+ if(!g)return "Opponent";
+ let opp=g.opponent||"Opponent";
+ return g.homeAway==="home"?`vs ${opp}`:g.homeAway==="away"?`@ ${opp}`:opp;
+}
+function sportsResultText_(g){
+ if(!g)return "";
+ let score=(g.ourScore!==""&&g.opponentScore!=="")?`${g.ourScore}-${g.opponentScore}`:"";
+ let result=g.result?`${g.result}${score?` ${score}`:""}`:score;
+ let opp=sportsOpponentText_(g);
+ return [result,opp].filter(Boolean).join(" • ");
+}
+function sportsTeamRelevant_(t){
+ if(!t||!t.ok)return false;
+ if(t.live)return true;
+ if(t.last){
+  try{
+   let age=Date.now()-new Date(t.last.date).getTime();
+   if(Number.isFinite(age)&&age<=4*86400000)return true;
+  }catch(_){}
+ }
+ if(t.next){
+  try{
+   let until=new Date(t.next.date).getTime()-Date.now();
+   if(Number.isFinite(until)&&until<=4*86400000&&until>=-3*3600000)return true;
+  }catch(_){}
+ }
+ return false;
+}
+function sportsMiniTileHtml_(t){
+ if(!t)return "";
+ let title=`${t.emoji||"🏟️"} ${t.shortName||t.name||"Team"}`;
+ let line="";
+ if(t.live){
+  let score=(t.live.ourScore!==""&&t.live.opponentScore!=="")?` • ${t.live.ourScore}-${t.live.opponentScore}`:"";
+  line=`LIVE • ${sportsOpponentText_(t.live)}${score}${t.live.status?` • ${t.live.status}`:""}`;
+ }else if(t.last){
+  line=`${sportsResultText_(t.last)}${t.next?` • Next ${sportsWhen_(t.next.date)}`:""}`;
+ }else if(t.next){
+  line=`Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}`;
+ }else{
+  line="No recent game data.";
+ }
+ return `<div class="briefSportsTile"><div class="briefSportsTeam">${esc(title)}</div><div class="briefSportsLine">${esc(line)}</div></div>`;
+}
+
 function morningSportsHtml_(){
  try{
   let root = (typeof SPORTS!=="undefined" && SPORTS) ? SPORTS : null;
@@ -1177,7 +1239,7 @@ function morningSportsHtml_(){
   }).join("");
  }catch(err){
   console.error("Morning Brief sports render failed",err);
-  return `<div class="briefLine briefWarn">⚠️ Sports data is still loading.</div>`;
+  return `<div class="briefLine briefWarn">⚠️ Sports card render error.</div>`;
  }
 }
 function sportsGameBlock_(label,g,isLive){
