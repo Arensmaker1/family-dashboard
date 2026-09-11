@@ -636,7 +636,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.7.1 — Morning Brief restored section polish */
+/* V9.7.2 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -2375,16 +2375,27 @@ function showBuildTab(){setRecipeTab_("build");document.getElementById("recipeBo
 function recipeDataFail(m){document.getElementById("recipeBody").innerHTML=`<div class="rError"><b>Couldn’t read the Sheet.</b><br><br>${esc(m||"Unknown error")}<br><br><span class="rMeta">Check Sheet access and Apps Script authorization.</span></div>`}
 const SIMPLE_RECIPE_CATEGORIES=["Breakfast","Mains","Salads","Soups","Sides","Apps","Sauces","Desserts","Drinks","Other"];
 function simpleRecipeCategory_(cat,name,tags){
- let c=String(cat||"").trim().toLowerCase(),blob=[c,name||"",tags||""].join(" ").toLowerCase();
- if(/breakfast|brunch|egg|pancake|waffle|oatmeal/.test(blob))return "Breakfast";
- if(/dessert|sweet|cake|cookie|pie|brownie|candy|ice cream/.test(blob))return "Desserts";
- if(/sauce|condiment|dressing|marinade|rub|seasoning|crema|chimichurri|salsa|gravy/.test(c))return "Sauces";
- if(/app|appetizer|starter|snack|dip|finger food/.test(c))return "Apps";
- if(/\bsalad\b|\bslaw\b/.test(blob))return "Salads";
- if(/\bsoup\b|\bstew\b|\bchowder\b|\bbisque\b/.test(blob))return "Soups";
- if(/side|vegetable|veggie|potato|rice|bread/.test(c))return "Sides";
- if(/drink|beverage|cocktail|mocktail|smoothie|shake/.test(c))return "Drinks";
- if(/main|dinner|entree|entrée|beef|chicken|pork|turkey|seafood|fish|shrimp|steak|bbq|barbecue|smoker|grill|mexican|italian|asian|casserole|pasta|sandwich|burger|taco|pizza/.test(c)||/\b(chicken|beef|pork|steak|fish|shrimp|turkey|salmon|taco|burger|pasta|pizza)\b/.test(blob))return "Mains";
+ let c=String(cat||"").trim().toLowerCase(),n=String(name||"").trim().toLowerCase(),t=String(tags||"").trim().toLowerCase(),blob=[c,n,t].join(" ");
+ // Specific food identity wins over noisy workbook/source category metadata.
+ if(/\b(salad|slaw)\b/.test(n)||/\b(salad|slaw)\b/.test(c))return "Salads";
+ if(/\b(soup|stew|chowder|bisque)\b/.test(n)||/\b(soup|stew|chowder|bisque)\b/.test(c))return "Soups";
+ if(/\b(breakfast|brunch|pancake|waffle|oatmeal|frittata|omelet|breakfast burrito|protein bowl)\b/.test(n)||/\b(breakfast|brunch)\b/.test(c))return "Breakfast";
+ if(/\b(dessert|cake|cheesecake|cookie|brownie|pie|cobbler|crisp|pudding|mousse|tiramisu|ice cream|sorbet|truffle|candy|fudge)\b/.test(n)||/\b(dessert|sweet)\b/.test(c))return "Desserts";
+ if(/\b(sauce|glaze|crema|chimichurri|salsa|gravy|dressing|marinade|rub|seasoning)\b/.test(n)||/\b(sauce|condiment|dressing|marinade|rub|seasoning)\b/.test(c))return "Sauces";
+ if(/\b(app|appetizer|starter|snack|dip|finger food)\b/.test(c))return "Apps";
+ if(/\b(drink|beverage|cocktail|mocktail|smoothie|shake)\b/.test(c))return "Drinks";
+ // Strong entrée signals override an obviously bad source label such as "Desserts".
+ if(/\b(chicken|beef|pork|tenderloin|steak|turkey|fish|salmon|shrimp|seafood|taco|tacos|burger|pasta|lasagna|pierogi|skillet|pot pie|loaded sweet potato|loaded potato|casserole|sandwich|fajita|meatball|ribs|brisket)\b/.test(n))return "Mains";
+ if(/\b(main|dinner|entree|entrée|bbq|barbecue|smoker|grill|mexican|italian|asian)\b/.test(c))return "Mains";
+ if(/\b(side|vegetable|veggie|potato|rice|bread)\b/.test(c))return "Sides";
+ // Only trust remaining category labels after stronger recipe-name evidence has had a chance.
+ if(c==="breakfast")return "Breakfast";
+ if(c==="desserts"||c==="dessert")return "Desserts";
+ if(c==="salads"||c==="salad")return "Salads";
+ if(c==="soups"||c==="soup")return "Soups";
+ if(c==="sides"||c==="side")return "Sides";
+ if(c==="apps"||c==="appetizers")return "Apps";
+ if(c==="sauces"||c==="sauce")return "Sauces";
  return "Other";
 }
 function planMealRoleForRecipe_(id){
@@ -2403,7 +2414,7 @@ function recipeDisplayCategory_(x){return simpleRecipeCategory_(x?.category,x?.n
 function buildRecipeCategories(){let s=document.getElementById("recipeCategory"),v=s.value;s.innerHTML='<option value="">All categories</option>'+SIMPLE_RECIPE_CATEGORIES.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");s.value=SIMPLE_RECIPE_CATEGORIES.includes(v)?v:""}
 function recipeBySource_(source,id){if(source==="plan")return (MP.recipes||[]).find(r=>String(r.id)===String(id));if(source==="flavor")return (MP.flavors||[]).find(r=>String(r.id)===String(id));return (R.recipes||[]).find(r=>String(r.id)===String(id))}
 function kitchenRecipeRows_(){let out=[],seen=new Set();(R.recipes||[]).forEach(x=>{let k=String(x.name||"").trim().toLowerCase();if(!k)return;seen.add(k);out.push(Object.assign({},x,{_source:"library",_displayStatus:x.status||"Family Recipe"}))});(MP.recipes||[]).forEach(x=>{let k=String(x.name||"").trim().toLowerCase();if(!k||seen.has(k))return;seen.add(k);let role=String(x.meal||planMealRoleForRecipe_(x.id)||"").toLowerCase();
-let derivedCategory=x.category||(role==="breakfast"?"Breakfast":"Mains");
+let derivedCategory=x.category||(role==="breakfast"?"Breakfast":"");
 out.push(Object.assign({},x,{category:derivedCategory,yield:x.servings?x.servings+" servings":"",status:x.planName||"Meal Plan",_source:"plan",_displayStatus:x.planName||"Meal Plan"}))});(MP.flavors||[]).forEach(x=>{let k=String(x.name||"").trim().toLowerCase();if(!k||seen.has(k))return;seen.add(k);out.push(Object.assign({},x,{category:"Sauces",status:"Flavor Library",_source:"flavor",_displayStatus:"Flavor Library"}))});return out.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")))}
 function ensureKitchenData_(cb){let pending=0,finished=false,done=()=>{if(pending>0)return;if(finished)return;finished=true;cb&&cb()};if(!R.loaded){pending++;google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;pending--;done()}).withFailureHandler(e=>{pending--;recipeDataFail(e.message||e)}).getRecipeLibrary()}if(!MP.loaded){pending++;google.script.run.withSuccessHandler(d=>{MP=d||{plans:[],recipes:[],flavors:[]};MP.loaded=!!MP.ok;pending--;done()}).withFailureHandler(()=>{MP={plans:[],recipes:[],flavors:[],loaded:true};pending--;done()}).getMealPlans()}done()}
 function openKitchenRecipe_(source,id){if(source==="plan")return openPlanRecipe(id,true);if(source==="flavor")return openPlanFlavor(id,"",true);return openRecipeDetail(id)}
