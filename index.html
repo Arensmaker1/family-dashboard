@@ -629,7 +629,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.9 — Morning Brief restored section polish */
+/* V9.6.10 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -1076,6 +1076,7 @@ let SPORTS={loading:true,ok:false,teams:[],updatedAt:null,message:""};
 let G={items:[],updatedAt:null},groceryTimer=null,STOCK={items:[]};
 let kitchenTimers=[];let timerDraftMinutes=10;let timerAudioCtx=null;let timerAlarmLoop=null;
 let R={recipes:[],loaded:false},MP={plans:[],recipes:[],sources:[],loaded:false},recipeView="recipes",currentPlanId="";
+let morningBriefSession_=0,morningBriefOpen_=false;
 let planWeekDraft=[],randomDinnerDraft=[],WG={items:[],recipes:[],loaded:false};
 let cookRecipe=null,cookStep=0,cookAllStepsOpen=false,cookCheckedIngredients=new Set(),cookCompletedSteps=new Set(),cookWakeLock=null,cookKeepAwake=false,cookScale=1;
 let coreLoadInFlight_=false,weatherLoadInFlight_=false,pantryLoadInFlight_=false,groceryLoadInFlight_=false;
@@ -1442,7 +1443,15 @@ function setupCalendarSwipe(){let g=document.getElementById("grid");if(!g||g.dat
 function today(){let d=new Date();view=new Date(d.getFullYear(),d.getMonth(),1);sel=d;renderCal();renderDetail();activity()}
 function openModal(x){document.getElementById("modal").innerHTML=x;document.getElementById("modalbg").style.display="grid"}
 let modalMode="",choreEditOriginal=null;
-function closeModal(){if(modalMode==="chores"){cancelChores();return}document.getElementById("modalbg").style.display="none";modalMode=""}
+function closeModal(){
+ if(modalMode==="chores"){cancelChores();return}
+ const bg=document.getElementById("modalbg"),m=document.getElementById("modal");
+ if(bg)bg.style.display="none";
+ modalMode="";
+ // Hidden modal contents do not need to remain alive. Clearing them on the
+ // next frame prevents stale async callbacks / large hidden trees from lingering.
+ requestAnimationFrame(()=>{try{if(bg&&bg.style.display==="none"&&m)m.innerHTML=""}catch(_){}});
+}
 function dayChecks(x,i){return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,n)=>`<label class="daycheck"><input type="checkbox" id="cd${i}_${n}" ${x.days.includes(n)?"checked":""}>${d}</label>`).join("")}
 function choreEditorData(){return S.chores.map((x,i)=>{let n=document.getElementById("cn"+i),w=document.getElementById("cw"+i);if(!n||!w)return x;return{name:n.value,who:w.value,days:[0,1,2,3,4,5,6].filter(d=>{let c=document.getElementById(`cd${i}_${d}`);return c&&c.checked})}})}
 function choresDirty(){if(!choreEditOriginal)return false;return JSON.stringify(choreEditorData())!==JSON.stringify(choreEditOriginal)}
@@ -2142,34 +2151,66 @@ function buildMorningBriefHtml_(){
  let upcoming=briefSafe_("Coming Up",()=>upcomingHouseholdHtml_(),"");
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=briefSafe_("Pinned Notes",()=>pins.length?pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join(""):`<div class="briefLine">Nothing pinned.</div>`);
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeModal()" aria-label="Close Morning Brief" title="Close">✕</button>${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button>${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
-function refreshMorningBrief_(){
+function closeMorningBrief_(){
+ morningBriefOpen_=false;
+ morningBriefSession_++;
+ fdCrashContext_("brief-close","top/done");
+ const bg=document.getElementById("modalbg"),m=document.getElementById("modal");
+ if(bg)bg.style.display="none";
+ modalMode="";
+ // Let the click paint complete before destroying the brief DOM.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  try{if(!morningBriefOpen_&&bg&&bg.style.display==="none"&&m)m.innerHTML=""}catch(_){}
+ }));
+}
+
+function refreshMorningBrief_(sessionId){
+ if(sessionId!=null && sessionId!==morningBriefSession_)return;
+ if(!morningBriefOpen_)return;
  let modal=document.getElementById("modal");
  if(!modal||!modal.querySelector(".briefWrap"))return;
  try{modal.innerHTML=buildMorningBriefHtml_()}catch(err){console.error("Morning Brief refresh failed",err)}
 }
 function openMorningBrief(){
- try{if(!SPORTS||SPORTS.loading||!Array.isArray(SPORTS.teams)||!SPORTS.teams.length){loadSports(false)}}catch(e){console.warn("Brief sports kickoff failed",e)}
+ const sessionId=++morningBriefSession_;
+ morningBriefOpen_=true;
+ fdCrashContext_("brief-open","session "+sessionId);
  try{
   let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
-  if(modal&&!modal.querySelector(".briefWrap"))modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`;
+  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`;
   if(bg)bg.style.display="grid";
  }catch(_){}
  try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
  try{ensureHouseholdReminders_()}catch(err){console.warn("Morning Brief reminders prep failed",err)}
- try{refreshMorningBrief_()}catch(err){console.error("Morning Brief initial render failed",err)}
+ try{refreshMorningBrief_(sessionId)}catch(err){console.error("Morning Brief initial render failed",err)}
+
+ // One sports kickoff only. Async completions may update the Brief only while
+ // this exact Brief session is still open.
  try{
   if(!SPORTS || SPORTS.loading || !Array.isArray(SPORTS.teams) || !SPORTS.teams.length){
    loadSports(false);
   }
  }catch(err){console.warn("Morning Brief sports refresh failed",err)}
- try{ensureDinnerData_(()=>{try{refreshMorningBrief_()}catch(_){}})}catch(err){console.warn("Morning Brief dinner refresh failed",err)}
+
+ try{
+  ensureDinnerData_(()=>{
+   if(!morningBriefOpen_||sessionId!==morningBriefSession_)return;
+   try{refreshMorningBrief_(sessionId)}catch(_){}
+  });
+ }catch(err){console.warn("Morning Brief dinner refresh failed",err)}
+
  try{
   if(window.google&&google.script&&google.script.run){
    google.script.run
-    .withSuccessHandler(g=>{try{G=g||{items:[]};refreshMorningBrief_()}catch(_){}})
-    .withFailureHandler(err=>console.warn("Morning Brief groceries refresh failed",err))
+    .withSuccessHandler(g=>{
+      if(!morningBriefOpen_||sessionId!==morningBriefSession_)return;
+      try{G=g||{items:[]};refreshMorningBrief_(sessionId)}catch(_){}
+    })
+    .withFailureHandler(err=>{
+      if(sessionId===morningBriefSession_)console.warn("Morning Brief groceries refresh failed",err)
+    })
     .getGroceries();
   }
  }catch(err){console.warn("Morning Brief grocery refresh setup failed",err)}
