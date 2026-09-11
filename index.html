@@ -608,7 +608,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.7 — Morning Brief restored section polish */
+/* V9.6.8 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -667,6 +667,8 @@ const FAMILY_DASHBOARD_APPS_SCRIPT_URL =
 const FAMILY_DASHBOARD_GOOGLE_CLIENT_ID = "506798395973-q1umcrb418h5hv6i0fssguc1ftnk746h.apps.googleusercontent.com";
 let familyDashboardIdToken = "";
 let familyDashboardTokenTimer = null;
+let familyDashboardExpiryTimer = null;
+let familyDashboardAuthExpired_ = false;
 
 (function installAppsScriptBridge_(){
   const pending = new Map();
@@ -789,6 +791,18 @@ let familyDashboardTokenTimer = null;
 
     pending.set(id, {success, failure, timer});
 
+    if(familyDashboardAuthExpired_ && !familyDashboardIdToken){
+      pending.delete(id);
+      clearTimeout(timer);
+      const err=new Error("Google session needs to be reconnected.");
+      showAuthBanner_("Google session paused — reconnect to refresh dashboard data.","Reconnect");
+      try{
+        if(failure)failure(err);
+        else console.warn(err.message);
+      }catch(e){console.error(e)}
+      return;
+    }
+
     if(bridgeReady && bridgePeer && familyDashboardIdToken){
       post_(payload);
     }else{
@@ -848,6 +862,61 @@ let familyDashboardTokenTimer = null;
     }catch(e){return {}}
   }
 
+
+  function ensureAuthBanner_(){
+    let bar=document.getElementById("fdAuthBanner");
+    if(bar)return bar;
+    bar=document.createElement("div");
+    bar.id="fdAuthBanner";
+    bar.style.cssText="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9998;display:none;align-items:center;gap:10px;max-width:min(720px,92vw);padding:9px 12px;border:1px solid #495c70;border-radius:12px;background:#0d1822;color:#f4f6f8;box-shadow:0 5px 18px rgba(0,0,0,.25);font:600 12px Arial,sans-serif";
+    bar.innerHTML='<span id="fdAuthBannerText">Google session needs attention.</span><button id="fdAuthBannerBtn" type="button" style="margin-left:auto;border:1px solid #66798c;border-radius:9px;background:#132435;color:#f4f6f8;padding:7px 10px;font-weight:700;cursor:pointer">Reconnect</button>';
+    document.body.appendChild(bar);
+    document.getElementById("fdAuthBannerBtn").addEventListener("click",requestGoogleSessionRefresh_);
+    return bar;
+  }
+
+  function showAuthBanner_(message,buttonText){
+    const bar=ensureAuthBanner_();
+    const msg=document.getElementById("fdAuthBannerText");
+    const btn=document.getElementById("fdAuthBannerBtn");
+    if(msg)msg.textContent=message||"Google session needs attention.";
+    if(btn)btn.textContent=buttonText||"Reconnect";
+    bar.style.display="flex";
+  }
+
+  function hideAuthBanner_(){
+    const bar=document.getElementById("fdAuthBanner");
+    if(bar)bar.style.display="none";
+  }
+
+  function requestGoogleSessionRefresh_(){
+    if(!window.google?.accounts?.id){
+      showAuthBanner_("Google sign-in is still loading. Try again in a moment.","Reconnect");
+      return;
+    }
+    try{
+      google.accounts.id.prompt(function(notification){
+        // If the browser cannot refresh with One Tap, expose the normal
+        // Google button without covering the entire dashboard.
+        if(notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())){
+          showAuthGate_("Google needs a quick confirmation to keep the dashboard connected.");
+        }
+      });
+    }catch(e){
+      showAuthGate_("Google needs a quick confirmation to keep the dashboard connected.");
+    }
+  }
+
+  function expireFamilyDashboardSession_(){
+    const livePayload=decodeJwtPayload_(familyDashboardIdToken);
+    const liveExp=Number(livePayload.exp||0)*1000;
+    if(liveExp>Date.now()+5000)return;
+    familyDashboardAuthExpired_=true;
+    familyDashboardIdToken="";
+    failExpiredQueue_();
+    showAuthBanner_("Google session paused — reconnect to refresh calendars, chores, recipes, and groceries.","Reconnect");
+  }
+
   function showAuthGate_(message){
     let gate=document.getElementById("fdAuthGate");
     if(!gate){
@@ -871,44 +940,31 @@ let familyDashboardTokenTimer = null;
     const token=String(response?.credential||"");
     if(!token){showAuthGate_("Google sign-in did not return a credential.");return}
     familyDashboardIdToken=token;
+    familyDashboardAuthExpired_=false;
     hideAuthGate_();
+    hideAuthBanner_();
     flush_();
+
     clearTimeout(familyDashboardTokenTimer);
+    clearTimeout(familyDashboardExpiryTimer);
+
     const payload=decodeJwtPayload_(token);
     const expiresAt=Number(payload.exp||0)*1000;
-    const refreshIn=Math.max(60000,expiresAt-Date.now()-5*60000);
+    if(!expiresAt)return;
 
-    // Ask GIS for a fresh credential before expiry, but DO NOT throw away
-    // the still-valid credential or cover the dashboard with the auth gate.
-    familyDashboardTokenTimer=setTimeout(function refreshFamilyDashboardToken_(){
-      try{
-        google.accounts.id.prompt(function(notification){
-          // If One Tap cannot refresh silently, keep the existing credential
-          // alive until its actual expiry and only then require interaction.
-          const msLeft=expiresAt-Date.now();
-          clearTimeout(familyDashboardTokenTimer);
-          familyDashboardTokenTimer=setTimeout(function(){
-            const livePayload=decodeJwtPayload_(familyDashboardIdToken);
-            const liveExp=Number(livePayload.exp||0)*1000;
-            if(liveExp>Date.now()+5000)return; // callback already refreshed us
-            familyDashboardIdToken="";
-            failExpiredQueue_();
-            showAuthGate_("Your Family Dashboard sign-in expired. Tap Google to reconnect.");
-            try{google.accounts.id.prompt()}catch(e){}
-          },Math.max(1000,msLeft+1000));
-        });
-      }catch(e){
-        clearTimeout(familyDashboardTokenTimer);
-        familyDashboardTokenTimer=setTimeout(function(){
-          const livePayload=decodeJwtPayload_(familyDashboardIdToken);
-          const liveExp=Number(livePayload.exp||0)*1000;
-          if(liveExp>Date.now()+5000)return;
-          familyDashboardIdToken="";
-          failExpiredQueue_();
-          showAuthGate_("Your Family Dashboard sign-in expired. Tap Google to reconnect.");
-        },Math.max(1000,expiresAt-Date.now()+1000));
-      }
-    },refreshIn);
+    // Five minutes before expiry, show a small intentional reminder instead
+    // of suddenly throwing Google's account chooser over the dashboard.
+    const warningIn=Math.max(1000,expiresAt-Date.now()-5*60000);
+    familyDashboardTokenTimer=setTimeout(function(){
+      const livePayload=decodeJwtPayload_(familyDashboardIdToken);
+      const liveExp=Number(livePayload.exp||0)*1000;
+      if(liveExp!==expiresAt && liveExp>Date.now()+5*60000)return;
+      showAuthBanner_("Google session refresh due soon. Tap Refresh whenever convenient.","Refresh Google");
+    },warningIn);
+
+    // At actual expiry keep the dashboard visible, pause backend work, and
+    // request reconnection without building up bridge calls in the background.
+    familyDashboardExpiryTimer=setTimeout(expireFamilyDashboardSession_,Math.max(1000,expiresAt-Date.now()+1000));
   }
 
   function startGoogleSignIn_(){
@@ -1036,6 +1092,7 @@ function fdDiagSample_(){
   groceries:!!groceryLoadInFlight_,
   voice:!!voiceWanted,
   recognition:!!voiceRecognition,
+  authExpired:!!familyDashboardAuthExpired_,
   timers:Array.isArray(kitchenTimers)?kitchenTimers.length:0,
   modal:!!modalOrOverlayOpen_()
  };
@@ -1102,7 +1159,7 @@ function openRendererDiagnostics_(){
    <button class="btn" onclick="closeModal()">Close</button>
   </div>
   <div class="fdDiagLog">
-   ${rows.length?rows.map(s=>`<div class="fdDiagRow"><span>${new Date(s.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${s.nodes} nodes</span><span>${s.heap==null?"—":s.heap+"MB"}</span><span>${s.lag||0}ms lag</span><span>${s.voice?"voice • ":""}${s.recognition?"mic • ":""}${s.bridgePending?`${s.bridgePending} bridge pending • `:""}${s.core||s.weather||s.pantry||s.groceries?"request active":""}</span></div>`).join(""):`<div class="empty">No samples yet.</div>`}
+   ${rows.length?rows.map(s=>`<div class="fdDiagRow"><span>${new Date(s.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${s.nodes} nodes</span><span>${s.heap==null?"—":s.heap+"MB"}</span><span>${s.lag||0}ms lag</span><span>${s.voice?"voice • ":""}${s.recognition?"mic • ":""}${s.authExpired?"auth paused • ":""}${s.bridgePending?`${s.bridgePending} bridge pending • `:""}${s.core||s.weather||s.pantry||s.groceries?"request active":""}</span></div>`).join(""):`<div class="empty">No samples yet.</div>`}
   </div>
  </div>`);
 }
