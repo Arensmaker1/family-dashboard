@@ -362,13 +362,34 @@ button,.btn{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
 /* V8.14.1 RECIPE SCALE WORKFLOW + HEADER POLISH */
 .appearanceToggle{
-  min-width:0!important;
-  min-height:0!important;
+  min-width:38px!important;
+  min-height:32px!important;
   height:32px!important;
   padding:5px 8px!important;
   line-height:1!important;
   align-self:center;
+  opacity:1!important;
+  visibility:visible!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:1px solid var(--theme1)!important;
+  color:var(--t)!important;
+  background:var(--p)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important;
+  font-size:16px!important;
+  font-weight:900!important;
 }
+body[data-appearance="light"] .appearanceToggle{
+  background:#fffdf9!important;
+  color:#292722!important;
+  border-color:#8e6dbe!important;
+}
+body[data-appearance="dark"] .appearanceToggle{
+  background:#101d28!important;
+  color:#f6f8fb!important;
+}
+.appearanceToggle:focus,.appearanceToggle:hover{filter:none!important;opacity:1!important;}
 .recipeScaleBar{
   padding:8px 10px;
   border:1px solid var(--l);
@@ -608,7 +629,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.6.8 — Morning Brief restored section polish */
+/* V9.6.9 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -744,7 +765,7 @@ let familyDashboardAuthExpired_ = false;
     if(msg.type === "fd-bridge-ready"){
       bridgePeer = event.source;
       bridgeReady = true;
-      console.log("Family Dashboard backend bridge ready:", event.origin);
+      console.log("Family Dashboard backend bridge ready:", event.origin); fdCrashContext_("bridge-ready",event.origin);
       flush_();
       return;
     }
@@ -912,6 +933,7 @@ let familyDashboardAuthExpired_ = false;
     const liveExp=Number(livePayload.exp||0)*1000;
     if(liveExp>Date.now()+5000)return;
     familyDashboardAuthExpired_=true;
+    fdCrashContext_("auth-expired");
     familyDashboardIdToken="";
     failExpiredQueue_();
     showAuthBanner_("Google session paused — reconnect to refresh calendars, chores, recipes, and groceries.","Reconnect");
@@ -941,6 +963,7 @@ let familyDashboardAuthExpired_ = false;
     if(!token){showAuthGate_("Google sign-in did not return a credential.");return}
     familyDashboardIdToken=token;
     familyDashboardAuthExpired_=false;
+    fdCrashContext_("auth-restored");
     hideAuthGate_();
     hideAuthBanner_();
     flush_();
@@ -1059,6 +1082,31 @@ let coreLoadInFlight_=false,weatherLoadInFlight_=false,pantryLoadInFlight_=false
 let mealPlanSourceAddInFlight_=false;
 let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0;
 let fdDiagLongTasks_=0,fdDiagLongestTask_=0,fdDiagLastHeartbeat_=Date.now(),fdDiagHeartbeatLag_=0,fdDiagSampler_=null,fdDiagHeartbeatTimer_=null;
+const FD_CRASH_CONTEXT_KEY_="familyDashboardCrashContextV1";
+function fdCrashContextRead_(){
+ try{let a=JSON.parse(localStorage.getItem(FD_CRASH_CONTEXT_KEY_)||"[]");return Array.isArray(a)?a:[]}catch(_){return[]}
+}
+function fdCrashContext_(type,detail=""){
+ try{
+  let bridge={pending:null,queued:null,ready:null};
+  if(typeof window.__fdBridgeDiag==="function")bridge=window.__fdBridgeDiag()||bridge;
+  let a=fdCrashContextRead_();
+  a.push({
+   ts:Date.now(),
+   type:String(type||"event"),
+   detail:String(detail||"").slice(0,180),
+   visibility:document.visibilityState,
+   focus:document.hasFocus(),
+   appearance:document.body.dataset.appearance||"",
+   authExpired:!!familyDashboardAuthExpired_,
+   bridgePending:bridge.pending,
+   bridgeQueued:bridge.queued,
+   nodes:document.getElementsByTagName("*").length,
+   heap:fdDiagHeapMb_()
+  });
+  localStorage.setItem(FD_CRASH_CONTEXT_KEY_,JSON.stringify(a.slice(-80)));
+ }catch(_){}
+}
 function fdDiagStore_(sample){
  try{
   let a=JSON.parse(localStorage.getItem("familyDashboardRendererDiagV1")||"[]");
@@ -1093,6 +1141,7 @@ function fdDiagSample_(){
   voice:!!voiceWanted,
   recognition:!!voiceRecognition,
   authExpired:!!familyDashboardAuthExpired_,
+  appearance:document.body.dataset.appearance||"",
   timers:Array.isArray(kitchenTimers)?kitchenTimers.length:0,
   modal:!!modalOrOverlayOpen_()
  };
@@ -1120,6 +1169,19 @@ function startRendererDiagnostics_(){
  },5000);
  clearInterval(fdDiagSampler_);
  fdDiagSampler_=setInterval(()=>{if(dashboardVisible_())fdDiagSample_()},60000);
+ if(!window.__fdCrashContextInstalled){
+  window.__fdCrashContextInstalled=true;
+  window.addEventListener("focus",()=>fdCrashContext_("focus"));
+  window.addEventListener("blur",()=>fdCrashContext_("blur"));
+  window.addEventListener("pageshow",e=>fdCrashContext_("pageshow",e.persisted?"bfcache":"normal"));
+  window.addEventListener("pagehide",e=>fdCrashContext_("pagehide",e.persisted?"bfcache":"normal"));
+  window.addEventListener("online",()=>fdCrashContext_("online"));
+  window.addEventListener("offline",()=>fdCrashContext_("offline"));
+  window.addEventListener("error",e=>fdCrashContext_("window-error",e.message||""));
+  window.addEventListener("unhandledrejection",e=>fdCrashContext_("unhandled-rejection",e.reason?.message||String(e.reason||"")));
+  document.addEventListener("visibilitychange",()=>fdCrashContext_("visibility",document.visibilityState));
+ }
+ fdCrashContext_("diagnostics-start");
  setTimeout(fdDiagSample_,12000);
 }
 function rendererDiagSummary_(){
@@ -1129,7 +1191,7 @@ function rendererDiagSummary_(){
  return {a,last,first,heapDelta,nodeDelta};
 }
 function clearRendererDiagnostics_(){
- try{localStorage.removeItem("familyDashboardRendererDiagV1")}catch(_){}
+ try{localStorage.removeItem("familyDashboardRendererDiagV1");localStorage.removeItem(FD_CRASH_CONTEXT_KEY_)}catch(_){}
  fdDiagLongTasks_=0;fdDiagLongestTask_=0;fdDiagHeartbeatLag_=0;fdDiagLastHeartbeat_=Date.now();
  openRendererDiagnostics_();
 }
@@ -1159,7 +1221,11 @@ function openRendererDiagnostics_(){
    <button class="btn" onclick="closeModal()">Close</button>
   </div>
   <div class="fdDiagLog">
-   ${rows.length?rows.map(s=>`<div class="fdDiagRow"><span>${new Date(s.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${s.nodes} nodes</span><span>${s.heap==null?"—":s.heap+"MB"}</span><span>${s.lag||0}ms lag</span><span>${s.voice?"voice • ":""}${s.recognition?"mic • ":""}${s.authExpired?"auth paused • ":""}${s.bridgePending?`${s.bridgePending} bridge pending • `:""}${s.core||s.weather||s.pantry||s.groceries?"request active":""}</span></div>`).join(""):`<div class="empty">No samples yet.</div>`}
+   ${rows.length?rows.map(s=>`<div class="fdDiagRow"><span>${new Date(s.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${s.nodes} nodes</span><span>${s.heap==null?"—":s.heap+"MB"}</span><span>${s.lag||0}ms lag</span><span>${s.appearance?`${s.appearance} • `:""}${s.voice?"voice • ":""}${s.recognition?"mic • ":""}${s.authExpired?"auth paused • ":""}${s.bridgePending?`${s.bridgePending} bridge pending • `:""}${s.core||s.weather||s.pantry||s.groceries?"request active":""}</span></div>`).join(""):`<div class="empty">No samples yet.</div>`}
+  </div>
+  <div class="note" style="margin-top:10px"><b>Recent crash context</b> — focus, visibility, auth, bridge, network, and page lifecycle breadcrumbs.</div>
+  <div class="fdDiagLog">
+   ${fdCrashContextRead_().slice(-14).reverse().map(e=>`<div class="fdDiagRow"><span>${new Date(e.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})}</span><span>${esc(e.type)}</span><span>${esc(e.appearance||"—")}</span><span>${e.authExpired?"auth paused • ":""}${e.bridgePending?`${e.bridgePending} pending • `:""}${e.bridgeQueued?`${e.bridgeQueued} queued • `:""}${esc(e.detail||"")}</span></div>`).join("")||`<div class="empty">No lifecycle events logged yet.</div>`}
   </div>
  </div>`);
 }
@@ -1227,7 +1293,22 @@ const familyTitles=["🏠 Family Dashboard","🛰️ Family Mission Control","�
 const themes={0:{a:"#cdefff",b:"#73bfff",g:"rgba(202,235,255,.22)",d:["❄️","❅","✦"]},1:{a:"#ff6f9e",b:"#ff9ac0",g:"rgba(255,105,160,.18)",d:["❤️","💗","🌸"]},2:{a:"#54d66b",b:"#f0cf55",g:"rgba(69,190,83,.18)",d:["☘️","🍀","✨"]},3:{a:"#78c8ff",b:"#d99cff",g:"rgba(105,190,255,.17)",d:["🌧️","🌷","☂️"]},4:{a:"#71db82",b:"#ffb1d8",g:"rgba(113,219,130,.16)",d:["🌷","🌼","🌿"]},5:{a:"#ffd45e",b:"#68cfff",g:"rgba(255,212,94,.16)",d:["☀️","✨","🪲"]},6:{a:"#ff5d67",b:"#5f9dff",g:"rgba(255,93,103,.16)",d:["⭐","✨","🎆"]},7:{a:"#f3bf47",b:"#ff8c42",g:"rgba(243,191,71,.16)",d:["🌻","☀️","✨"]},8:{a:"#c94f44",b:"#e5a94f",g:"rgba(201,79,68,.16)",d:["🍎","🍂","✏️"]},9:{a:"#ff7a28",b:"#9f62ff",g:"rgba(255,122,40,.18)",d:["🎃","🦇","👻"]},10:{a:"#d77b39",b:"#b99a60",g:"rgba(215,123,57,.17)",d:["🍂","🍁","🦃"]},11:{a:"#e84c4c",b:"#65c66f",g:"rgba(232,76,76,.16)",d:["❄️","🎁","🎄"]}};
 function quoteFor(d){let n=Math.floor(new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()/86400000);if(Math.abs(n)%20===0)return rareQuotes[Math.abs(n)%rareQuotes.length];return quotes[Math.abs(n)%quotes.length]}
 function weeklyTitle(d=new Date()){let w=Math.floor(new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()/604800000);return familyTitles[Math.abs(w)%familyTitles.length]}
-function applyAppearance(mode){mode=mode==="dark"?"dark":"light";document.body.dataset.appearance=mode;try{localStorage.setItem("familyDashboardAppearance",mode)}catch(_){}let b=document.getElementById("appearanceToggle");if(b){b.textContent=mode==="light"?"🌙":"☀️";b.title=mode==="light"?"Switch to dark appearance":"Switch to light appearance"}}
+function applyAppearance(mode){
+ mode=mode==="dark"?"dark":"light";
+ document.body.dataset.appearance=mode;
+ try{localStorage.setItem("familyDashboardAppearance",mode)}catch(_){}
+ let b=document.getElementById("appearanceToggle");
+ if(b){
+  b.hidden=false;
+  b.style.removeProperty("display");
+  b.style.removeProperty("visibility");
+  b.style.removeProperty("opacity");
+  b.textContent=mode==="light"?"🌙":"☀️";
+  b.title=mode==="light"?"Switch to dark appearance":"Switch to light appearance";
+  b.setAttribute("aria-label",b.title);
+ }
+ fdCrashContext_("appearance",mode);
+}
 function initAppearance(){let mode="light";try{mode=localStorage.getItem("familyDashboardAppearance")||"light"}catch(_){}applyAppearance(mode)}
 function toggleAppearance(){applyAppearance(document.body.dataset.appearance==="light"?"dark":"light");activity()}
 function applyTheme(d){let t=themes[d.getMonth()]||themes[0];document.body.style.setProperty("--theme1",t.a);document.body.style.setProperty("--theme2",t.b);document.body.style.setProperty("--themeGlow",t.g);let ft=document.getElementById("familyTitle");if(ft)ft.textContent=weeklyTitle(d);let L=document.getElementById("themeDecor");if(!L)return;L.innerHTML="";for(let i=0;i<8;i++){let x=document.createElement("div");x.className="decor";x.textContent=t.d[i%t.d.length];x.style.left=(6+i*12)+"%";x.style.top=(-12-(i%4)*18)+"%";x.style.fontSize=(16+(i%3)*7)+"px";x.style.animationDelay=(-i*1.4)+"s";L.appendChild(x)}}
