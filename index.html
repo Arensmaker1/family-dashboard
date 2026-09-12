@@ -649,7 +649,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.8.0 — Morning Brief restored section polish */
+/* V9.8.1 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -721,6 +721,7 @@ const FAMILY_DASHBOARD_GOOGLE_CLIENT_ID = "506798395973-q1umcrb418h5hv6i0fssguc1
 let familyDashboardIdToken = "";
 let familyDashboardTokenTimer = null;
 let familyDashboardExpiryTimer = null;
+let familyDashboardAutoRefreshInFlight_ = false;
 let familyDashboardAuthExpired_ = false;
 
 (function installAppsScriptBridge_(){
@@ -942,21 +943,54 @@ let familyDashboardAuthExpired_ = false;
     if(bar)bar.style.display="none";
   }
 
+  function renderGoogleFallbackButton_(){
+    const target=document.getElementById("fdGoogleSignIn");
+    if(!target || target.dataset.rendered==="1" || !window.google?.accounts?.id)return;
+    target.dataset.rendered="1";
+    target.innerHTML="";
+    google.accounts.id.renderButton(target,{
+      theme:"outline",
+      size:"large",
+      shape:"pill",
+      text:"continue_with"
+    });
+  }
+
+  function tryExistingGoogleSession_(reason){
+    if(!window.google?.accounts?.id || familyDashboardAutoRefreshInFlight_)return false;
+    familyDashboardAutoRefreshInFlight_=true;
+    fdCrashContext_("auth-auto-attempt",reason||"existing-session");
+    try{
+      google.accounts.id.prompt(function(notification){
+        familyDashboardAutoRefreshInFlight_=false;
+        if(notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())){
+          fdCrashContext_("auth-auto-unavailable",reason||"existing-session");
+          if(reason==="startup"){
+            renderGoogleFallbackButton_();
+          }else{
+            showAuthBanner_("Google needs a quick confirmation to keep the dashboard connected.","Reconnect");
+          }
+        }
+      });
+      return true;
+    }catch(e){
+      familyDashboardAutoRefreshInFlight_=false;
+      fdCrashContext_("auth-auto-error",e?.message||String(e));
+      if(reason==="startup") renderGoogleFallbackButton_();
+      else showAuthBanner_("Google needs a quick confirmation to keep the dashboard connected.","Reconnect");
+      return false;
+    }
+  }
+
   function requestGoogleSessionRefresh_(){
     if(!window.google?.accounts?.id){
       showAuthBanner_("Google sign-in is still loading. Try again in a moment.","Reconnect");
       return;
     }
-    try{
-      google.accounts.id.prompt(function(notification){
-        // If the browser cannot refresh with One Tap, expose the normal
-        // Google button without covering the entire dashboard.
-        if(notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())){
-          showAuthGate_("Google needs a quick confirmation to keep the dashboard connected.");
-        }
-      });
-    }catch(e){
+    hideAuthBanner_();
+    if(!tryExistingGoogleSession_("manual-reconnect")){
       showAuthGate_("Google needs a quick confirmation to keep the dashboard connected.");
+      renderGoogleFallbackButton_();
     }
   }
 
@@ -964,6 +998,7 @@ let familyDashboardAuthExpired_ = false;
     const livePayload=decodeJwtPayload_(familyDashboardIdToken);
     const liveExp=Number(livePayload.exp||0)*1000;
     if(liveExp>Date.now()+5000)return;
+    if(tryExistingGoogleSession_("expiry"))return;
     familyDashboardAuthExpired_=true;
     fdCrashContext_("auth-expired");
     familyDashboardIdToken="";
@@ -994,6 +1029,7 @@ let familyDashboardAuthExpired_ = false;
     const token=String(response?.credential||"");
     if(!token){showAuthGate_("Google sign-in did not return a credential.");return}
     familyDashboardIdToken=token;
+    familyDashboardAutoRefreshInFlight_=false;
     familyDashboardAuthExpired_=false;
     fdCrashContext_("auth-restored");
     hideAuthGate_();
@@ -1014,7 +1050,12 @@ let familyDashboardAuthExpired_ = false;
       const livePayload=decodeJwtPayload_(familyDashboardIdToken);
       const liveExp=Number(livePayload.exp||0)*1000;
       if(liveExp!==expiresAt && liveExp>Date.now()+5*60000)return;
-      showAuthBanner_("Google session refresh due soon. Tap Refresh whenever convenient.","Refresh Google");
+      // Prefer the same existing Chrome/Google account path that produces
+      // "Continue as Jeff". Only show a reconnect banner if Google cannot
+      // refresh through that existing browser session.
+      if(!tryExistingGoogleSession_("pre-expiry")){
+        showAuthBanner_("Google session refresh due soon. Tap Refresh whenever convenient.","Refresh Google");
+      }
     },warningIn);
 
     // At actual expiry keep the dashboard visible, pause backend work, and
@@ -1031,18 +1072,19 @@ let familyDashboardAuthExpired_ = false;
       setTimeout(startGoogleSignIn_,150);
       return;
     }
-    showAuthGate_("Sign in with an authorized family Google account.");
+    showAuthGate_("Checking your existing Google session…");
     google.accounts.id.initialize({
       client_id:FAMILY_DASHBOARD_GOOGLE_CLIENT_ID,
       callback:handleGoogleCredential_,
       auto_select:true,
       cancel_on_tap_outside:false
     });
-    const target=document.getElementById("fdGoogleSignIn");
-    if(target){
-      google.accounts.id.renderButton(target,{theme:"outline",size:"large",shape:"pill",text:"signin_with"});
+
+    // Preferred path: use the Google account already active in Chrome.
+    // If One Tap/FedCM cannot supply it, we reveal the normal Google button as fallback.
+    if(!tryExistingGoogleSession_("startup")){
+      renderGoogleFallbackButton_();
     }
-    google.accounts.id.prompt();
   }
 
   function mountBridge_(){
@@ -1175,6 +1217,7 @@ function fdDiagSample_(){
   voice:!!voiceWanted,
   recognition:!!voiceRecognition,
   authExpired:!!familyDashboardAuthExpired_,
+  authAutoRefresh:!!familyDashboardAutoRefreshInFlight_,
   appearance:document.body.dataset.appearance||"",
   timers:Array.isArray(kitchenTimers)?kitchenTimers.length:0,
   modal:!!modalOrOverlayOpen_()
