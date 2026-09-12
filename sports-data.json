@@ -69,9 +69,9 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Bot 2nd",
-        "ourScore": "0",
-        "opponentScore": "0",
+        "status": "Bot 6th",
+        "ourScore": "4",
+        "opponentScore": "6",
         "result": "",
         "winner": null,
         "venue": "Comerica Park",
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T19:22:03.588843Z"
+  "updatedAt": "2026-09-12T19:35:34.228529Z"
 }
