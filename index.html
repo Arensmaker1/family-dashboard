@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.2.1 Grocery-Friendly Polish build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.10.0 Maintenance Center build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -705,6 +705,13 @@ body.fdRendererSafe .ufoBeam{animation:none!important}
     box-sizing:border-box!important;
   }
 }
+
+/* V9.10.0 — Maintenance Center: calendar visibility + completion history */
+.hr2EditorGrid{grid-template-columns:2fr .8fr .9fr .85fr 1fr}
+.maintenanceChip{margin-top:3px;padding:2px 4px;border-radius:4px;border-left:3px solid var(--o);background:#ff9b3d18;font-size:8.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maintenanceDayBlock{margin-top:7px;padding-top:7px;border-top:1px solid #ffffff12}.maintenanceDayTitle{font-size:9px;color:var(--o);font-weight:900;letter-spacing:.04em;margin-bottom:4px}.maintenanceDayRow{display:flex;align-items:center;gap:7px;padding:5px 0;font-size:10px}.maintenanceDayRow span{min-width:0;flex:1}.maintenanceDayRow .btn{padding:4px 7px;font-size:8px}
+.hrHistoryList{display:flex;flex-direction:column;gap:6px}.hrHistoryRow{display:grid;grid-template-columns:95px 1fr auto;gap:9px;align-items:center;border:1px solid var(--l);border-radius:9px;padding:8px 9px;background:#ffffff04}.hrHistoryDate{font-size:9px;color:var(--m)}.hrHistoryName{font-size:11px;font-weight:800}.hrHistoryMeta{font-size:8px;color:var(--m);margin-top:2px}.hrHistoryNext{font-size:9px;color:var(--g);white-space:nowrap}body[data-appearance="light"] .hrHistoryRow{background:#fffdf9}
+@media(max-width:720px){.hr2EditorGrid{grid-template-columns:1fr 1fr}.hr2EditorGrid>input:first-child{grid-column:1/-1}.hrHistoryRow{grid-template-columns:78px 1fr}.hrHistoryNext{grid-column:2}}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1513,11 +1520,17 @@ function deleteCalendarEventUI(eventId,calendarId){
 function openCalendarEventEditor(date){let d=date||sel||new Date(),dateVal=key(d),now=new Date(),hh=String(now.getHours()).padStart(2,"0")+":"+(now.getMinutes()<30?"30":"00"),endH=String((now.getHours()+1)%24).padStart(2,"0")+":"+(now.getMinutes()<30?"30":"00");document.getElementById("modal").innerHTML=`<h2>📅 Add Family Event</h2><div class="note" style="margin-bottom:10px">Add directly to one of the writable Google calendars connected to this dashboard.</div><div class="calEventForm"><label class="full">EVENT TITLE<input id="ceTitle" autocomplete="off" placeholder="Dentist, practice, dinner…"></label><label>DATE<input id="ceDate" type="date" value="${dateVal}"></label><label>CALENDAR<select id="ceCalendar"><option value="">Loading calendars…</option></select></label><label class="calAllDay"><input id="ceAllDay" type="checkbox" onchange="toggleCalendarTimeFields_()"> All-day event</label><span></span><label id="ceStartWrap">START<input id="ceStart" type="time" value="${hh}"></label><label id="ceEndWrap">END<input id="ceEnd" type="time" value="${endH}"></label><label class="full">LOCATION<input id="ceLocation" placeholder="Optional"></label></div><div id="ceState" class="note" style="margin-top:8px"></div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button id="ceSave" class="btn primaryAction" onclick="saveCalendarEventUI()">＋ Add Event</button></div>`;document.getElementById("modalbg").style.display="grid";google.script.run.withSuccessHandler(r=>{let a=r?.calendars||[],q=document.getElementById("ceCalendar");q.innerHTML=a.map(c=>`<option value="${esc(c.id)}" ${c.primary?"selected":""}>${esc(c.name)}${c.primary?" (Primary)":""}</option>`).join("")||'<option value="">No writable calendars</option>'}).withFailureHandler(e=>document.getElementById("ceState").textContent=e.message||e).getCalendarChoices();activity()}
 function toggleCalendarTimeFields_(){let on=document.getElementById("ceAllDay")?.checked;document.getElementById("ceStartWrap").style.display=on?"none":"flex";document.getElementById("ceEndWrap").style.display=on?"none":"flex"}
 function saveCalendarEventUI(){let btn=document.getElementById("ceSave"),state=document.getElementById("ceState"),p={title:document.getElementById("ceTitle").value.trim(),date:document.getElementById("ceDate").value,calendarId:document.getElementById("ceCalendar").value,allDay:document.getElementById("ceAllDay").checked,startTime:document.getElementById("ceStart").value,endTime:document.getElementById("ceEnd").value,location:document.getElementById("ceLocation").value.trim()};if(!p.title){alert("Give the event a title first.");return}btn.disabled=true;btn.textContent="Adding…";state.textContent="Writing to Google Calendar…";google.script.run.withSuccessHandler(r=>{if(!r?.ok){state.textContent=r?.message||"Couldn’t add event.";btn.disabled=false;btn.textContent="＋ Add Event";return}state.textContent="Added ✓ Refreshing calendar…";google.script.run.withSuccessHandler(d=>{D=d;S=d.settings||S;closeModal();renderCal();if(document.getElementById("dayOverlay").classList.contains("open"))openDay(sel)}).withFailureHandler(e=>{state.textContent=e.message||e}).getInitialData()}).withFailureHandler(e=>{state.textContent=e.message||e;btn.disabled=false;btn.textContent="＋ Add Event"}).createDashboardCalendarEvent(p)}
-function renderCal(){applyTheme(view);document.getElementById("month").textContent=view.toLocaleDateString([],{month:"long",year:"numeric"});let g=document.getElementById("grid");g.innerHTML="";let f=new Date(view.getFullYear(),view.getMonth(),1),st=new Date(f);st.setDate(f.getDate()-f.getDay());for(let i=0;i<42;i++){let d=new Date(st);d.setDate(st.getDate()+i);let c=document.createElement("div");c.className="day"+(d.getMonth()!=view.getMonth()?" other":"")+(same(d,new Date())?" today":"")+(same(d,sel)?" sel":"");let sd=specialDayType(d);if(sd.birthday)c.classList.add("birthdayCell");if(sd.holiday)c.classList.add("holidayCell");c.tabIndex=0;c.onclick=()=>{if(Date.now()<suppressDayClickUntil)return;openDay(d)};c.innerHTML=`<div class="num">${d.getDate()}</div>`;let E=ev(d);if(dayConflicts_(d).length)c.classList.add("hasConflict");E.slice(0,3).forEach(e=>{let x=document.createElement("div");x.className="event";x.style.background=e.color+"33";x.style.borderLeft="3px solid "+e.color;x.textContent=(e.allDay?"":time(e)+" ")+e.title;c.appendChild(x)});if(E.length>3){let x=document.createElement("div");x.className="more";x.textContent=`+ ${E.length-3} more`;c.appendChild(x)}g.appendChild(c)}document.getElementById("quoteMain").textContent="💬 “"+quoteFor(new Date())+"”";document.getElementById("legend").innerHTML=D.calendars.map(c=>`<span class="${S.hiddenCalendars.includes(c.name)?"off":""}" onclick="toggleCal('${encodeURIComponent(c.name)}')"><i style="background:${c.color}"></i>${esc(c.name)}</span>`).join("")}
+function renderCal(){
+ applyTheme(view);document.getElementById("month").textContent=view.toLocaleDateString([],{month:"long",year:"numeric"});
+ let g=document.getElementById("grid");g.innerHTML="";let f=new Date(view.getFullYear(),view.getMonth(),1),st=new Date(f);st.setDate(f.getDate()-f.getDay());
+ for(let i=0;i<42;i++){let d=new Date(st);d.setDate(st.getDate()+i);let c=document.createElement("div");c.className="day"+(d.getMonth()!=view.getMonth()?" other":"")+(same(d,new Date())?" today":"")+(same(d,sel)?" sel":"");let sd=specialDayType(d);if(sd.birthday)c.classList.add("birthdayCell");if(sd.holiday)c.classList.add("holidayCell");c.tabIndex=0;c.onclick=()=>{if(Date.now()<suppressDayClickUntil)return;openDay(d)};c.innerHTML=`<div class="num">${d.getDate()}</div>`;let E=ev(d),M=remindersForDate_(d);if(dayConflicts_(d).length)c.classList.add("hasConflict");E.slice(0,3).forEach(e=>{let x=document.createElement("div");x.className="event";x.style.background=e.color+"33";x.style.borderLeft="3px solid "+e.color;x.textContent=(e.allDay?"":time(e)+" ")+e.title;c.appendChild(x)});if(E.length>3){let x=document.createElement("div");x.className="more";x.textContent=`+ ${E.length-3} more`;c.appendChild(x)}if(M.length){let x=document.createElement("div");x.className="maintenanceChip";x.title=M.map(r=>r.name).join(" • ");x.textContent=`🔧 ${M.length===1?M[0].name:M.length+" maintenance jobs"}`;c.appendChild(x)}g.appendChild(c)}
+ document.getElementById("quoteMain").textContent="💬 “"+quoteFor(new Date())+"”";document.getElementById("legend").innerHTML=D.calendars.map(c=>`<span class="${S.hiddenCalendars.includes(c.name)?"off":""}" onclick="toggleCal('${encodeURIComponent(c.name)}')"><i style="background:${c.color}"></i>${esc(c.name)}</span>`).join("")
+}
 function weather(){if(!W||!W.ok)return`<div class="wm">${esc(W?.message||"Weather loading…")}</div>`;let i=W.daily.time.indexOf(key(sel));if(i<0)return"";return`<div class="temp">${icon(W.daily.weather_code[i])} ${Math.round(W.daily.temperature_2m_max[i])}°</div><div class="wm">${Math.round(W.daily.temperature_2m_min[i])}° low • ${W.daily.precipitation_probability_max[i]||0}% rain</div><div class="wm">${esc(W.location)}</div>`}
 function forecast(){if(!W||!W.ok)return"";return W.daily.time.map((t,i)=>`<div class="menuitem"><span class="md">${new Date(t+"T12:00").toLocaleDateString([],{weekday:"short"})}</span>${icon(W.daily.weather_code[i])} ${Math.round(W.daily.temperature_2m_max[i])}° / ${Math.round(W.daily.temperature_2m_min[i])}°</div>`).join("")}
+function maintenanceDayHtml_(d,returnTo="day"){let M=remindersForDate_(d);if(!M.length)return "";return `<div class="maintenanceDayBlock"><div class="maintenanceDayTitle">🔧 HOUSEHOLD MAINTENANCE</div>${M.map(r=>`<div class="maintenanceDayRow"><span>${reminderCategoryIcon_(r.category)} <b>${esc(r.name)}</b>${r.notes?`<div class="note">${esc(r.notes)}</div>`:""}</span><button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','${returnTo}')">✓ Done</button></div>`).join("")}</div>`}
 function renderDetail(){let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.completions[key(sel)+"-"+x.i]).length,p=C.length?Math.round(done/C.length*100):100;document.getElementById("detail").innerHTML=`<div class="head"><div><h1>${sel.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</h1><div class="sub">${sel.getFullYear()}</div></div><div class="weather">${weather()}</div></div><div class="cards">
-<div class="card"><h2>📅 TODAY'S SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}</div></div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}</div>
+<div class="card"><h2>📅 TODAY'S SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}</div></div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}${maintenanceDayHtml_(sel,"day")}</div>
 <div class="card"><h2>✅ TODAY'S CHORES <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div></div>
 <div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}</div>
 <div class="card"><h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2>${(S.pinnedNotes||[]).map((x,i)=>`<div class="pinNote">📌 ${esc(x)}<button onclick="dismissPinned(${i})">×</button></div>`).join("")}<div class="notesbox">${esc(S.notes)}</div><h2 style="margin-top:12px">🌤️ FORECAST</h2>${forecast()}</div>
@@ -1823,16 +1836,22 @@ function openRecipeGroceryFromDinner_(source,id){
    ========================================================= */
 function ensureHouseholdReminders_(){
  if(!Array.isArray(S.householdReminders))S.householdReminders=[];
+ if(!Array.isArray(S.householdReminderHistory))S.householdReminderHistory=[];
  S.householdReminders=S.householdReminders.map((r,i)=>({
   id:r.id||("hr_"+Date.now()+"_"+i),
   name:String(r.name||"").trim(),
   intervalDays:Math.max(1,Number(r.intervalDays)||90),
+  warnDays:Math.max(0,Math.min(90,Number(r.warnDays ?? 7)||0)),
   nextDue:r.nextDue||key(new Date()),
   lastDone:r.lastDone||"",
   category:r.category||"Home",
   notes:r.notes||""
  }));
+ S.householdReminderHistory=S.householdReminderHistory.filter(x=>x&&x.name&&x.doneDate).slice(-250);
 }
+function reminderWarnDays_(r){return Math.max(0,Math.min(90,Number(r?.warnDays ?? 7)||0))}
+function reminderCategoryIcon_(c){let m={Home:"🏠",HVAC:"🌬️",Water:"💧",Safety:"🧯",Kitchen:"🍽️",Pool:"🏊",Lawn:"🌱",Auto:"🚗",Other:"🔧"};return m[c]||"🔧"}
+function remindersForDate_(d){ensureHouseholdReminders_();let k=key(d);return S.householdReminders.filter(r=>r.name&&r.nextDue===k).sort((a,b)=>a.name.localeCompare(b.name))}
 function dateOnly_(v){let d=v?new Date(v+"T12:00:00"):new Date();d.setHours(12,0,0,0);return d}
 function daysUntil_(dateString){if(!dateString)return 99999;let now=new Date();now.setHours(12,0,0,0);let d=dateOnly_(dateString);return Math.round((d-now)/86400000)}
 function reminderDueText_(r){
@@ -1847,7 +1866,7 @@ function reminderClass_(r){
  let n=daysUntil_(r.nextDue);
  if(n<0)return "overdue";
  if(n===0)return "due";
- if(n<=7)return "soon";
+ if(n<=reminderWarnDays_(r))return "soon";
  return "future";
 }
 function activeBriefReminders_(){
@@ -1861,7 +1880,7 @@ function reminderStats2_(){
   total:all.length,
   overdue:all.filter(r=>daysUntil_(r.nextDue)<0).length,
   today:all.filter(r=>daysUntil_(r.nextDue)===0).length,
-  soon:all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=7}).length
+  soon:all.filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=reminderWarnDays_(r)}).length
  };
 }
 function reminderNextDate_(r,baseDate){
@@ -1873,13 +1892,16 @@ function reminderNextDate_(r,baseDate){
 function markHouseholdReminderDone_(id,returnTo){
  ensureHouseholdReminders_();
  let r=S.householdReminders.find(x=>x.id===id);if(!r)return;
- let now=new Date();
- r.lastDone=key(now);
- r.nextDue=reminderNextDate_(r,now);
+ let now=new Date(),doneDate=key(now),previousDue=r.nextDue||"",next=reminderNextDate_(r,now);
+ S.householdReminderHistory.push({id:"hh_"+Date.now(),reminderId:r.id,name:r.name,category:r.category||"Home",doneDate,previousDue,nextDue:next,notes:r.notes||""});
+ S.householdReminderHistory=S.householdReminderHistory.slice(-250);
+ r.lastDone=doneDate;
+ r.nextDue=next;
  persist(()=>{
-  renderGlance();
+  renderCal();renderDetail();renderGlance();
+  if(document.getElementById("dayOverlay")?.classList.contains("open"))openDay(sel);
   if(returnTo==="manager")openHouseholdReminders();
-  else openMorningBrief();
+  else if(returnTo!=="day")openMorningBrief();
  });
 }
 function snoozeHouseholdReminder_(id,days,returnTo){
@@ -2225,8 +2247,8 @@ function morningGroceryHtml_(){
 }
 
 function morningReminderHtml_(){
- let all=activeBriefReminders_(),due=all.filter(r=>daysUntil_(r.nextDue)<=7);
- if(!due.length)return `<div class="briefLine">✓ No household jobs due this week.</div>`;
+ let all=activeBriefReminders_(),due=all.filter(r=>daysUntil_(r.nextDue)<=reminderWarnDays_(r));
+ if(!due.length)return `<div class="briefLine">✓ No household jobs need attention.</div>`;
  return due.slice(0,4).map(r=>{
   let cls=reminderClass_(r),n=daysUntil_(r.nextDue);
   return `<div class="hrBriefItem ${cls}">
@@ -2239,7 +2261,7 @@ function morningReminderHtml_(){
  }).join("");
 }
 function upcomingHouseholdHtml_(){
- let a=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>7&&n<=30}).slice(0,3);
+ let a=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>reminderWarnDays_(r)&&n<=30}).slice(0,3);
  if(!a.length)return "";
  return `<div class="hrUpcoming"><b>COMING UP</b>${a.map(r=>`<span>${esc(r.name)} • ${esc(reminderDueText_(r))}</span>`).join("")}</div>`;
 }
@@ -2342,7 +2364,7 @@ function reminderPreset_(name,days,category){
  ensureHouseholdReminders_();
  try{S.householdReminders=captureHouseholdReminders_()}catch(_){}
  let d=new Date();d.setDate(d.getDate()+days);
- S.householdReminders.push({id:"hr_"+Date.now(),name,intervalDays:days,nextDue:key(d),lastDone:"",category,notes:""});
+ S.householdReminders.push({id:"hr_"+Date.now(),name,intervalDays:days,warnDays:7,nextDue:key(d),lastDone:"",category,notes:""});
  openHouseholdReminders();
 }
 function openHouseholdReminders(){
@@ -2351,7 +2373,7 @@ function openHouseholdReminders(){
  openModal(`<div class="hr2Wrap">
   <button class="btn hr2CloseFloat" onclick="openMorningBrief()" aria-label="Close Household Reminders" title="Close">✕</button>
   <div class="hr2Head">
-   <div><h2>🔁 Household Reminders 2.0</h2><div class="note">Recurring maintenance that actually remembers itself.</div></div>
+   <div><h2>🔁 Maintenance Center 3.0</h2><div class="note">Recurring maintenance that actually remembers itself.</div></div>
   </div>
   <div class="hr2Stats">
    <div><b>${stats.overdue}</b><span>Overdue</span></div>
@@ -2365,6 +2387,7 @@ function openHouseholdReminders(){
    <button class="btn mini" onclick="reminderPreset_('Buy water softener salt',30,'Water')">Softener salt • 30d</button>
    <button class="btn mini" onclick="reminderPreset_('Test smoke / CO detectors',30,'Safety')">Smoke/CO test • 30d</button>
    <button class="btn mini" onclick="reminderPreset_('Replace smoke / CO detector batteries',180,'Safety')">Detector batteries • 180d</button>
+   <button class="btn mini" onclick="openHouseholdReminderHistory_()">📜 History</button>
   </div>
   <div id="householdReminderEditor" class="hr2List">
    ${S.householdReminders.length?S.householdReminders.map((r,i)=>householdReminderEditorRow_(r,i)).join(""):`<div class="empty">No recurring reminders yet. Add one below and let the dashboard remember the boring crap.</div>`}
@@ -2385,6 +2408,7 @@ function householdReminderEditorRow_(r,i){
    <input id="hrName${i}" value="${esc(r.name||"")}" placeholder="What needs doing?">
    <select id="hrCat${i}">${reminderCategoryOptions_(r.category||"Home")}</select>
    <label><span>Repeat every</span><div><input id="hrDays${i}" type="number" min="1" max="3650" value="${Number(r.intervalDays)||90}"> <small>days</small></div></label>
+   <label><span>Warn me</span><div><input id="hrWarn${i}" type="number" min="0" max="90" value="${reminderWarnDays_(r)}"> <small>days early</small></div></label>
    <label><span>Next due</span><input id="hrDue${i}" type="date" value="${esc(r.nextDue||key(new Date()))}"></label>
   </div>
   <input id="hrNotes${i}" class="hr2Notes" value="${esc(r.notes||"")}" placeholder="Optional note — filter size, brand, location, etc.">
@@ -2404,6 +2428,7 @@ function captureHouseholdReminders_(){
   id:r.id||("hr_"+Date.now()+"_"+i),
   name:(document.getElementById("hrName"+i)?.value||r.name||"").trim(),
   intervalDays:Math.max(1,Number(document.getElementById("hrDays"+i)?.value)||Number(r.intervalDays)||1),
+  warnDays:Math.max(0,Math.min(90,Number(document.getElementById("hrWarn"+i)?.value ?? r.warnDays ?? 7)||0)),
   nextDue:document.getElementById("hrDue"+i)?.value||r.nextDue||key(new Date()),
   lastDone:r.lastDone||"",
   category:document.getElementById("hrCat"+i)?.value||r.category||"Home",
@@ -2412,7 +2437,7 @@ function captureHouseholdReminders_(){
 }
 function addHouseholdReminder_(){
  try{S.householdReminders=captureHouseholdReminders_()}catch(_){ensureHouseholdReminders_()}
- S.householdReminders.push({id:"hr_"+Date.now(),name:"",intervalDays:90,nextDue:key(new Date()),lastDone:"",category:"Home",notes:""});
+ S.householdReminders.push({id:"hr_"+Date.now(),name:"",intervalDays:90,warnDays:7,nextDue:key(new Date()),lastDone:"",category:"Home",notes:""});
  openHouseholdReminders();
  setTimeout(()=>document.getElementById("hrName"+(S.householdReminders.length-1))?.focus(),40);
 }
@@ -2426,6 +2451,7 @@ function saveHouseholdReminders_(){
  persist(()=>{openMorningBrief();renderGlance()});
 }
 
+function openHouseholdReminderHistory_(){ensureHouseholdReminders_();let rows=[...S.householdReminderHistory].sort((a,b)=>String(b.doneDate).localeCompare(String(a.doneDate))).slice(0,80);openModal(`<div class="hr2Wrap"><h2>📜 Maintenance History</h2><div class="note">Completed household jobs are kept here so you can answer “when did we last do that?” without guessing.</div><div class="hrHistoryList" style="margin-top:12px">${rows.length?rows.map(x=>`<div class="hrHistoryRow"><div class="hrHistoryDate">${esc(dateOnly_(x.doneDate).toLocaleDateString([],{month:"short",day:"numeric",year:"numeric"}))}</div><div><div class="hrHistoryName">${reminderCategoryIcon_(x.category)} ${esc(x.name)}</div><div class="hrHistoryMeta">${esc(x.category||"Home")}${x.notes?` • ${esc(x.notes)}`:""}</div></div><div class="hrHistoryNext">Next: ${x.nextDue?esc(dateOnly_(x.nextDue).toLocaleDateString([],{month:"short",day:"numeric"})):"—"}</div></div>`).join(""):`<div class="empty">Nothing completed yet. Mark a maintenance item Done and it will land here.</div>`}</div><div class="actions"><button class="btn" onclick="openHouseholdReminders()">← Maintenance Center</button><button class="btn" onclick="openMorningBrief()">Brief</button></div></div>`)}
 function openGroceries(){document.getElementById("groceryOverlay").classList.add("open");let s=document.getElementById("groceryCategory");if(!s.innerHTML)s.innerHTML=groceryCategoryOptions();refreshGroceries();clearInterval(groceryTimer);groceryTimer=setInterval(refreshGroceries,20000);setTimeout(()=>document.getElementById("groceryName")?.focus(),100);activity()}
 function closeGroceries(){document.getElementById("groceryOverlay").classList.remove("open");clearInterval(groceryTimer);groceryTimer=null;activity()}
 function renderGroceries(){let body=document.getElementById("groceryBody");if(!body)return;let active=G.items.filter(x=>!x.checked).length,checked=G.items.length-active;document.getElementById("groceryCount").innerHTML=`${active} to get${checked?` • ${checked} checked`:""}<div class="gMergeNote">Recipe and weekly-plan adds automatically merge matching items.</div>`;document.getElementById("grocerySync").textContent=G.updatedAt?"Synced "+new Date(G.updatedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";if(!G.items.length){body.innerHTML='<div class="gEmpty">Your list is empty. Add something delicious. 😈</div>';return}let html="";GROCERY_CATEGORIES.forEach(cat=>{let a=G.items.filter(x=>x.category===cat).sort((a,b)=>Number(a.checked)-Number(b.checked)||a.name.localeCompare(b.name));if(!a.length)return;html+=`<section class="gSection"><div class="gSectionTitle">${esc(cat)}</div>${a.map(x=>`<div class="gItem ${x.checked?"checked":""}"><input type="checkbox" ${x.checked?"checked":""} onchange="setGroceryCheckedUI('${x.id}',this.checked)"><span class="gName">${x.qty?`<span class="gQty">${esc(x.qty)}</span>`:""}${esc(x.name)}${x.source?`<span class="gSource">From: ${esc(x.source)}</span>`:""}</span><div class="gItemActions"><button class="gEdit" onclick="editGroceryUI('${x.id}')" title="Edit">✎</button><button class="gDelete" onclick="deleteGroceryUI('${x.id}')" title="Delete">×</button></div></div>`).join("")}</section>`});body.innerHTML=html}
@@ -2456,7 +2482,7 @@ function openDay(d){
  document.getElementById("v4date").textContent=sel.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
  document.getElementById("v4year").textContent=sel.getFullYear();
  document.getElementById("v4weather").innerHTML=weather();
- document.getElementById("v4schedule").innerHTML=`<h2>📅 SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD EVENT</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}${e.location?" • "+esc(e.location):""}</div>${eventHasConflict_(e,E)?'<div class="calConflictNote">⚠ Schedule overlap</div>':""}</div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}`;
+ document.getElementById("v4schedule").innerHTML=`<h2>📅 SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD EVENT</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}${e.location?" • "+esc(e.location):""}</div>${eventHasConflict_(e,E)?'<div class="calConflictNote">⚠ Schedule overlap</div>':""}</div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}${maintenanceDayHtml_(sel,"day")}`;
  document.getElementById("v4chores").innerHTML=`<h2>✅ CHORES <span class="streakBadge">🔥 ${choreStreak(new Date())} day streak</span> <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked);openDay(sel)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div>`;
  document.getElementById("v4menu").innerHTML=`<h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}`;
  document.getElementById("v4notes").innerHTML=`<h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2><div class="notesbox">${esc(S.notes)}</div>`;
