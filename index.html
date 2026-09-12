@@ -649,7 +649,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.8.3 — Morning Brief restored section polish */
+/* V9.9.0 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -1159,6 +1159,14 @@ let mealPlanSourceAddInFlight_=false;
 let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0;
 let fdDiagLongTasks_=0,fdDiagLongestTask_=0,fdDiagLastHeartbeat_=Date.now(),fdDiagHeartbeatLag_=0,fdDiagSampler_=null,fdDiagHeartbeatTimer_=null;
 const FD_CRASH_CONTEXT_KEY_="familyDashboardCrashContextV1";
+function initRendererSafePreference_(){
+ try{
+  const saved=localStorage.getItem("familyDashboardRendererSafe");
+  fdRendererSafe_=saved==="on";
+ }catch(_){fdRendererSafe_=false}
+ document.body.classList.toggle("fdRendererSafe",!!fdRendererSafe_);
+}
+
 function fdCrashContextRead_(){
  try{let a=JSON.parse(localStorage.getItem(FD_CRASH_CONTEXT_KEY_)||"[]");return Array.isArray(a)?a:[]}catch(_){return[]}
 }
@@ -1226,7 +1234,8 @@ function fdDiagSample_(){
  return s;
 }
 function startRendererDiagnostics_(){
- document.body.classList.add("fdRendererSafe");
+ initRendererSafePreference_();
+ document.body.classList.toggle("fdRendererSafe",!!fdRendererSafe_);
  try{
   if("PerformanceObserver" in window){
    let po=new PerformanceObserver(list=>{
@@ -1259,6 +1268,7 @@ function startRendererDiagnostics_(){
   document.addEventListener("visibilitychange",()=>fdCrashContext_("visibility",document.visibilityState));
  }
  fdCrashContext_("diagnostics-start");
+ fdCrashContext_("visual-test","full motion enabled");
  setTimeout(fdDiagSample_,12000);
 }
 function rendererDiagSummary_(){
@@ -1273,7 +1283,10 @@ function clearRendererDiagnostics_(){
  openRendererDiagnostics_();
 }
 function toggleRendererSafe_(){
- document.body.classList.toggle("fdRendererSafe");
+ fdRendererSafe_=!fdRendererSafe_;
+ try{localStorage.setItem("familyDashboardRendererSafe",fdRendererSafe_?"on":"off")}catch(_){}
+ document.body.classList.toggle("fdRendererSafe",fdRendererSafe_);
+ fdCrashContext_("safe-motion",fdRendererSafe_?"on":"off");
  openRendererDiagnostics_();
 }
 function openRendererDiagnostics_(){
@@ -2891,7 +2904,7 @@ function minuteDashboardTick_(){
  let fm=document.getElementById("fridayMode");if(fm)fm.textContent=fridayModeText();
  renderCountdowns();
  if(!modalOrOverlayOpen_())renderGlance();
- if(!document.body.classList.contains("fdRendererSafe"))maybeRareCreature();
+ if(!fdRendererSafe_)maybeRareCreature();
 }
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){
