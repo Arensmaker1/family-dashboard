@@ -69,8 +69,8 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Bot 4th",
-        "ourScore": "3",
+        "status": "Mid 5th",
+        "ourScore": "4",
         "opponentScore": "4",
         "result": "",
         "winner": null,
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T18:39:17.439907Z"
+  "updatedAt": "2026-09-12T18:50:37.514759Z"
 }
