@@ -746,6 +746,10 @@ body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .bri
 
 /* V9.13.0 — Voice 2.0 */
 .voiceV2Tag{font-size:8px;font-weight:900;letter-spacing:.55px;opacity:.58;white-space:nowrap}
+
+/* V9.14.0 Grocery Center 2.0 */
+.wgSmartNote{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;border:1px solid #3f7d65;font-size:9px;font-weight:800;opacity:.9}
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -3077,6 +3081,8 @@ function showGroceryGenTab(){
   google.script.run.withSuccessHandler(d=>{WG=d||{items:[],recipes:[]};WG.loaded=!!WG.ok;renderWeekGroceries()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getWeekGroceryPreview();
 }
 function renderWeekGroceries(){
+ if(WG&&Array.isArray(WG.items)&&!WG._smartCartApplied){applySmartCart_();WG._smartCartApplied=true}
+
   let b=document.getElementById("recipeBody");if(!WG.ok){b.innerHTML=`<div class="rEmpty"><h2>🛒 Week Groceries</h2>${esc(WG.message||"No loaded week found.")}<br><br><span class="rMeta">Load a week from Meal Plans or Plan My Week first, then come back here.</span></div>`;return}
   let warn=(WG.missing||[]).length?`<div class="wgWarning">Couldn’t match ${WG.missing.length} meal${WG.missing.length===1?"":"s"}: ${esc(WG.missing.join(", "))}</div>`:"";
   let counts=groceryIntelligenceCounts_();
@@ -3084,7 +3090,114 @@ function renderWeekGroceries(){
 }
 function groceryIntelligenceCounts_(){let c={need:0,listed:0,pantry:0};(WG.items||[]).forEach(x=>{if(x.stocked)c.pantry++;else if(x.alreadyOnList)c.listed++;else c.need++});return c}
 function groceryStatusHtml_(x){if(x.stocked)return '<span class="wgStatus pantry">🥫 ALWAYS STOCKED</span>';if(x.alreadyOnList)return '<span class="wgStatus listed">🛒 ALREADY ON LIST</span>';return '<span class="wgStatus need">● NEED TO BUY</span>'}
-function weekGroceryRow_(x,i){let checked=(!x.stocked&&!x.alreadyOnList)?"checked":"",cls=x.stocked?"stocked":(x.alreadyOnList?"alreadyListed":"");let existing=x.alreadyOnList?` <span class="wgExisting">• Current list${x.existingQty?`: ${esc(x.existingQty)}`:""}</span>`:"";return `<div class="wgRow ${cls}"><input id="wgCheck${i}" type="checkbox" ${checked}><input id="wgQty${i}" type="text" value="${esc(x.qty||"")}" placeholder="Qty"><input id="wgName${i}" type="text" value="${esc(x.name||"")}" placeholder="Ingredient"><select id="wgCat${i}">${GROCERY_CATEGORIES.map(c=>`<option ${c===x.category?"selected":""}>${esc(c)}</option>`).join("")}</select><div class="wgSources">From: ${esc(x.sourceText||"")} ${groceryStatusHtml_(x)}${existing}<button class="btn wgPantryBtn" onclick="toggleWeekPantry(${i})">${x.stocked?"Remove from Pantry":"Keep Stocked"}</button></div></div>`}
+function weekGroceryRow_(x,i){let checked=(!x.stocked&&!x.alreadyOnList)?"checked":"",cls=x.stocked?"stocked":(x.alreadyOnList?"alreadyListed":"");let existing=x.alreadyOnList?` <span class="wgExisting">• Current list${x.existingQty?`: ${esc(x.existingQty)}`:""}</span>`:"";return `<div class="wgRow ${cls}"><input id="wgCheck${i}" type="checkbox" ${checked}><input id="wgQty${i}" type="text" value="${esc(x.qty||"")}" placeholder="Qty"><input id="wgName${i}" type="text" value="${esc(x.name||"")}" placeholder="Ingredient"><select id="wgCat${i}">${GROCERY_CATEGORIES.map(c=>`<option ${c===x.category?"selected":""}>${esc(c)}</option>`).join("")}</select><div class="wgSources">From: ${esc(x.sourceText||"")} ${x.smartNote?`<span class="wgSmartNote">${esc(x.smartNote)}</span>`:""} ${groceryStatusHtml_(x)}${existing}<button class="btn wgPantryBtn" onclick="toggleWeekPantry(${i})">${x.stocked?"Remove from Pantry":"Keep Stocked"}</button></div></div>`}
+
+/* V9.14.0 — Grocery Center 2.0 / Smart Cart normalization */
+function groceryFrac_(s){
+ s=String(s||"").trim().replace("½"," 1/2").replace("⅓"," 1/3").replace("⅔"," 2/3").replace("¼"," 1/4").replace("¾"," 3/4").replace("⅛"," 1/8");
+ let total=0;
+ s.split(/\s+/).filter(Boolean).forEach(x=>{
+   if(/^\d+(?:\.\d+)?$/.test(x))total+=Number(x);
+   else if(/^\d+\/\d+$/.test(x)){let [a,b]=x.split("/").map(Number);if(b)total+=a/b}
+ });
+ return total||0;
+}
+function groceryCanonicalName_(name){
+ let n=String(name||"").toLowerCase()
+   .replace(/\([^)]*\)/g," ")
+   .replace(/\b(fresh|finely|roughly|coarsely|thinly|thickly|small|medium|large|extra large|chopped|diced|minced|sliced|grated|shredded|peeled|seeded|drained|rinsed|packed|divided|squeezed dry|for serving|for garnish|to taste)\b/g," ")
+   .replace(/[^\w\s-]/g," ").replace(/\s+/g," ").trim();
+ const aliases=[
+   [/\b(cilantro leaves|fresh cilantro|cilantro)\b/,"cilantro"],
+   [/\b(flat leaf parsley|flat-leaf parsley|italian parsley|fresh parsley|parsley)\b/,"parsley"],
+   [/\b(cucumbers|cucumber)\b/,"cucumber"],
+   [/\b(crushed tomato|crushed tomatoes)\b/,"crushed tomatoes"],
+   [/\b(green onions|green onion|scallions|scallion)\b/,"green onions"],
+   [/\b(limes|lime)\b/,"lime"],[/\b(lemons|lemon)\b/,"lemon"],
+   [/\b(garlic cloves|garlic clove|garlic)\b/,"garlic"],
+   [/\b(yellow onions|yellow onion)\b/,"yellow onion"],
+   [/\b(red onions|red onion)\b/,"red onion"],
+   [/\b(white onions|white onion)\b/,"white onion"]
+ ];
+ for(let [rx,v] of aliases)if(rx.test(n))return v;
+ return n;
+}
+function groceryQtyParts_(x){
+ let raw=`${x.qty||""} ${x.name||""}`.toLowerCase().replace(/[–—]/g,"-");
+ let m=raw.match(/(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?|[½⅓⅔¼¾⅛])\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|cans?|cloves?|bunch(?:es)?|lbs?|pounds?|oz|ounces?|whole)?\b/);
+ if(!m)return {n:0,u:""};
+ return {n:groceryFrac_(m[1]),u:(m[2]||"").replace(/s$/,"")};
+}
+function groceryPurchaseRule_(name,rows){
+ let parts=rows.map(groceryQtyParts_),sum=u=>parts.filter(p=>p.u===u).reduce((a,p)=>a+p.n,0),all=parts.reduce((a,p)=>a+p.n,0);
+ if(name==="cilantro"||name==="parsley"){
+   let cups=sum("cup"),bunch=sum("bunch");
+   return `${Math.max(1,Math.ceil(bunch+(cups?cups/2:0)))} bunch${Math.max(1,Math.ceil(bunch+(cups?cups/2:0)))===1?"":"es"}`;
+ }
+ if(name==="cucumber"){
+   let whole=parts.filter(p=>!p.u).reduce((a,p)=>a+p.n,0),cups=sum("cup");
+   let count=Math.max(1,Math.ceil(whole+(cups?cups/1.5:0)));
+   return `${count}`;
+ }
+ if(name==="crushed tomatoes"){
+   let cans=sum("can"),cups=sum("cup"),oz=sum("oz");
+   // Standard recipe assumption for cart planning: a 14–15 oz can is ~1.75 cups.
+   let count=Math.max(1,Math.ceil(cans+cups/1.75+oz/14.5));
+   return `${count} can${count===1?"":"s"}`;
+ }
+ if(name==="lime"||name==="lemon"){
+   let whole=parts.filter(p=>!p.u).reduce((a,p)=>a+p.n,0),tbsp=sum("tbsp"),cups=sum("cup");
+   let count=Math.max(1,Math.ceil(whole+tbsp/2+cups*8));
+   return `${count}`;
+ }
+ if(name==="garlic"){
+   let cloves=sum("clove"),whole=parts.filter(p=>!p.u).reduce((a,p)=>a+p.n,0);
+   if(cloves)return `${Math.max(1,Math.ceil(cloves/10))} bulb${Math.ceil(cloves/10)===1?"":"s"}`;
+   if(whole)return `${Math.ceil(whole)}`;
+ }
+ // Same-unit quantities can be safely summed. Mixed units stay descriptive instead of fake precision.
+ let units=[...new Set(parts.filter(p=>p.n&&p.u).map(p=>p.u))];
+ if(units.length===1){
+   let u=units[0],n=sum(u),pretty=Number.isInteger(n)?String(n):String(Math.round(n*100)/100);
+   return `${pretty} ${u}${n!==1&&u!=="tbsp"&&u!=="tsp"?"s":""}`;
+ }
+ return rows.map(x=>String(x.qty||"").trim()).filter(Boolean).join(" + ");
+}
+function groceryVague_(name){
+ return /\b(crunchy vegetables|mixed vegetables|vegetables|greens|herbs|seasoning|spices|toppings|garnish)\b/i.test(name||"");
+}
+function smartCartConsolidate_(items){
+ let groups=new Map(),out=[];
+ (items||[]).forEach((x,i)=>{
+   let canon=groceryCanonicalName_(x.name);
+   if(!canon){out.push(x);return}
+   let key=`${canon}|${String(x.category||"Other").toLowerCase()}`;
+   if(!groups.has(key))groups.set(key,[]);
+   groups.get(key).push({...x,_smartIndex:i,_canon:canon});
+ });
+ groups.forEach(rows=>{
+   if(rows.length===1){
+     let x=rows[0];
+     if(groceryVague_(x.name))x.smartNote="⚠️ Vague recipe ingredient — choose what you actually want to buy.";
+     out.push(x);return;
+   }
+   let base={...rows[0]},canon=rows[0]._canon;
+   base.name=canon.replace(/\b\w/g,c=>c.toUpperCase());
+   base.qty=groceryPurchaseRule_(canon,rows);
+   base.sourceText=[...new Set(rows.map(x=>x.sourceText).filter(Boolean))].join(" • ");
+   base.smartMerged=rows.length;
+   base.smartNote=`✓ Smart Cart combined ${rows.length} recipe lines`;
+   base.stocked=rows.every(x=>x.stocked);
+   base.alreadyOnList=rows.some(x=>x.alreadyOnList);
+   out.push(base);
+ });
+ return out.sort((a,b)=>String(a.category||"").localeCompare(String(b.category||""))||String(a.name||"").localeCompare(String(b.name||"")));
+}
+function applySmartCart_(){
+ if(!WG||!Array.isArray(WG.items))return;
+ WG.items=smartCartConsolidate_(WG.items);
+}
+
 function setWeekGroceryChecks(v){WG.items.forEach((_,i)=>{let e=document.getElementById("wgCheck"+i);if(e)e.checked=v})}
 function smartSelectWeekGroceries(){WG.items.forEach((x,i)=>{let e=document.getElementById("wgCheck"+i);if(e)e.checked=!x.stocked&&!x.alreadyOnList})}
 function uncheckPantryWeekGroceries(){WG.items.forEach((x,i)=>{let e=document.getElementById("wgCheck"+i);if(e&&x.stocked)e.checked=false})}
