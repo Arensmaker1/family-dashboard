@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.10.0 Maintenance Center build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.11.0 Household Inbox build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -712,6 +712,19 @@ body.fdRendererSafe .ufoBeam{animation:none!important}
 .maintenanceDayBlock{margin-top:7px;padding-top:7px;border-top:1px solid #ffffff12}.maintenanceDayTitle{font-size:9px;color:var(--o);font-weight:900;letter-spacing:.04em;margin-bottom:4px}.maintenanceDayRow{display:flex;align-items:center;gap:7px;padding:5px 0;font-size:10px}.maintenanceDayRow span{min-width:0;flex:1}.maintenanceDayRow .btn{padding:4px 7px;font-size:8px}
 .hrHistoryList{display:flex;flex-direction:column;gap:6px}.hrHistoryRow{display:grid;grid-template-columns:95px 1fr auto;gap:9px;align-items:center;border:1px solid var(--l);border-radius:9px;padding:8px 9px;background:#ffffff04}.hrHistoryDate{font-size:9px;color:var(--m)}.hrHistoryName{font-size:11px;font-weight:800}.hrHistoryMeta{font-size:8px;color:var(--m);margin-top:2px}.hrHistoryNext{font-size:9px;color:var(--g);white-space:nowrap}body[data-appearance="light"] .hrHistoryRow{background:#fffdf9}
 @media(max-width:720px){.hr2EditorGrid{grid-template-columns:1fr 1fr}.hr2EditorGrid>input:first-child{grid-column:1/-1}.hrHistoryRow{grid-template-columns:78px 1fr}.hrHistoryNext{grid-column:2}}
+
+
+/* V9.11.0 — Morning Brief 3.0 / Household Inbox */
+.briefInboxHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px;padding-right:46px}
+.briefInboxHead h2{margin:0;font-size:24px}.briefInboxKicker{font-size:9px;color:var(--theme1);font-weight:900;letter-spacing:.08em;margin-bottom:3px}.briefInboxDate{font-size:10px;color:var(--m);margin-top:3px}
+.briefSummary.v911{margin-bottom:10px}.briefInboxGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:10px}.briefInboxSection{border:1px solid var(--l);border-radius:12px;background:var(--p);padding:10px;min-width:0}.briefInboxSection.attention{border-color:#f0a84c66}.briefInboxSection h3{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.05em;color:var(--theme1)}
+.briefInboxBadge{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;border-radius:999px;padding:0 6px;background:#f0a84c1e;border:1px solid #f0a84c77;color:#f0a84c;font-size:9px}.briefInboxBadge.zero{background:#72e26b12;border-color:#72e26b55;color:var(--g)}
+.briefInboxItem{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:7px;align-items:start;padding:7px 0;border-bottom:1px solid #ffffff0d;font-size:10px;line-height:1.35}.briefInboxItem:last-child{border-bottom:0}.briefInboxIcon{font-size:14px;line-height:1.15}.briefInboxText{min-width:0}.briefInboxText b{display:block;font-size:10px;margin-bottom:1px}.briefInboxText span{display:block;color:var(--m);font-size:9px}.briefInboxItem.urgent .briefInboxText b{color:#ff7c7c}.briefInboxItem.warn .briefInboxText b{color:#f0a84c}.briefInboxItem.good .briefInboxText b{color:var(--g)}.briefInboxAction .btn{min-height:0!important;padding:4px 7px;font-size:8px;white-space:nowrap}
+.briefInboxEmpty{font-size:10px;color:var(--m);padding:5px 0}.briefInboxEmpty.good{color:var(--g);font-weight:800}.briefInboxMiniActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.briefInboxMiniActions .btn{padding:5px 8px;font-size:8px}.briefInboxSubgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:9px}.briefInboxSubgrid .briefCard{margin:0}.briefInboxNotes{display:flex;flex-direction:column;gap:5px}.briefInboxNote{font-size:10px;line-height:1.35;padding:5px 0;border-bottom:1px solid #ffffff0d}.briefInboxNote:last-child{border-bottom:0}
+body[data-appearance="light"] .briefInboxSection{background:#fffdf9}.briefInboxSection .hrBriefItem{padding:6px 0}
+@media(max-width:900px){.briefInboxGrid{grid-template-columns:1fr}.briefInboxSubgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.briefInboxHead h2{font-size:20px}.briefInboxHead{padding-right:40px}.briefInboxSubgrid{grid-template-columns:1fr}.briefInboxSection{padding:9px}.briefInboxItem{grid-template-columns:18px minmax(0,1fr) auto}.briefInboxAction .btn{padding:4px 6px}}
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1114,7 +1127,7 @@ let familyDashboardAuthExpired_ = false;
 <div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 2.0</h2><div class=&quot;briefLine&quot;>Loading today\'s household rundown…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 3.0</h2><div class=&quot;briefLine&quot;>Loading household inbox…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -2195,102 +2208,83 @@ function renderGlance(){
 }
 
 
-/* V9.6.2 — Morning Brief section helpers */
-function morningSummaryHtml_(){
- let now=new Date(),
-     events=futureEventsForDay_(now,true),
-     cs=morningChoreStats_(),
-     rs=reminderStats2_(),
-     parts=[];
- if(events.length)parts.push(`${events.length} thing${events.length===1?"":"s"} left on calendar`);
- if(cs.left)parts.push(`${cs.left} chore${cs.left===1?"":"s"} remaining`);
- if(rs.overdue)parts.push(`${rs.overdue} household job${rs.overdue===1?"":"s"} overdue`);
- if(!parts.length)parts.push("the household is looking pretty clear");
- let greeting=now.getHours()<12?"Good morning":now.getHours()<17?"Good afternoon":"Good evening";
- return `<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>${greeting}.</b> ${esc(parts.join(" • "))}</div></div>`;
+/* V9.11.0 — Morning Brief 3.0 / Household Inbox */
+function morningAttentionItems_(){
+ let now=new Date(),items=[],conflicts=dayConflicts_(now),rs=activeBriefReminders_(),dinner=morningDinnerData_(),cs=morningChoreStats_(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[];
+ conflicts.slice(0,2).forEach(pair=>items.push({rank:100,cls:"urgent",icon:"⚠️",title:"Calendar conflict",detail:`${pair[0].title} overlaps ${pair[1].title}`}));
+ rs.filter(r=>daysUntil_(r.nextDue)<0).slice(0,3).forEach(r=>items.push({rank:95,cls:"urgent",icon:"🔧",title:r.name,detail:reminderDueText_(r),action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
+ rs.filter(r=>daysUntil_(r.nextDue)===0).slice(0,3).forEach(r=>items.push({rank:90,cls:"warn",icon:"🔁",title:r.name,detail:"Due today",action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
+ if(dinner?.need?.missing>0)items.push({rank:70,cls:"warn",icon:"🛒",title:"Dinner needs a grocery check",detail:`${dinner.need.missing} ingredient${dinner.need.missing===1?"":"s"} may still be needed`,action:`<button class="btn" onclick="closeMorningBrief_();openGroceries()">Groceries</button>`});
+ if(dinner?.prep?.length)items.push({rank:65,cls:"warn",icon:"🍽️",title:"Dinner prep",detail:dinner.prep[0],action:dinner.match?`<button class="btn" onclick="closeMorningBrief_();openDinnerRecipe_('${dinner.match.source}','${esc(dinner.match.id)}')">Recipe</button>`:""});
+ if(dinner?.busy&&Number(dinner.busy.count||0)>=2)items.push({rank:55,cls:"warn",icon:"📅",title:"Busy evening",detail:`${dinner.busy.count} events starting with ${dinner.busy.time} ${dinner.busy.title}`});
+ if(cs.left&&now.getHours()>=17)items.push({rank:45,cls:"warn",icon:"✅",title:"Chores still open",detail:`${cs.left} chore${cs.left===1?"":"s"} remaining tonight`,action:`<button class="btn" onclick="closeMorningBrief_();openChores()">Chores</button>`});
+ pins.slice(0,2).forEach(x=>items.push({rank:30,cls:"",icon:"📌",title:"Don't forget",detail:String(x)}));
+ return items.sort((a,b)=>b.rank-a.rank).slice(0,7);
 }
-function tomorrowPreviewHtml_(){
- let d=new Date();d.setDate(d.getDate()+1);
- let events=futureEventsForDay_(d,false).sort((a,b)=>new Date(a.start)-new Date(b.start)),
-     dinner=dinnerForDate_(d);
- if(!events.length&&!dinner)return `<div class="briefTomorrow"><b>UP FIRST TOMORROW</b><span>Nothing major on deck yet.</span></div>`;
- let bits=[];
- if(events.length){
-  let e=events[0];
-  bits.push(`${e.allDay?"All day":time(e)} • ${e.title}`);
- }
- if(dinner)bits.push(`🍽️ ${dinner.name}`);
- return `<div class="briefTomorrow"><b>UP FIRST TOMORROW</b>${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`;
+function morningAttentionHtml_(){
+ let a=morningAttentionItems_();
+ if(!a.length)return `<div class="briefInboxEmpty good">✓ Nothing needs immediate attention.</div>`;
+ return a.map(x=>`<div class="briefInboxItem ${x.cls||""}"><div class="briefInboxIcon">${x.icon}</div><div class="briefInboxText"><b>${esc(x.title)}</b><span>${esc(x.detail||"")}</span></div>${x.action?`<div class="briefInboxAction">${x.action}</div>`:""}</div>`).join("");
+}
+function morningTodayInboxHtml_(){
+ let now=new Date(),events=futureEventsForDay_(now,true).sort((a,b)=>new Date(a.start)-new Date(b.start)),d=morningDinnerData_(),cs=morningChoreStats_(),rows=[];
+ if(events.length)events.slice(0,4).forEach(e=>rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">📅</div><div class="briefInboxText"><b>${e.allDay?"All day":esc(time(e))} • ${esc(e.title)}</b><span>${esc(e.calendar||"")}</span></div></div>`));
+ else rows.push(`<div class="briefInboxItem good"><div class="briefInboxIcon">📅</div><div class="briefInboxText"><b>Calendar is clear</b><span>Nothing else scheduled today.</span></div></div>`);
+ if(d?.dinner?.name)rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">🍽️</div><div class="briefInboxText"><b>${esc(d.dinner.name)}</b><span>${d.mins?esc(formatCookEstimate_(d.mins))+" cook estimate":"Dinner tonight"}</span></div>${d.match?`<div class="briefInboxAction"><button class="btn" onclick="closeMorningBrief_();openDinnerRecipe_('${d.match.source}','${esc(d.match.id)}')">Recipe</button></div>`:""}</div>`);
+ else rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">🍽️</div><div class="briefInboxText"><b>Dinner isn't planned yet</b><span>Menu is open for interpretation.</span></div></div>`);
+ rows.push(`<div class="briefInboxItem ${cs.left===0?"good":""}"><div class="briefInboxIcon">✅</div><div class="briefInboxText"><b>${cs.left===0?"Chores are done":`${cs.left} chore${cs.left===1?"":"s"} remaining`}</b><span>${cs.total?`${cs.done} of ${cs.total} complete`:"No chores assigned today"}</span></div>${cs.left?`<div class="briefInboxAction"><button class="btn" onclick="closeMorningBrief_();openChores()">View</button></div>`:""}</div>`);
+ if(W&&W.ok&&W.current){let today=key(now),i=W.daily&&W.daily.time?W.daily.time.indexOf(today):-1,hi=i>=0?Math.round(W.daily.temperature_2m_max[i]):"—",lo=i>=0?Math.round(W.daily.temperature_2m_min[i]):"—",rain=i>=0?(W.daily.precipitation_probability_max[i]||0):0;rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">${icon(W.current.weather_code)}</div><div class="briefInboxText"><b>${Math.round(W.current.temperature_2m)}° now • ${hi}° / ${lo}°</b><span>${rain}% precipitation${W.location?` • ${esc(W.location)}`:""}</span></div></div>`)}
+ return rows.join("");
+}
+function morningNextMilestone_(){
+ let now=new Date(),a=(D.events||[]).filter(e=>!S.hiddenCalendars.includes(e.calendar)&&new Date(e.start)>=now&&calendarEventKind_(e.title)).sort((a,b)=>new Date(a.start)-new Date(b.start));
+ if(!a.length)return null;let e=a[0],d=new Date(e.start),days=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);return days<=14?{event:e,days}:null;
+}
+function morningComingUpHtml_(){
+ let tom=new Date();tom.setDate(tom.getDate()+1);let events=futureEventsForDay_(tom,false).sort((a,b)=>new Date(a.start)-new Date(b.start)),dinner=dinnerForDate_(tom),rem=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>0&&n<=30}),milestone=morningNextMilestone_(),rows=[];
+ events.slice(0,3).forEach(e=>rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">➡️</div><div class="briefInboxText"><b>Tomorrow • ${e.allDay?"All day":esc(time(e))}</b><span>${esc(e.title)}</span></div></div>`));
+ if(dinner)rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">🍽️</div><div class="briefInboxText"><b>Tomorrow's dinner</b><span>${esc(dinner.name)}</span></div></div>`);
+ rem.slice(0,3).forEach(r=>rows.push(`<div class="briefInboxItem ${daysUntil_(r.nextDue)<=reminderWarnDays_(r)?"warn":""}"><div class="briefInboxIcon">🔧</div><div class="briefInboxText"><b>${esc(r.name)}</b><span>${esc(reminderDueText_(r))}</span></div></div>`));
+ if(milestone){let k=calendarEventKind_(milestone.event.title),ic=k==="birthday"?"🎂":k==="vacation"?"✈️":k==="school"?"🎒":"✨";rows.push(`<div class="briefInboxItem"><div class="briefInboxIcon">${ic}</div><div class="briefInboxText"><b>Next milestone</b><span>${esc(milestone.event.title)} • ${milestone.days===0?"Today":milestone.days===1?"Tomorrow":milestone.days+" days"}</span></div></div>`)}
+ if(!rows.length)return `<div class="briefInboxEmpty">Nothing major is waiting in the next few days.</div>`;
+ return rows.slice(0,7).join("");
+}
+function morningSummaryHtml_(){
+ let now=new Date(),events=futureEventsForDay_(now,true),cs=morningChoreStats_(),attention=morningAttentionItems_(),parts=[];
+ if(events.length)parts.push(`${events.length} calendar item${events.length===1?"":"s"} left`);
+ if(cs.left)parts.push(`${cs.left} chore${cs.left===1?"":"s"} remaining`);
+ if(attention.length)parts.push(`${attention.length} item${attention.length===1?"":"s"} need attention`);
+ if(!parts.length)parts.push("the household is looking clear");
+ let greeting=now.getHours()<12?"Good morning":now.getHours()<17?"Good afternoon":"Good evening";
+ return `<div class="briefSummary v911"><div class="briefSummaryIcon">☀️</div><div><b>${greeting}.</b> ${esc(parts.join(" • "))}</div></div>`;
 }
 function morningChoreSummaryHtml_(){
  let d=new Date(),C=choresFor(d);
  if(!C.length)return `<div class="briefLine briefGood">✓ No chores assigned today.</div>`;
- let people={};
- C.forEach(x=>{
-  let who=String(x.who||"Household").trim()||"Household",
-      done=!!S.completions[key(d)+"-"+x.i];
-  if(!people[who])people[who]={total:0,left:0};
-  people[who].total++;
-  if(!done)people[who].left++;
- });
- return Object.keys(people).sort((a,b)=>a.localeCompare(b)).map(who=>{
-  let p=people[who];
-  return `<div class="briefPersonRow"><b>${esc(who)}</b><span>${p.left===0?`all done ✓`:`${p.left} chore${p.left===1?"":"s"}`}</span></div>`;
- }).join("");
+ let people={};C.forEach(x=>{let who=String(x.who||"Household").trim()||"Household",done=!!S.completions[key(d)+"-"+x.i];if(!people[who])people[who]={total:0,left:0};people[who].total++;if(!done)people[who].left++});
+ return Object.keys(people).sort((a,b)=>a.localeCompare(b)).map(who=>{let p=people[who];return `<div class="briefPersonRow"><b>${esc(who)}</b><span>${p.left===0?`all done ✓`:`${p.left} chore${p.left===1?"":"s"}`}</span></div>`}).join("");
 }
 function morningGroceryHtml_(){
  if(!G||!Array.isArray(G.items))return `<div class="briefLine">Grocery list is still loading.</div>`;
- let active=G.items.filter(x=>!x.checked);
- return active.length
-  ? `<div class="briefCountOnly"><b>${active.length}</b><span>grocery item${active.length===1?"":"s"} remaining</span></div>`
-  : `<div class="briefLine briefGood">✓ Grocery list clear.</div>`;
+ let active=G.items.filter(x=>!x.checked);return active.length?`<div class="briefCountOnly"><b>${active.length}</b><span>grocery item${active.length===1?"":"s"} remaining</span></div>`:`<div class="briefLine briefGood">✓ Grocery list clear.</div>`;
 }
-
 function morningReminderHtml_(){
  let all=activeBriefReminders_(),due=all.filter(r=>daysUntil_(r.nextDue)<=reminderWarnDays_(r));
  if(!due.length)return `<div class="briefLine">✓ No household jobs need attention.</div>`;
- return due.slice(0,4).map(r=>{
-  let cls=reminderClass_(r),n=daysUntil_(r.nextDue);
-  return `<div class="hrBriefItem ${cls}">
-   <div><b>${esc(r.name)}</b><div class="hrBriefDue">${esc(reminderDueText_(r))}${r.lastDone?` • Last done ${esc(dateOnly_(r.lastDone).toLocaleDateString([],{month:"short",day:"numeric"}))}`:""}</div></div>
-   <div class="hrBriefBtns">
-    <button class="btn mini" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>
-    ${n<=0?`<button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',1,'brief')">+1d</button><button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',7,'brief')">+7d</button>`:""}
-   </div>
-  </div>`;
- }).join("");
+ return due.slice(0,4).map(r=>{let cls=reminderClass_(r),n=daysUntil_(r.nextDue);return `<div class="hrBriefItem ${cls}"><div><b>${esc(r.name)}</b><div class="hrBriefDue">${esc(reminderDueText_(r))}${r.lastDone?` • Last done ${esc(dateOnly_(r.lastDone).toLocaleDateString([],{month:"short",day:"numeric"}))}`:""}</div></div><div class="hrBriefBtns"><button class="btn mini" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>${n<=0?`<button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',1,'brief')">+1d</button><button class="btn mini" onclick="snoozeHouseholdReminder_('${esc(r.id)}',7,'brief')">+7d</button>`:""}</div></div>`}).join("");
 }
-function upcomingHouseholdHtml_(){
- let a=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>reminderWarnDays_(r)&&n<=30}).slice(0,3);
- if(!a.length)return "";
- return `<div class="hrUpcoming"><b>COMING UP</b>${a.map(r=>`<span>${esc(r.name)} • ${esc(reminderDueText_(r))}</span>`).join("")}</div>`;
-}
-function morningPriorityHtml_(){
- let rs=reminderStats2_(),bits=[];
- if(rs.overdue)bits.push(`🔴 ${rs.overdue} household job${rs.overdue===1?" is":"s are"} overdue`);
- if(rs.today)bits.push(`🟠 ${rs.today} household job${rs.today===1?" is":"s are"} due today`);
- let dinner=morningDinnerData_();
- if(dinner?.prep?.length)bits.push(`🍽️ Dinner prep: ${dinner.prep[0]}`);
- if(dinner?.busy)bits.push(`📅 Busy evening: ${dinner.busy.count||1} event${(dinner.busy.count||1)===1?"":"s"}`);
- if(!bits.length)return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3><div class="briefPriorityRow">Nothing urgent is fighting for your attention right now.</div></div>`;
- return `<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3>${bits.slice(0,4).map(x=>`<div class="briefPriorityRow">${esc(x)}</div>`).join("")}</div>`;
-}
-
+function upcomingHouseholdHtml_(){let a=activeBriefReminders_().filter(r=>{let n=daysUntil_(r.nextDue);return n>reminderWarnDays_(r)&&n<=30}).slice(0,3);return a.length?`<div class="hrUpcoming"><b>COMING UP</b>${a.map(r=>`<span>${esc(r.name)} • ${esc(reminderDueText_(r))}</span>`).join("")}</div>`:""}
+function morningPriorityHtml_(){return morningAttentionHtml_()}
 function buildMorningBriefHtml_(){
- let now=new Date(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[];
- let summary=briefSafe_("Summary",()=>morningSummaryHtml_(),`<div class="briefSummary"><div class="briefSummaryIcon">☀️</div><div><b>Good ${now.getHours()<12?"morning":now.getHours()<17?"afternoon":"evening"}.</b> Here’s the household rundown.</div></div>`);
- let priority=briefSafe_("What Matters",()=>morningPriorityHtml_(),`<div class="briefPriority"><h3>⭐ WHAT MATTERS</h3><div class="briefPriorityRow">Dashboard data is still loading.</div></div>`);
- let schedule=briefSafe_("Today",()=>morningScheduleHtml_());
- let tomorrow=briefSafe_("Tomorrow",()=>tomorrowPreviewHtml_());
- let weather=briefSafe_("Weather",()=>morningWeatherHtml_());
+ let now=new Date(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[],attention=briefSafe_("Needs Attention",()=>morningAttentionItems_(),[]),attentionCount=Array.isArray(attention)?attention.length:0;
+ let summary=briefSafe_("Summary",()=>morningSummaryHtml_(),`<div class="briefSummary v911"><div class="briefSummaryIcon">☀️</div><div><b>Household brief.</b> Dashboard data is still loading.</div></div>`);
+ let today=briefSafe_("Today Inbox",()=>morningTodayInboxHtml_());
+ let needs=briefSafe_("Needs Attention",()=>morningAttentionHtml_());
+ let coming=briefSafe_("Coming Up",()=>morningComingUpHtml_());
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
- let dinner=briefSafe_("Dinner Command",()=>morningDinnerHtml_());
- let chores=briefSafe_("Chores",()=>morningChoreSummaryHtml_());
- let reminders=briefSafe_("Household",()=>morningReminderHtml_());
- let upcoming=briefSafe_("Coming Up",()=>upcomingHouseholdHtml_(),"");
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
- let notes=briefSafe_("Pinned Notes",()=>pins.length?pins.map(x=>`<div class="briefLine">📌 ${esc(x)}</div>`).join(""):`<div class="briefLine">Nothing pinned.</div>`);
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button>${summary}${priority}<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px"><div><h2 style="margin:0">☀️ Morning Brief 2.0</h2><div class="note">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><button class="btn" onclick="openHouseholdReminders()">🔁 Reminders</button></div><div class="briefHero"><div class="briefCard"><h3>📅 TODAY</h3>${schedule}${tomorrow}</div><div class="briefCard"><h3>🌤️ WEATHER</h3>${weather}</div></div><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefGrid"><div class="briefCard"><h3>🍽️ DINNER COMMAND</h3>${dinner}</div><div class="briefCard"><h3>✅ CHORES</h3>${chores}</div><div class="briefCard"><h3>🔁 HOUSEHOLD</h3>${reminders}${upcoming}</div><div class="briefCard clickable" onclick="closeModal();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}</div><div class="briefCard"><h3>📌 DON'T FORGET</h3>${notes}</div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefCard clickable" onclick="closeMorningBrief_();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -2318,7 +2312,7 @@ function openMorningBrief(){
  fdCrashContext_("brief-open","session "+sessionId);
  try{
   let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
-  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 2.0</h2><div class="briefLine">Loading today’s household rundown…</div></div>`;
+  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 3.0</h2><div class="briefLine">Loading household inbox…</div></div>`;
   if(bg)bg.style.display="grid";
  }catch(_){}
  try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
