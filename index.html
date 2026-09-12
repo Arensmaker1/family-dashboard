@@ -500,7 +500,7 @@ body[data-appearance="light"] .briefSummary{background:#fffdf9}
 .sportsWin{color:var(--g)!important;font-weight:900}
 .sportsLoss{color:#d9818e!important;font-weight:900}
 .sportsCenterWrap{max-width:900px;margin:auto}
-.sportsCenterHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.sportsCenterHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;padding-right:48px}
 .sportsCenterHead h2{margin:0}
 .sportsCenterGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px}
 .sportsTeamCard{border:1px solid var(--l);border-radius:11px;padding:11px;background:var(--p)}
@@ -714,13 +714,13 @@ body.fdRendererSafe .ufoBeam{animation:none!important}
 @media(max-width:720px){.hr2EditorGrid{grid-template-columns:1fr 1fr}.hr2EditorGrid>input:first-child{grid-column:1/-1}.hrHistoryRow{grid-template-columns:78px 1fr}.hrHistoryNext{grid-column:2}}
 
 
-/* V9.11.1 — Morning Brief 3.0 / sports + return-navigation fix */
+/* V9.11.2 — Brief return navigation + modal spacing polish */
 .briefInboxHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px;padding-right:46px}
 .briefInboxHead h2{margin:0;font-size:24px}.briefInboxKicker{font-size:9px;color:var(--theme1);font-weight:900;letter-spacing:.08em;margin-bottom:3px}.briefInboxDate{font-size:10px;color:var(--m);margin-top:3px}
 .briefSummary.v911{margin-bottom:10px}.briefInboxGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:10px}.briefInboxSection{border:1px solid var(--l);border-radius:12px;background:var(--p);padding:10px;min-width:0}.briefInboxSection.attention{border-color:#f0a84c66}.briefInboxSection h3{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.05em;color:var(--theme1)}
 .briefInboxBadge{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;border-radius:999px;padding:0 6px;background:#f0a84c1e;border:1px solid #f0a84c77;color:#f0a84c;font-size:9px}.briefInboxBadge.zero{background:#72e26b12;border-color:#72e26b55;color:var(--g)}
 .briefInboxItem{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:7px;align-items:start;padding:7px 0;border-bottom:1px solid #ffffff0d;font-size:10px;line-height:1.35}.briefInboxItem:last-child{border-bottom:0}.briefInboxIcon{font-size:14px;line-height:1.15}.briefInboxText{min-width:0}.briefInboxText b{display:block;font-size:10px;margin-bottom:1px}.briefInboxText span{display:block;color:var(--m);font-size:9px}.briefInboxItem.urgent .briefInboxText b{color:#ff7c7c}.briefInboxItem.warn .briefInboxText b{color:#f0a84c}.briefInboxItem.good .briefInboxText b{color:var(--g)}.briefInboxAction .btn{min-height:0!important;padding:4px 7px;font-size:8px;white-space:nowrap}
-.briefInboxEmpty{font-size:10px;color:var(--m);padding:5px 0}.briefInboxEmpty.good{color:var(--g);font-weight:800}.briefInboxMiniActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.briefInboxMiniActions .btn{padding:5px 8px;font-size:8px}.briefInboxSubgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:9px}.briefInboxSubgrid .briefCard{margin:0}.briefInboxNotes{display:flex;flex-direction:column;gap:5px}.briefInboxNote{font-size:10px;line-height:1.35;padding:5px 0;border-bottom:1px solid #ffffff0d}.briefInboxNote:last-child{border-bottom:0}
+.briefInboxEmpty{font-size:10px;color:var(--m);padding:5px 0}.briefInboxEmpty.good{color:var(--g);font-weight:800}.briefInboxMiniActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.briefInboxMiniActions .btn{padding:5px 8px;font-size:8px}.briefInboxMiniActions .briefMaintenanceBtn{padding:8px 12px!important;font-size:10px!important;min-height:36px!important;border-radius:10px!important;font-weight:850!important}.briefInboxSubgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:9px}.briefInboxSubgrid .briefCard{margin:0}.briefInboxNotes{display:flex;flex-direction:column;gap:5px}.briefInboxNote{font-size:10px;line-height:1.35;padding:5px 0;border-bottom:1px solid #ffffff0d}.briefInboxNote:last-child{border-bottom:0}
 body[data-appearance="light"] .briefInboxSection{background:#fffdf9}.briefInboxSection .hrBriefItem{padding:6px 0}
 @media(max-width:900px){.briefInboxGrid{grid-template-columns:1fr}.briefInboxSubgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.briefInboxHead h2{font-size:20px}.briefInboxHead{padding-right:40px}.briefInboxSubgrid{grid-template-columns:1fr}.briefInboxSection{padding:9px}.briefInboxItem{grid-template-columns:18px minmax(0,1fr) auto}.briefInboxAction .btn{padding:4px 6px}}
@@ -2035,14 +2035,24 @@ function sportsGameBlock_(label,g,isLive){
 }
 function sportsCenterHtml_(){
  let teams=SPORTS.teams||[],updated=SPORTS.updatedAt?new Date(SPORTS.updatedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";
- return `<div class="sportsCenterWrap"><div class="sportsCenterHead"><div><h2>🏟️ Sports Center</h2><div class="sportsUpdated">${updated?`Updated ${esc(updated)}`:"Tracked family teams"}</div></div><button class="btn" onclick="loadSports(true)">↻ Refresh</button></div>${SPORTS.loading?'<div class="rLoading">Loading scores and schedules…</div>':SPORTS.ok?`<div class="sportsCenterGrid">${teams.map(t=>`<div class="sportsTeamCard"><h3>${esc(t.emoji||"🏟️")} ${esc(t.name)}</h3>${t.ok?`${t.live?sportsGameBlock_("LIVE",t.live,true):""}${sportsGameBlock_("LAST",t.last,false)}${sportsGameBlock_("NEXT",t.next,false)}`:`<div class="sportsMeta">${esc(t.error||"Data unavailable.")}</div>`}</div>`).join("")}</div>`:`<div class="rError">${esc(SPORTS.message||"Sports data unavailable.")}</div>`}<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+ return `<div class="sportsCenterWrap"><div class="sportsCenterHead"><div><h2>🏟️ Sports Center</h2><div class="sportsUpdated">${updated?`Updated ${esc(updated)}`:"Tracked family teams"}</div></div><button class="btn" onclick="loadSports(true)">↻ Refresh</button></div>${SPORTS.loading?'<div class="rLoading">Loading scores and schedules…</div>':SPORTS.ok?`<div class="sportsCenterGrid">${teams.map(t=>`<div class="sportsTeamCard"><h3>${esc(t.emoji||"🏟️")} ${esc(t.name)}</h3>${t.ok?`${t.live?sportsGameBlock_("LIVE",t.live,true):""}${sportsGameBlock_("LAST",t.last,false)}${sportsGameBlock_("NEXT",t.next,false)}`:`<div class="sportsMeta">${esc(t.error||"Data unavailable.")}</div>`}</div>`).join("")}</div>`:`<div class="rError">${esc(SPORTS.message||"Sports data unavailable.")}</div>`}<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button><button class="btn" onclick="closeSportsCenter_()">Done</button></div></div>`;
 }
-function openSportsCenter(){openModal(sportsCenterHtml_());if(SPORTS.loading)loadSports(false);activity()}
+let sportsReturnTarget_="";
+function closeSportsCenter_(){
+ if(sportsReturnTarget_==="brief"){sportsReturnTarget_="";openMorningBrief();return}
+ sportsReturnTarget_="";closeModal();
+}
+function openSportsCenter(returnTo=""){sportsReturnTarget_=returnTo||"";openModal(sportsCenterHtml_(),{closeAction:"closeSportsCenter_()"});if(SPORTS.loading)loadSports(false);activity()}
 function refreshSportsViews_(){
  let m=document.getElementById("modal");
  if(!m)return;
- if(m.querySelector(".sportsCenterWrap"))m.innerHTML=sportsCenterHtml_();
- else if(m.querySelector(".briefWrap"))openMorningBrief();
+ if(m.querySelector(".sportsCenterWrap")){
+  m.innerHTML=sportsCenterHtml_();
+  return;
+ }
+ // Sports updates should re-render the brief in place. Re-opening the brief here
+ // starts another sports load/session and can create a refresh loop that starves clicks.
+ if(m.querySelector(".briefWrap") && morningBriefOpen_)refreshMorningBrief_(morningBriefSession_);
 }
 const SPORTS_DIRECT_TEAMS_=[
  {key:"lions",name:"Detroit Lions",shortName:"Lions",emoji:"🦁",sport:"football",league:"nfl",teamId:"8",abbr:"DET"},
@@ -2293,7 +2303,7 @@ function buildMorningBriefHtml_(){
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter()">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -2316,6 +2326,14 @@ function refreshMorningBrief_(sessionId){
  try{modal.innerHTML=buildMorningBriefHtml_()}catch(err){console.error("Morning Brief refresh failed",err)}
 }
 function openMorningBrief(){
+ // If the Brief is already the active modal, refresh it rather than creating a
+ // new session. This prevents duplicate button taps / async callbacks from
+ // stacking thousands of Brief sessions.
+ const activeModal=document.getElementById("modal");
+ if(morningBriefOpen_ && activeModal?.querySelector(".briefWrap")){
+  refreshMorningBrief_(morningBriefSession_);
+  return;
+ }
  const sessionId=++morningBriefSession_;
  morningBriefOpen_=true;
  fdCrashContext_("brief-open","session "+sessionId);
@@ -2331,7 +2349,7 @@ function openMorningBrief(){
  // One sports kickoff only. Async completions may update the Brief only while
  // this exact Brief session is still open.
  try{
-  if(!SPORTS || SPORTS.loading || !Array.isArray(SPORTS.teams) || !SPORTS.teams.length){
+  if(!SPORTS || (!SPORTS.loading && (!Array.isArray(SPORTS.teams) || !SPORTS.teams.length))){
    loadSports(false);
   }
  }catch(err){console.warn("Morning Brief sports refresh failed",err)}
@@ -2374,7 +2392,6 @@ function openHouseholdReminders(){
  ensureHouseholdReminders_();
  let stats=reminderStats2_();
  openModal(`<div class="hr2Wrap">
-  <button class="btn hr2CloseFloat" onclick="openMorningBrief()" aria-label="Close Household Reminders" title="Close">✕</button>
   <div class="hr2Head">
    <div><h2>🔁 Maintenance Center 3.0</h2><div class="note">Recurring maintenance that actually remembers itself.</div></div>
   </div>
@@ -2397,7 +2414,7 @@ function openHouseholdReminders(){
   </div>
   <button class="btn" onclick="addHouseholdReminder_()">+ Add Custom Reminder</button>
   <div class="actions"><button class="btn" onclick="openMorningBrief()">Cancel</button><button class="btn primaryAction" onclick="saveHouseholdReminders_()">Save Reminders</button></div>
- </div>`);
+ </div>`,{closeAction:"openMorningBrief()"});
 }
 function householdReminderEditorRow_(r,i){
  let cls=reminderClass_(r),due=reminderDueText_(r);
