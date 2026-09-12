@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.12.0 Morning Brief Intelligence build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.12.1 Morning Brief Intelligence build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -740,6 +740,9 @@ body[data-appearance="light"] .briefInboxSection{background:#fffdf9}.briefInboxS
 body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .briefJumpRow{background:#fffdf9}
 @media(max-width:720px){.briefStatusStrip{grid-template-columns:1fr 1fr}.briefIntelHero b{font-size:13px}}
 
+
+/* V9.12.1 — exact dinner picker + kitchen-ready acknowledgement */
+.dinnerPickerWrap{max-width:760px;margin:auto}.dinnerPickerSearch{width:100%;box-sizing:border-box;margin:10px 0;padding:11px 12px;border:1px solid var(--l);border-radius:10px;background:var(--p);color:var(--t);font-size:14px}.dinnerPickerRows{max-height:54vh;overflow:auto;border:1px solid var(--l);border-radius:11px;padding:5px}.dinnerPickRow{width:100%;display:flex;flex-direction:column;gap:3px;text-align:left;padding:9px 10px;border:0;border-bottom:1px solid var(--l);background:transparent;color:var(--t);cursor:pointer}.dinnerPickRow:last-child{border-bottom:0}.dinnerPickRow:hover{background:#ffffff0b}.dinnerPickRow b{font-size:12px}.dinnerPickRow span{font-size:9px;color:var(--m)}body[data-appearance="light"] .dinnerPickerSearch{background:#fffdf9}body[data-appearance="light"] .dinnerPickRow:hover{background:#f5efe5}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1676,7 +1679,7 @@ function updateTimers(){let now=Date.now(),ring=false,changed=false;kitchenTimer
 
 function dinnerForDate_(d){
  let iso=key(d),x=(S.mealPlanWeek||[]).find(v=>v.date===iso);
- if(x&&x.dinner)return {name:x.dinner,id:x.dinnerId||"",source:"plan",planName:x.planName||"Meal Plan"};
+ if(x&&x.dinner)return {name:x.dinner,id:x.dinnerId||"",source:x.dinnerSource||"plan",planName:x.planName||"Meal Plan"};
  x=(S.randomDinnerWeek||[]).find(v=>v.date===iso);
  if(x&&x.dinner)return {name:x.dinner,id:x.id||x.dinnerId||"",source:"library",planName:"Build My Week"};
  let keys=["SUN","MON","TUE","WED","THU","FRI","SAT"],raw=String(S.menu?.[keys[d.getDay()]]||"").trim();
@@ -1752,6 +1755,20 @@ function groceryNeedForRecipe_(recipe){
  parts.forEach(line=>{let words=line.replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2&&!/^(cup|cups|tbsp|tsp|tablespoon|teaspoon|ounce|ounces|pound|pounds|clove|cloves|large|small|medium|fresh|minced|chopped|diced|sliced|ground|optional|taste)$/.test(w));if(words.length&&!active.some(g=>{let gn=String(g.name||"").toLowerCase();return words.slice(-2).some(w=>gn.includes(w))}))missing++});
  return {missing,total:parts.length};
 }
+/* V9.12.1 — Dinner Command Intelligence Polish */
+function dinnerReadyStore_(){if(!S.dinnerReadyChecks||typeof S.dinnerReadyChecks!=="object"||Array.isArray(S.dinnerReadyChecks))S.dinnerReadyChecks={};return S.dinnerReadyChecks}
+function dinnerReadyFingerprint_(dinner){return dinner?`${String(dinner.source||"")}|${String(dinner.id||"")}|${String(dinner.name||"").trim().toLowerCase()}`:""}
+function isDinnerReady_(d,dinner){let v=dinnerReadyStore_()[key(d)];return !!(v&&v===dinnerReadyFingerprint_(dinner))}
+function clearDinnerReady_(d){delete dinnerReadyStore_()[key(d)]}
+function markDinnerReady_(dateIso,returnToBrief){let d=dateIso?new Date(dateIso+"T12:00:00"):new Date(),dinner=dinnerForDate_(d);if(!dinner)return;dinnerReadyStore_()[key(d)]=dinnerReadyFingerprint_(dinner);persist(()=>{renderGlance();renderCal();renderDetail();if(returnToBrief)openMorningBrief();else if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)})}
+function menuKeyForDate_(d){return ["SUN","MON","TUE","WED","THU","FRI","SAT"][d.getDay()]}
+function replaceMenuDinner_(d,name){let k=menuKeyForDate_(d),raw=String(S.menu?.[k]||"").trim(),parts=raw?raw.split(/\s*•\s*/).map(x=>x.trim()).filter(Boolean):[];let keep=parts.filter(x=>!/^(?:🌙\s*)/u.test(x));if(parts.length===1&&!/^[🌅☀️🌙]/u.test(parts[0]))keep=[];keep.push(`🌙 ${name}`);S.menu[k]=keep.join("  •  ")}
+function dinnerPickerRecipes_(){let all=[];(R.recipes||[]).forEach(r=>all.push({source:"library",id:r.id,name:r.name||"",category:r.category||"Recipe",meta:r.tags||""}));(MP.recipes||[]).forEach(r=>all.push({source:"plan",id:r.id,name:r.name||"",category:r.planName||r.meal||"Meal Plan",meta:[r.cuisine,r.method].filter(Boolean).join(" • ")}));let seen=new Set();return all.filter(x=>{let n=normalizeDinnerRecipeName_(x.name);if(!n||seen.has(n))return false;seen.add(n);return true}).sort((a,b)=>xlocale(a.name,b.name))}
+function xlocale(a,b){return String(a||"").localeCompare(String(b||""),undefined,{sensitivity:"base"})}
+function dinnerPickerRowsHtml_(iso,q){let needle=String(q||"").trim().toLowerCase(),rows=dinnerPickerRecipes_().filter(x=>!needle||`${x.name} ${x.category} ${x.meta}`.toLowerCase().includes(needle)).slice(0,80);if(!rows.length)return `<div class="empty">No recipe matches that search.</div>`;return rows.map(x=>`<button class="dinnerPickRow" onclick="chooseDinnerRecipe_('${esc(iso)}','${x.source}','${esc(x.id)}')"><b>${esc(x.name)}</b><span>${esc(x.category)}${x.meta?` • ${esc(x.meta)}`:""}</span></button>`).join("")}
+function filterDinnerChooser_(iso){let host=document.getElementById("dinnerPickerRows"),q=document.getElementById("dinnerPickerSearch")?.value||"";if(host)host.innerHTML=dinnerPickerRowsHtml_(iso,q)}
+function openDinnerChooser_(dateIso,returnToBrief){let d=dateIso?new Date(dateIso+"T12:00:00"):new Date(),iso=key(d);window._dinnerChooserReturnBrief=!!returnToBrief;let show=()=>{openModal(`<div class="dinnerPickerWrap"><h2>🍽️ Choose Dinner</h2><div class="note">Pick the exact recipe you want. Random swaps can stay random; this is the precision-guided option.</div><input id="dinnerPickerSearch" class="dinnerPickerSearch" placeholder="Search recipes…" oninput="filterDinnerChooser_('${esc(iso)}')"><div id="dinnerPickerRows" class="dinnerPickerRows">${dinnerPickerRowsHtml_(iso,"")}</div><div class="actions"><button class="btn" onclick="${returnToBrief?'openMorningBrief()':'closeModal()'}">Cancel</button></div></div>`,{closeAction:returnToBrief?'openMorningBrief()':'closeModal()'});setTimeout(()=>document.getElementById("dinnerPickerSearch")?.focus(),30)};if(!R.loaded||!MP.loaded)ensureDinnerData_(show);else show()}
+function chooseDinnerRecipe_(dateIso,source,id){let d=new Date(dateIso+"T12:00:00"),pool=source==="plan"?(MP.recipes||[]):(R.recipes||[]),r=pool.find(x=>String(x.id)===String(id));if(!r)return;let iso=key(d),row=(S.mealPlanWeek||[]).find(x=>x.date===iso);if(row){row.dinner=r.name;row.dinnerId=r.id;row.dinnerSource=source}else{if(!Array.isArray(S.randomDinnerWeek))S.randomDinnerWeek=[];let x=S.randomDinnerWeek.find(v=>v.date===iso);if(!x){x={date:iso};S.randomDinnerWeek.push(x)}x.dinner=r.name;x.dinnerId=r.id;x.id=r.id;x.source=source}replaceMenuDinner_(d,r.name);clearDinnerReady_(d);let back=!!window._dinnerChooserReturnBrief;window._dinnerChooserReturnBrief=false;closeModal();persist(()=>{renderDetail();renderCal();renderGlance();if(back)openMorningBrief();else if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)})}
 function ensureDinnerData_(cb){
  let jobs=0,done=()=>{if(--jobs<=0){renderGlance();if(cb)cb()}};
  if(!R.loaded){jobs++;google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;done()}).withFailureHandler(done).getRecipeLibrary()}
@@ -1801,19 +1818,21 @@ function kitchenIntelHtml_(d,m){
  return chips.length?`<div class="kitchenIntel">${chips.slice(0,4).join("")}</div>`:"";
 }
 
-function dinnerCommandStatus_(m,need){
+function dinnerCommandStatus_(m,need,ready){
  if(!m)return {cls:"link",text:"LINK RECIPE",icon:"🔗"};
- if(need&&need.missing>0)return {cls:"shop",text:`SHOP ${need.missing}`,icon:"🛒"};
+ if(ready)return {cls:"ready",text:"READY",icon:"✓"};
+ if(need&&need.missing>0)return {cls:"shop",text:`CHECK ${need.missing}`,icon:"🛒"};
  return {cls:"ready",text:"READY",icon:"✓"};
 }
-function dinnerCommandMetaHtml_(d,m,need){
+function dinnerCommandMetaHtml_(d,m,need,ready){
  if(!m||!m.recipe)return "";
  let mins=durationMinutesFromText_(m.recipe.instructions||""),
      prep=prepIntelForRecipe_(m.recipe),
      bits=[];
  if(mins)bits.push(`<span class="dc2MetaChip">⏱️ ${esc(formatCookEstimate_(mins))}</span>`);
  if(prep.length)bits.push(`<span class="dc2MetaChip dc2Prep">🧂 ${esc(prep[0])}</span>`);
- if(need)bits.push(need.missing
+ if(ready)bits.push(`<span class="dc2MetaChip dc2Ready">✓ kitchen ready</span>`);
+ else if(need)bits.push(need.missing
    ?`<span class="dc2MetaChip dc2Shop">🛒 ${need.missing} to check</span>`
    :`<span class="dc2MetaChip dc2Ready">✓ groceries covered</span>`);
  return bits.length?`<div class="dc2Meta">${bits.slice(0,3).join("")}</div>`:"";
@@ -1821,14 +1840,14 @@ function dinnerCommandMetaHtml_(d,m,need){
 
 function dinnerCommandHtml_(d){
  let dinner=dinnerForDate_(d);if(!dinner)return "";
- let m=recipeMatchForDinner_(dinner),need=m?groceryNeedForRecipe_(m.recipe):null,status=dinnerCommandStatus_(m,need);
+ let m=recipeMatchForDinner_(dinner),need=m?groceryNeedForRecipe_(m.recipe):null,ready=isDinnerReady_(d,dinner),status=dinnerCommandStatus_(m,need,ready);
  let sub=m
    ?((m.match==="fuzzy"||m.match==="title")&&m.recipe?.name!==dinner.name?`Linked to ${esc(m.recipe.name)}`:(dinner.planName||"Recipe linked"))
    :"No linked recipe found yet";
  let actions=m
-   ?`<div class="dinnerActions dc2Actions"><button class="btn primaryAction" onclick="event.stopPropagation();openCookMode('${m.source}','${esc(m.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="event.stopPropagation();openDinnerRecipe_('${m.source}','${esc(m.id)}')">🍽️ Recipe</button><button class="btn" onclick="event.stopPropagation();openRecipeGroceryFromDinner_('${m.source}','${esc(m.id)}')">🛒 Ingredients</button></div>`
-   :`<div class="dinnerActions dc2Actions"><button class="btn" onclick="event.stopPropagation();openRecipes()">🔎 Find Recipe</button></div>`;
- return `<div class="dinnerCommand dc2Command"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${dinnerCommandMetaHtml_(d,m,need)}${actions}</div>`;
+   ?`<div class="dinnerActions dc2Actions"><button class="btn primaryAction" onclick="event.stopPropagation();openCookMode('${m.source}','${esc(m.id)}')">👨‍🍳 Start Cook Mode</button><button class="btn" onclick="event.stopPropagation();openDinnerRecipe_('${m.source}','${esc(m.id)}')">🍽️ Recipe</button><button class="btn" onclick="event.stopPropagation();openDinnerChooser_('${key(d)}',false)">🎯 Choose Dinner</button><button class="btn" onclick="event.stopPropagation();openRecipeGroceryFromDinner_('${m.source}','${esc(m.id)}')">🛒 Ingredients</button></div>`
+   :`<div class="dinnerActions dc2Actions"><button class="btn" onclick="event.stopPropagation();openDinnerChooser_('${key(d)}',false)">🎯 Choose Dinner</button><button class="btn" onclick="event.stopPropagation();openRecipes()">🔎 Find Recipe</button></div>`;
+ return `<div class="dinnerCommand dc2Command"><div class="dinnerCommandTop"><b>🍽️ DINNER COMMAND</b><span class="dc2Status ${status.cls}">${status.icon} ${status.text}</span></div><div class="dinnerName">${esc(dinner.name)}</div><div class="dinnerSub smartLine">${sub}</div>${dinnerCommandMetaHtml_(d,m,need,ready)}${actions}</div>`;
 }
 function openRecipeGroceryFromDinner_(source,id){
  let x=recipeBySource_(source,id);
@@ -2222,7 +2241,7 @@ function morningReminderStats_(){let all=activeBriefReminders_(),overdue=all.fil
 
 function tomorrowFirstEvent_(){let d=new Date();d.setDate(d.getDate()+1);return futureEventsForDay_(d,false).sort((x,y)=>new Date(x.start)-new Date(y.start))[0]||null}
 
-function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null;return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,busy:busyEveningIntel_(d)}}
+function morningDinnerData_(){let d=new Date(),dinner=dinnerForDate_(d);if(!dinner)return {dinner:null,match:null,prep:[],mins:null,need:null,ready:false,busy:busyEveningIntel_(d)};let m=recipeMatchForDinner_(dinner),prep=m?prepIntelForRecipe_(m.recipe):[],mins=m?durationMinutesFromText_(m.recipe.instructions||""):null,need=m?groceryNeedForRecipe_(m.recipe):null,ready=isDinnerReady_(d,dinner);return {dinner:dinner,match:m,prep:prep,mins:mins,need:need,ready:ready,busy:busyEveningIntel_(d)}}
 
 function morningDinnerHtml_(){
  let d=morningDinnerData_(),dinner=d&&d.dinner;
@@ -2254,7 +2273,7 @@ function morningAttentionItems_(){
  }else if(dinner?.busy&&Number(dinner.busy.count||0)>=2){
   items.push({rank:72,cls:"warn",icon:"📅",title:"Busy evening",detail:`${dinner.busy.count} events starting with ${dinner.busy.time} ${dinner.busy.title}`});
  }
- if(dinner?.need?.missing>0)items.push({rank:82,cls:"warn",icon:"🛒",title:"Dinner needs a grocery check",detail:`${dinner.need.missing} ingredient${dinner.need.missing===1?"":"s"} may still be needed`,action:`<button class="btn" onclick="openGroceriesFromBrief_()">Groceries</button>`});
+ if(!dinner?.ready&&dinner?.need?.missing>0)items.push({rank:82,cls:"warn",icon:"🛒",title:"Dinner needs a grocery check",detail:`${dinner.need.missing} ingredient${dinner.need.missing===1?"":"s"} may still be needed`,action:`<button class="btn" onclick="openGroceriesFromBrief_()">Groceries</button>`});
  if(dinner?.prep?.length)items.push({rank:78,cls:"warn",icon:"🍽️",title:"Dinner prep",detail:dinner.prep[0],action:dinner.match?`<button class="btn" onclick="openBriefDinnerStatus_()">Dinner</button>`:""});
  // Tomorrow can deserve attention today when it is unusually busy or requires advance food prep.
  let tom=new Date(now);tom.setDate(tom.getDate()+1);
@@ -2299,7 +2318,8 @@ function morningIntelHeadline_(){
  if(rs.overdue)return {cls:"urgent",title:`${rs.overdue} overdue household job${rs.overdue===1?"":"s"} need attention.`,detail:"Maintenance Center has the details and can roll each item forward when completed."};
  if(d?.dinner?.name&&d?.busy&&d?.mins>=60)return {cls:"warn",title:"Busy evening — dinner needs a head start.",detail:`${d.dinner.name} is ${formatCookEstimate_(d.mins)} and the evening calendar is already occupied.`};
  if(d?.prep?.length)return {cls:"warn",title:"Dinner has advance prep attached.",detail:`${d.dinner?.name||"Tonight's dinner"}: ${d.prep[0]}.`};
- if(d?.need?.missing>0)return {cls:"warn",title:"Dinner plan is set, grocery check isn't.",detail:`${d.need.missing} ingredient${d.need.missing===1?"":"s"} may still need attention.`};
+ if(!d?.ready&&d?.need?.missing>0)return {cls:"warn",title:"Dinner plan is set, grocery check isn't.",detail:`${d.need.missing} ingredient${d.need.missing===1?"":"s"} may still need attention.`};
+ if(d?.ready&&d?.dinner?.name)return {cls:"good",title:"Dinner is locked and loaded.",detail:`${d.dinner.name} is confirmed and the kitchen check is cleared.`};
  if(attention.length>=3)return {cls:"warn",title:`${attention.length} things are competing for attention today.`,detail:"The highest-priority items are sorted below so the household can attack them in order."};
  if(tomEvents.length>=4)return {cls:"warn",title:"Today is manageable. Tomorrow is the ambush.",detail:`${tomEvents.length} calendar items are already lined up for tomorrow.`};
  if(!events.length&&!attention.length)return {cls:"good",title:"Light day. Nothing is on fire.",detail:"Calendar is clear, nothing urgent is due, and NORAD has no reason to manufacture drama."};
@@ -2309,7 +2329,7 @@ function morningIntelHeroHtml_(){let x=morningIntelHeadline_();return `<div clas
 function morningStatusStripHtml_(){
  let now=new Date(),events=futureEventsForDay_(now,true),conf=dayConflicts_(now).length,d=morningDinnerData_(),rs=reminderStats2_(),g=(G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked).length:null;
  let calCls=conf?"urgent":events.length?"":"good",calMain=conf?`${conf} CONFLICT${conf===1?"":"S"}`:events.length?`${events.length} LEFT`:"CLEAR",calSub=events.length?(events[0].allDay?events[0].title:`${time(events[0])} ${events[0].title}`):"No more events";
- let dinnerCls=d?.need?.missing>0?"warn":d?.dinner?.name?"good":"",dinnerMain=d?.dinner?.name?(d?.need?.missing>0?`CHECK ${d.need.missing}`:"READY"):"OPEN",dinnerSub=d?.dinner?.name?d.dinner.name:"No dinner planned";
+ let dinnerCls=(!d?.ready&&d?.need?.missing>0)?"warn":d?.dinner?.name?"good":"",dinnerMain=d?.dinner?.name?((!d?.ready&&d?.need?.missing>0)?`CHECK ${d.need.missing}`:"READY"):"OPEN",dinnerSub=d?.dinner?.name?d.dinner.name:"No dinner planned";
  let maintCls=rs.overdue?"urgent":rs.today?"warn":rs.soon?"":"good",maintMain=rs.overdue?`${rs.overdue} OVERDUE`:rs.today?`${rs.today} DUE`:rs.soon?`${rs.soon} SOON`:"CLEAR",maintSub=rs.total?`${rs.total} tracked`:"No reminders";
  let grocCls=g===0?"good":"",grocMain=g==null?"LOADING":g?`${g} ITEMS`:"CLEAR",grocSub=g?"Open shopping list":"Nothing waiting";
  return `<div class="briefStatusStrip"><button class="briefStatusChip ${calCls}" onclick="openBriefCalendarStatus_()"><small>📅 CALENDAR</small><strong>${esc(calMain)}</strong><em>${esc(calSub)}</em></button><button class="briefStatusChip ${dinnerCls}" onclick="openBriefDinnerStatus_()"><small>🍽️ DINNER</small><strong>${esc(dinnerMain)}</strong><em>${esc(dinnerSub)}</em></button><button class="briefStatusChip ${maintCls}" onclick="openHouseholdReminders()"><small>🔧 MAINTENANCE</small><strong>${esc(maintMain)}</strong><em>${esc(maintSub)}</em></button><button class="briefStatusChip ${grocCls}" onclick="openGroceriesFromBrief_()"><small>🛒 GROCERIES</small><strong>${esc(grocMain)}</strong><em>${esc(grocSub)}</em></button></div>`;
@@ -2330,10 +2350,12 @@ function openBriefCalendarStatus_(){
  openModal(`<div class="briefJumpWrap"><h2>📅 Today at a Glance</h2><div class="note" style="margin-bottom:8px">${conf.length?`${conf.length} schedule conflict${conf.length===1?"":"s"} detected.`:"Today's remaining calendar."}</div><div class="briefJumpList">${body}</div><div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button></div></div>`,{closeAction:"openMorningBrief()"});
 }
 function openBriefDinnerStatus_(){
- let d=morningDinnerData_(),name=d?.dinner?.name||"No dinner planned",bits=[];
- if(d?.mins)bits.push(`⏱️ ${formatCookEstimate_(d.mins)}`);if(d?.prep?.length)bits.push(`🧂 ${d.prep[0]}`);if(d?.need)bits.push(d.need.missing?`🛒 ${d.need.missing} ingredient${d.need.missing===1?"":"s"} to check`:`✓ groceries covered`);if(d?.busy)bits.push(`📅 ${d.busy.count} evening event${d.busy.count===1?"":"s"}`);
+ let d=morningDinnerData_(),name=d?.dinner?.name||"No dinner planned",bits=[],iso=key(new Date());
+ if(d?.mins)bits.push(`⏱️ ${formatCookEstimate_(d.mins)}`);if(d?.prep?.length)bits.push(`🧂 ${d.prep[0]}`);if(d?.ready)bits.push(`✓ kitchen ready`);else if(d?.need)bits.push(d.need.missing?`🛒 ${d.need.missing} ingredient${d.need.missing===1?"":"s"} to check`:`✓ groceries covered`);if(d?.busy)bits.push(`📅 ${d.busy.count} evening event${d.busy.count===1?"":"s"}`);
  morningBriefOpen_=false;morningBriefSession_++;
- openModal(`<div class="briefJumpWrap"><h2>🍽️ Dinner Intel</h2><div class="briefJumpRow"><b>${esc(name)}</b><span>${esc(bits.join(" • ")||"No linked recipe intelligence available yet.")}</span></div>${d?.match?`<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button><button class="btn primaryAction" onclick="openDinnerRecipe_('${d.match.source}','${esc(d.match.id)}')">Open Recipe</button></div>`:`<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button></div>`}</div>`,{closeAction:"openMorningBrief()"});
+ let readyBtn=(d?.match&&d?.need?.missing>0&&!d?.ready)?`<button class="btn primaryAction" onclick="markDinnerReady_('${iso}',true)">✓ Kitchen Ready</button>`:"";
+ let recipeBtn=d?.match?`<button class="btn" onclick="closeModal();openDinnerRecipe_('${d.match.source}','${esc(d.match.id)}')">Open Recipe</button>`:"";
+ openModal(`<div class="briefJumpWrap"><h2>🍽️ Dinner Intel</h2><div class="briefJumpRow"><b>${esc(name)}</b><span>${esc(bits.join(" • ")||"No linked recipe intelligence available yet.")}</span></div><div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button><button class="btn" onclick="openDinnerChooser_('${iso}',true)">🎯 Choose Dinner</button>${readyBtn}${recipeBtn}</div></div>`,{closeAction:"openMorningBrief()"});
 }
 function morningChoreSummaryHtml_(){
  let d=new Date(),C=choresFor(d);
