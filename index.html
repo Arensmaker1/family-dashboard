@@ -3113,6 +3113,17 @@ function groceryCanonicalName_(name){
    [/\b(cucumbers|cucumber)\b/,"cucumber"],
    [/\b(crushed tomato|crushed tomatoes)\b/,"crushed tomatoes"],
    [/\b(green onions|green onion|scallions|scallion)\b/,"green onions"],
+   [/\b(jalapeños|jalapeño|jalapenos|jalapeno)\b/,"jalapeno"],
+   [/\b(cherry tomatoes|cherry tomato)\b/,"cherry tomatoes"],
+   [/\b(raspberries|raspberry)\b/,"raspberries"],
+   [/\b(berries|mixed berries|berry)\b/,"berries"],
+   [/\b(celery stalks|celery stalk|celery)\b/,"celery"],
+   [/\b(spinach leaves|baby spinach|spinach)\b/,"spinach"],
+   [/\b(roasted red peppers|roasted red pepper)\b/,"roasted red pepper"],
+   [/\b(roma tomatoes|roma tomato)\b/,"roma tomatoes"],
+   [/\b(sweet potatoes|sweet potato)\b/,"sweet potato"],
+   [/\b(potatoes|potato)\b/,"potato"],
+   [/\b(tomatoes|tomato)\b/,"tomato"],
    [/\b(limes|lime)\b/,"lime"],[/\b(lemons|lemon)\b/,"lemon"],
    [/\b(garlic cloves|garlic clove|garlic)\b/,"garlic"],
    [/\b(yellow onions|yellow onion)\b/,"yellow onion"],
@@ -3128,7 +3139,86 @@ function groceryQtyParts_(x){
  if(!m)return {n:0,u:""};
  return {n:groceryFrac_(m[1]),u:(m[2]||"").replace(/s$/,"")};
 }
+
+function groceryShoppingUnit_(name,rows){
+ let parts=rows.map(groceryQtyParts_),
+     sum=u=>parts.filter(p=>p.u===u).reduce((a,p)=>a+p.n,0),
+     bare=parts.filter(p=>p.n&&!p.u).reduce((a,p)=>a+p.n,0),
+     cups=sum("cup"),oz=sum("oz"),lbs=sum("lb")+sum("pound"),
+     cans=sum("can"),bunches=sum("bunch");
+
+ const countText=(n,label,plural=label+"s")=>`${Math.max(1,Math.ceil(n))} ${Math.max(1,Math.ceil(n))===1?label:plural}`;
+
+ // Produce should read like a shopping list, not a recipe.
+ if(name==="celery"){
+   let n=Math.max(1,Math.ceil((cups||0)/4));
+   return countText(n,"bunch");
+ }
+ if(name==="raspberries"||name==="berries"){
+   let c=cups+(oz?oz/5:0);
+   if(c<=2)return "1 pint";
+   if(c<=4)return "1 quart";
+   return countText(c/4,"quart");
+ }
+ if(name==="cherry tomatoes"){
+   let c=cups+(oz?oz/8:0);
+   if(c<=2)return "1 pint";
+   if(c<=4)return "1 quart";
+   return countText(c/4,"quart");
+ }
+ if(name==="cucumber"){
+   return countText((bare||0)+(cups?cups/1.5:0),"cucumber");
+ }
+ if(name==="cilantro"||name==="parsley"){
+   return countText((bunches||0)+(cups?cups/2:0),"bunch");
+ }
+ if(name==="jalapeno"){
+   return countText(Math.max(1,bare||rows.length),"jalapeño");
+ }
+ if(name==="red onion"||name==="yellow onion"||name==="white onion"){
+   return countText(Math.max(1,bare||rows.length),name,name+"s");
+ }
+ if(name==="garlic"){
+   let cloves=sum("clove");
+   return countText(cloves?cloves/10:Math.max(1,bare||1),"bulb");
+ }
+ if(name==="lime"||name==="lemon"){
+   let tbsp=sum("tbsp"),n=(bare||0)+tbsp/2+cups*8;
+   return countText(Math.max(1,n),name);
+ }
+ if(name==="spinach"){
+   let bags=parts.filter(p=>p.u==="bag").reduce((a,p)=>a+p.n,0);
+   if(bags)return countText(bags,"bag");
+   return "1 bag";
+ }
+ if(name==="roasted red pepper"){
+   return "1 jar";
+ }
+ if(name==="roma tomatoes"){
+   let n=bare+(lbs?lbs*4:0)+(cups?cups/0.75:0);
+   return countText(Math.max(1,n),"Roma tomato","Roma tomatoes");
+ }
+ if(name==="tomato"){
+   let n=bare+(lbs?lbs*3:0)+(cups?cups/0.75:0);
+   return countText(Math.max(1,n),"tomato");
+ }
+ if(name==="potato"){
+   let n=bare+(oz?oz/8:0)+(lbs?lbs*2:0)+(cups?cups/1.5:0);
+   return countText(Math.max(1,n),"potato");
+ }
+ if(name==="sweet potato"){
+   let n=bare+(oz?oz/8:0)+(lbs?lbs*2:0)+(cups?cups/1.5:0);
+   return countText(Math.max(1,n),"sweet potato","sweet potatoes");
+ }
+ if(name==="crushed tomatoes"){
+   let count=Math.max(1,Math.ceil(cans+cups/1.75+oz/14.5));
+   return countText(count,"can");
+ }
+ return "";
+}
+
 function groceryPurchaseRule_(name,rows){
+ let shopping=groceryShoppingUnit_(name,rows);if(shopping)return shopping;
  let parts=rows.map(groceryQtyParts_),sum=u=>parts.filter(p=>p.u===u).reduce((a,p)=>a+p.n,0),all=parts.reduce((a,p)=>a+p.n,0);
  if(name==="cilantro"||name==="parsley"){
    let cups=sum("cup"),bunch=sum("bunch");
@@ -3164,7 +3254,7 @@ function groceryPurchaseRule_(name,rows){
  return rows.map(x=>String(x.qty||"").trim()).filter(Boolean).join(" + ");
 }
 function groceryVague_(name){
- return /\b(crunchy vegetables|mixed vegetables|vegetables|greens|herbs|seasoning|spices|toppings|garnish)\b/i.test(name||"");
+ return /\b(crunchy vegetables|mixed vegetables|vegetables|greens|herbs|seasoning|spices|toppings|garnish|pepper\/onion\/poblano|sweet potato \+ black beans)\b/i.test(name||"");
 }
 function smartCartConsolidate_(items){
  let groups=new Map(),out=[];
@@ -3176,12 +3266,32 @@ function smartCartConsolidate_(items){
    groups.get(key).push({...x,_smartIndex:i,_canon:canon});
  });
  groups.forEach(rows=>{
+   let base={...rows[0]},canon=rows[0]._canon,
+       shoppingQty=groceryShoppingUnit_(canon,rows);
+
+   // Every recognized ingredient gets translated into a purchasable unit,
+   // even when only one recipe asked for it.
+   if(shoppingQty){
+     base.name=canon.replace(/\b\w/g,c=>c.toUpperCase());
+     base.qty=shoppingQty;
+     base.sourceText=[...new Set(rows.map(x=>x.sourceText).filter(Boolean))].join(" • ");
+     if(rows.length>1){
+       base.smartMerged=rows.length;
+       base.smartNote=`✓ Smart Cart combined ${rows.length} recipe lines`;
+     }else{
+       base.smartNote="✓ Smart Cart converted recipe amount to a shopping unit";
+     }
+     base.stocked=rows.every(x=>x.stocked);
+     base.alreadyOnList=rows.some(x=>x.alreadyOnList);
+     out.push(base);return;
+   }
+
    if(rows.length===1){
      let x=rows[0];
      if(groceryVague_(x.name))x.smartNote="⚠️ Vague recipe ingredient — choose what you actually want to buy.";
      out.push(x);return;
    }
-   let base={...rows[0]},canon=rows[0]._canon;
+
    base.name=canon.replace(/\b\w/g,c=>c.toUpperCase());
    base.qty=groceryPurchaseRule_(canon,rows);
    base.sourceText=[...new Set(rows.map(x=>x.sourceText).filter(Boolean))].join(" • ");
