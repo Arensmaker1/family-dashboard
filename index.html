@@ -122,6 +122,19 @@ body[data-appearance="light"] .pinNote{background:#f5efe5}
 
 /* V8.4 Kitchen Intelligence */
 .glanceStrip{display:flex;gap:8px;align-items:stretch;padding:0 10px 8px;max-width:1500px;margin:-2px auto 0}.glanceBox{flex:1;min-width:0;border:1px solid var(--l);background:var(--p);border-radius:10px;padding:7px 10px;font-size:10px;line-height:1.35}.glanceBox b{color:var(--v);font-size:10px}.glanceText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.pinNote{border-left:3px solid var(--o);padding:5px 7px;margin:5px 0;background:#ffffff08;border-radius:5px}.pinNote button{float:right;border:0;background:transparent;color:var(--m);cursor:pointer}.timerBadge{background:var(--o);color:#111;border-radius:999px;padding:1px 6px;margin-left:5px;font-size:9px}@keyframes timerPulse{50%{transform:scale(1.08)}}#timersNavBtn.ringing{animation:timerPulse .7s infinite;outline:2px solid var(--o)}.timerCreate{border:1px solid var(--l);border-radius:12px;padding:12px;margin:10px 0}.timerQuickNames,.timerPresets,.timerAdjust{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:8px 0}.timerQuickNames button,.timerPresets button{min-height:44px;padding:8px 12px}.timerAdjust{justify-content:center}.timerAdjust button{width:58px;height:54px;font-size:18px;font-weight:900}.timerMinuteDisplay{min-width:108px;text-align:center;font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}.timerNameInput{width:100%;box-sizing:border-box;background:#0b1721;color:var(--t);border:1px solid #405163;border-radius:9px;padding:12px;font-size:15px;margin-top:8px}.timerStart{width:100%;min-height:50px;font-size:16px;font-weight:900;margin-top:8px}.timerRow.ringing{border-color:var(--o);box-shadow:0 0 0 1px var(--o) inset}.timerStop{min-height:42px;font-weight:900}.timerAlarmBar{display:flex;gap:12px;align-items:center;justify-content:space-between;border:2px solid var(--o);border-radius:12px;padding:12px 14px;margin:8px 0 12px;background:#ffb00018}.timerAlarmBar b{color:var(--o);font-size:18px}.timerAlarmBar div div{font-size:11px;margin-top:3px}.timerAlarmStopAll{min-width:180px;min-height:58px;font-size:17px;font-weight:1000;animation:timerPulse .7s infinite}@media(max-width:700px){.timerAlarmBar{flex-direction:column;align-items:stretch}.timerAlarmStopAll{width:100%}}
+
+.calendarTimerStrip{display:none;max-width:1500px;margin:0 auto 7px;padding:0 10px;box-sizing:border-box}
+.calendarTimerStrip.show{display:flex}
+.calendarTimerMain{width:100%;min-height:46px;border:2px solid var(--o);border-radius:12px;background:#ffb00012;display:flex;align-items:center;gap:12px;padding:7px 12px;box-sizing:border-box;cursor:pointer;box-shadow:0 2px 9px #00000018}
+.calendarTimerMain.ringing{animation:timerPulse .7s infinite;background:#ffb00024}
+.calendarTimerIcon{font-size:22px;flex:none}
+.calendarTimerInfo{min-width:0;flex:1;display:flex;align-items:baseline;gap:10px}
+.calendarTimerInfo b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendarTimerCountdown{font-size:24px;font-weight:1000;font-variant-numeric:tabular-nums;white-space:nowrap}
+.calendarTimerOthers{font-size:10px;color:var(--m);white-space:nowrap}
+.calendarTimerStop{min-width:125px;min-height:34px;font-weight:900}
+body[data-appearance="light"] .calendarTimerMain{background:#fff8e8}
+@media(max-width:700px){.calendarTimerStrip{padding:0 7px}.calendarTimerMain{gap:7px;padding:6px 8px}.calendarTimerCountdown{font-size:20px}.calendarTimerOthers{display:none}.calendarTimerStop{min-width:90px}}
 .timerList{display:grid;gap:8px;margin:12px 0}.timerRow{border:1px solid var(--l);border-radius:9px;padding:10px;display:flex;gap:10px;align-items:center}.timerName{font-weight:800;flex:1}.timerTime{font-size:20px;font-variant-numeric:tabular-nums}.stockedGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;margin:12px 0}.stockedItem{border:1px solid var(--l);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center}.stockedTag{font-size:9px;color:var(--g);font-weight:800}.wgRow.stocked{opacity:.55}.wgStocked{font-size:9px;color:var(--g);font-weight:800}.notesPins{margin:10px 0}.pinEditRow{display:flex;gap:6px;margin:6px 0}.pinEditRow input{flex:1}
 body[data-appearance="light"] .pinNote{background:#00000005}body[data-appearance="light"] .timerNameInput{background:#fff;color:#292722;border-color:#cfc4b5}
 @media(max-width:700px){.glanceStrip{padding:4px 7px 7px;gap:5px}.glanceBox{padding:6px;font-size:9px}.glanceText{white-space:normal;max-height:2.7em}.timerAdjust button{width:52px}.timerMinuteDisplay{min-width:92px}}
@@ -636,7 +649,7 @@ body[data-appearance="light"] .dc2MetaChip{background:#fff}
  .hrBriefItem{grid-template-columns:1fr}.hrBriefBtns{flex-wrap:wrap}
 }
 
-/* V9.7.6 — Morning Brief restored section polish */
+/* V9.8.0 — Morning Brief restored section polish */
 .briefTomorrow{margin-top:10px;padding-top:8px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:3px}
 .briefTomorrow>b{font-size:8px;color:var(--m);letter-spacing:.45px}
 .briefTomorrow>span{font-size:10px}
@@ -1049,6 +1062,7 @@ let familyDashboardAuthExpired_ = false;
 </head><body><div id="themeDecor" class="themeDecor"></div>
 <div id="load">Loading Family Dashboard…</div><div id="app"><header><div class="brand" id="familyTitle">🏠 Family Dashboard</div><div class="controls"><button class="btn" onclick="move(-1)">‹</button><button class="btn" onclick="today()">Today</button><button id="appearanceToggle" class="btn appearanceToggle" onclick="toggleAppearance()" title="Switch light/dark appearance" aria-label="Switch light/dark appearance">🌙</button><div id="month" class="month"></div><button class="btn" onclick="move(1)">›</button></div><div class="clock"><span id="clock"></span><small id="mainWeather">Weather loading…</small><div id="weatherReaction" class="weatherReaction"></div><div id="fridayMode" class="fridayMode"></div><div id="countdowns" class="countdownStrip"></div><small id="sync"></small></div></header>
 <div id="glanceStrip" class="glanceStrip"></div>
+<div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
 <footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 2.0</h2><div class=&quot;briefLine&quot;>Loading today\'s household rundown…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
@@ -1518,9 +1532,31 @@ function renderPantry(){let e=document.getElementById("stockedBody");if(!e)retur
 function addStockedUI(){let e=document.getElementById("stockName"),n=(e?.value||"").trim();if(!n)return;google.script.run.withSuccessHandler(x=>{STOCK=x;e.value="";renderPantry()}).addAlwaysStocked(n)}
 function deleteStockedUI(id){google.script.run.withSuccessHandler(x=>{STOCK=x;renderPantry()}).deleteAlwaysStocked(id)}
 
-function loadKitchenTimers(){try{kitchenTimers=JSON.parse(localStorage.getItem("familyKitchenTimersV1")||"[]")}catch(_){kitchenTimers=[]}kitchenTimers=kitchenTimers.filter(x=>x&&x.end)}
+function loadKitchenTimers(){try{kitchenTimers=JSON.parse(localStorage.getItem("familyKitchenTimersV1")||"[]")}catch(_){kitchenTimers=[]}kitchenTimers=kitchenTimers.filter(x=>x&&x.end);setTimeout(renderCalendarTimerStrip_,0)}
 function saveKitchenTimers(){try{localStorage.setItem("familyKitchenTimersV1",JSON.stringify(kitchenTimers))}catch(_){}}
 function fmtTimer(ms){ms=Math.max(0,ms);let s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),z=s%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(z).padStart(2,"0")}`:`${m}:${String(z).padStart(2,"0")}`}
+function renderCalendarTimerStrip_(){
+ const host=document.getElementById("calendarTimerStrip");
+ if(!host)return;
+ const now=Date.now(),all=(kitchenTimers||[]).filter(x=>x&&x.end);
+ if(!all.length){host.className="calendarTimerStrip";host.innerHTML="";return}
+ const ringing=all.filter(x=>x.ringing||x.end<=now);
+ const active=all.filter(x=>!x.ringing&&x.end>now).sort((a,b)=>a.end-b.end);
+ const primary=(ringing[0]||active[0]);
+ if(!primary){host.className="calendarTimerStrip";host.innerHTML="";return}
+ const isRinging=!!(primary.ringing||primary.end<=now);
+ const others=Math.max(0,all.length-1);
+ host.className="calendarTimerStrip show";
+ host.innerHTML=`<div class="calendarTimerMain ${isRinging?"ringing":""}" onclick="openTimers()">
+   <div class="calendarTimerIcon">${isRinging?"🔔":"⏱️"}</div>
+   <div class="calendarTimerInfo">
+    <b>${isRinging?"TIMER DONE":esc(primary.name||"Timer")}</b>
+    <span class="calendarTimerCountdown">${isRinging?"DONE!":fmtTimer(primary.end-now)}</span>
+    ${others?`<span class="calendarTimerOthers">+${others} more timer${others===1?"":"s"}</span>`:""}
+   </div>
+   ${isRinging?`<button class="btn calendarTimerStop" onclick="event.stopPropagation();stopAllTimerAlarms()">■ STOP ALARM</button>`:`<span class="calendarTimerOthers">Tap to manage</span>`}
+  </div>`;
+}
 function openTimers(){timerDraftMinutes=Math.max(1,timerDraftMinutes||10);renderTimersModal(true)}
 function timerRowsHTML(){return kitchenTimers.map((x,i)=>`<div class="timerRow ${x.ringing?"ringing":""}"><div class="timerName">${esc(x.name||"Timer")}</div><div class="timerTime" id="timerTime${i}">${x.end>Date.now()?fmtTimer(x.end-Date.now()):"DONE!"}</div>${x.ringing?`<button class="btn timerStop" onclick="stopTimerAlarm(${i})">■ Stop Alarm</button>`:`<button class="btn timerStop" onclick="removeTimer(${i})">■ Stop</button>`}</div>`).join("")}
 function renderTimersModal(open=false){let anyRinging=kitchenTimers.some(x=>x.ringing),alarmBar=anyRinging?`<div class="timerAlarmBar"><div><b>⏰ TIMER DONE!</b><div>Tap below to silence the alarm without leaving this screen.</div></div><button class="btn timerAlarmStopAll" onclick="stopAllTimerAlarms()">■ STOP ALARM</button></div>`:"";let content=`<h2>⏱️ Kitchen Timers</h2>${alarmBar}<div class="note">Tap a preset or use the big +/- buttons.</div><div class="timerCreate"><div class="timerPresets"><button class="btn" onclick="setTimerMinutes(5)">5 min</button><button class="btn" onclick="setTimerMinutes(10)">10</button><button class="btn" onclick="setTimerMinutes(15)">15</button><button class="btn" onclick="setTimerMinutes(20)">20</button><button class="btn" onclick="setTimerMinutes(30)">30</button><button class="btn" onclick="setTimerMinutes(45)">45</button><button class="btn" onclick="setTimerMinutes(60)">60</button></div><div class="timerAdjust"><button class="btn" onclick="adjustTimerMinutes(-5)">−5</button><button class="btn" onclick="adjustTimerMinutes(-1)">−1</button><div id="timerMinuteDisplay" class="timerMinuteDisplay">${timerDraftMinutes} min</div><button class="btn" onclick="adjustTimerMinutes(1)">+1</button><button class="btn" onclick="adjustTimerMinutes(5)">+5</button></div><button class="btn timerStart" onclick="addTimerUI()">▶ Start ${timerDraftMinutes}-Minute Timer</button></div><div class="timerList">${timerRowsHTML()||'<div class="empty">No timers running. Miraculously, nothing is burning.</div>'}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div>`;if(open)openModal(content);else if(document.getElementById("modalbg").style.display!=="none"&&document.getElementById("modal")?.querySelector(".timerList"))document.getElementById("modal").innerHTML=content}
@@ -1538,7 +1574,7 @@ function timerAlarmPulse(){try{let A=window.AudioContext||window.webkitAudioCont
 function startTimerAlarmLoop(){if(timerAlarmLoop)return;timerAlarmPulse();timerAlarmLoop=setInterval(timerAlarmPulse,1800)}
 function stopTimerAlarmLoop(){if(timerAlarmLoop){clearInterval(timerAlarmLoop);timerAlarmLoop=null}}
 function syncTimerAlarmLoop(){kitchenTimers.some(x=>x.ringing)?startTimerAlarmLoop():stopTimerAlarmLoop()}
-function updateTimers(){let now=Date.now(),ring=false,changed=false;kitchenTimers.forEach(x=>{if(x.end<=now&&!x.ringing){x.ringing=true;changed=true}if(x.ringing)ring=true});if(changed)saveKitchenTimers();syncTimerAlarmLoop();let active=kitchenTimers.filter(x=>x.end>now).length,btn=document.getElementById("timersNavBtn"),label=document.getElementById("timersNavLabel");if(label)label.innerHTML=`Timers${active?` <span class="timerBadge">${active}</span>`:""}${ring?" 🔔":""}`;if(btn)btn.classList.toggle("ringing",ring);kitchenTimers.forEach((x,i)=>{let e=document.getElementById("timerTime"+i);if(e)e.textContent=x.end>now?fmtTimer(x.end-now):"DONE!"});if(changed&&document.getElementById("modalbg").style.display!=="none"&&document.getElementById("modal")?.querySelector(".timerList"))renderTimersModal(false);updateCookTimerBar();updateCookMiniBar_()}
+function updateTimers(){let now=Date.now(),ring=false,changed=false;kitchenTimers.forEach(x=>{if(x.end<=now&&!x.ringing){x.ringing=true;changed=true}if(x.ringing)ring=true});if(changed)saveKitchenTimers();syncTimerAlarmLoop();let active=kitchenTimers.filter(x=>x.end>now).length,btn=document.getElementById("timersNavBtn"),label=document.getElementById("timersNavLabel");if(label)label.innerHTML=`Timers${active?` <span class="timerBadge">${active}</span>`:""}${ring?" 🔔":""}`;if(btn)btn.classList.toggle("ringing",ring);kitchenTimers.forEach((x,i)=>{let e=document.getElementById("timerTime"+i);if(e)e.textContent=x.end>now?fmtTimer(x.end-now):"DONE!"});if(changed&&document.getElementById("modalbg").style.display!=="none"&&document.getElementById("modal")?.querySelector(".timerList"))renderTimersModal(false);renderCalendarTimerStrip_();updateCookTimerBar();updateCookMiniBar_()}
 
 
 function dinnerForDate_(d){
