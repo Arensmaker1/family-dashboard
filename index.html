@@ -714,7 +714,7 @@ body.fdRendererSafe .ufoBeam{animation:none!important}
 @media(max-width:720px){.hr2EditorGrid{grid-template-columns:1fr 1fr}.hr2EditorGrid>input:first-child{grid-column:1/-1}.hrHistoryRow{grid-template-columns:78px 1fr}.hrHistoryNext{grid-column:2}}
 
 
-/* V9.11.0 — Morning Brief 3.0 / Household Inbox */
+/* V9.11.1 — Morning Brief 3.0 / sports + return-navigation fix */
 .briefInboxHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px;padding-right:46px}
 .briefInboxHead h2{margin:0;font-size:24px}.briefInboxKicker{font-size:9px;color:var(--theme1);font-weight:900;letter-spacing:.08em;margin-bottom:3px}.briefInboxDate{font-size:10px;color:var(--m);margin-top:3px}
 .briefSummary.v911{margin-bottom:10px}.briefInboxGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:10px}.briefInboxSection{border:1px solid var(--l);border-radius:12px;background:var(--p);padding:10px;min-width:0}.briefInboxSection.attention{border-color:#f0a84c66}.briefInboxSection h3{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.05em;color:var(--theme1)}
@@ -1941,6 +1941,15 @@ function sportsResultText_(g){
  let opp=sportsOpponentText_(g);
  return [result,opp].filter(Boolean).join(" • ");
 }
+function sportsWhen_(value){
+ try{
+  let d=value instanceof Date?value:new Date(value);
+  if(!Number.isFinite(d.getTime()))return "Time TBD";
+  let now=new Date(),tom=new Date(now);tom.setDate(now.getDate()+1);
+  let day=same(d,now)?"Today":same(d,tom)?"Tomorrow":d.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"});
+  return `${day} • ${d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`;
+ }catch(_){return "Time TBD"}
+}
 function sportsTeamRelevant_(t){
  if(!t||!t.ok)return false;
  if(t.live)return true;
@@ -1965,10 +1974,10 @@ function sportsMiniTileHtml_(t){
  if(t.live){
   let score=(t.live.ourScore!==""&&t.live.opponentScore!=="")?` • ${t.live.ourScore}-${t.live.opponentScore}`:"";
   line=`LIVE • ${sportsOpponentText_(t.live)}${score}${t.live.status?` • ${t.live.status}`:""}`;
- }else if(t.last){
-  line=`${sportsResultText_(t.last)}${t.next?` • Next ${sportsWhen_(t.next.date)}`:""}`;
  }else if(t.next){
-  line=`Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}`;
+  line=`Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}${t.next.broadcast?` • ${t.next.broadcast}`:""}`;
+ }else if(t.last){
+  line=`Last: ${sportsResultText_(t.last)} • ${sportsWhen_(t.last.date)}`;
  }else{
   line="No recent game data.";
  }
@@ -2009,8 +2018,8 @@ function morningSportsHtml_(){
     let emoji = t.emoji || "🏟️";
     let line = "";
     if(t.live) line = `LIVE • ${sportsOpponentText_(t.live)}${t.live.ourScore!==""&&t.live.opponentScore!==""?` • ${t.live.ourScore}-${t.live.opponentScore}`:""}`;
-    else if(t.last) line = sportsResultText_(t.last);
-    else if(t.next) line = `Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}`;
+    else if(t.next) line = `Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}${t.next.broadcast?` • ${t.next.broadcast}`:""}`;
+    else if(t.last) line = `Last: ${sportsResultText_(t.last)} • ${sportsWhen_(t.last.date)}`;
     return `<div class="briefSportsTile"><div class="briefSportsTeam">${esc(emoji)} ${esc(name)}</div><div class="briefSportsLine">${esc(line||"No recent game data.")}</div></div>`;
   }).join("");
  }catch(err){
@@ -2284,7 +2293,7 @@ function buildMorningBriefHtml_(){
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><span class="mini" onclick="openSportsCenter()">VIEW ALL</span></h3>${sports}</div><div class="briefCard clickable" onclick="closeMorningBrief_();openGroceries()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter()">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -2446,8 +2455,10 @@ function saveHouseholdReminders_(){
 }
 
 function openHouseholdReminderHistory_(){ensureHouseholdReminders_();let rows=[...S.householdReminderHistory].sort((a,b)=>String(b.doneDate).localeCompare(String(a.doneDate))).slice(0,80);openModal(`<div class="hr2Wrap"><h2>📜 Maintenance History</h2><div class="note">Completed household jobs are kept here so you can answer “when did we last do that?” without guessing.</div><div class="hrHistoryList" style="margin-top:12px">${rows.length?rows.map(x=>`<div class="hrHistoryRow"><div class="hrHistoryDate">${esc(dateOnly_(x.doneDate).toLocaleDateString([],{month:"short",day:"numeric",year:"numeric"}))}</div><div><div class="hrHistoryName">${reminderCategoryIcon_(x.category)} ${esc(x.name)}</div><div class="hrHistoryMeta">${esc(x.category||"Home")}${x.notes?` • ${esc(x.notes)}`:""}</div></div><div class="hrHistoryNext">Next: ${x.nextDue?esc(dateOnly_(x.nextDue).toLocaleDateString([],{month:"short",day:"numeric"})):"—"}</div></div>`).join(""):`<div class="empty">Nothing completed yet. Mark a maintenance item Done and it will land here.</div>`}</div><div class="actions"><button class="btn" onclick="openHouseholdReminders()">← Maintenance Center</button><button class="btn" onclick="openMorningBrief()">Brief</button></div></div>`)}
+let groceryReturnToBrief_=false;
 function openGroceries(){document.getElementById("groceryOverlay").classList.add("open");let s=document.getElementById("groceryCategory");if(!s.innerHTML)s.innerHTML=groceryCategoryOptions();refreshGroceries();clearInterval(groceryTimer);groceryTimer=setInterval(refreshGroceries,20000);setTimeout(()=>document.getElementById("groceryName")?.focus(),100);activity()}
-function closeGroceries(){document.getElementById("groceryOverlay").classList.remove("open");clearInterval(groceryTimer);groceryTimer=null;activity()}
+function openGroceriesFromBrief_(){groceryReturnToBrief_=true;closeMorningBrief_();openGroceries()}
+function closeGroceries(){document.getElementById("groceryOverlay").classList.remove("open");clearInterval(groceryTimer);groceryTimer=null;let back=groceryReturnToBrief_;groceryReturnToBrief_=false;activity();if(back)setTimeout(()=>openMorningBrief(),0)}
 function renderGroceries(){let body=document.getElementById("groceryBody");if(!body)return;let active=G.items.filter(x=>!x.checked).length,checked=G.items.length-active;document.getElementById("groceryCount").innerHTML=`${active} to get${checked?` • ${checked} checked`:""}<div class="gMergeNote">Recipe and weekly-plan adds automatically merge matching items.</div>`;document.getElementById("grocerySync").textContent=G.updatedAt?"Synced "+new Date(G.updatedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";if(!G.items.length){body.innerHTML='<div class="gEmpty">Your list is empty. Add something delicious. 😈</div>';return}let html="";GROCERY_CATEGORIES.forEach(cat=>{let a=G.items.filter(x=>x.category===cat).sort((a,b)=>Number(a.checked)-Number(b.checked)||a.name.localeCompare(b.name));if(!a.length)return;html+=`<section class="gSection"><div class="gSectionTitle">${esc(cat)}</div>${a.map(x=>`<div class="gItem ${x.checked?"checked":""}"><input type="checkbox" ${x.checked?"checked":""} onchange="setGroceryCheckedUI('${x.id}',this.checked)"><span class="gName">${x.qty?`<span class="gQty">${esc(x.qty)}</span>`:""}${esc(x.name)}${x.source?`<span class="gSource">From: ${esc(x.source)}</span>`:""}</span><div class="gItemActions"><button class="gEdit" onclick="editGroceryUI('${x.id}')" title="Edit">✎</button><button class="gDelete" onclick="deleteGroceryUI('${x.id}')" title="Delete">×</button></div></div>`).join("")}</section>`});body.innerHTML=html}
 function groceryFail(e){document.getElementById("grocerySync").textContent="Sync error";console.error(e)}
 function refreshGroceries(){
