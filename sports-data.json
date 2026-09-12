@@ -58,7 +58,25 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": true,
-      "live": null,
+      "live": {
+        "id": "401816905",
+        "date": "2026-09-12T17:10Z",
+        "name": "Colorado Rockies at Detroit Tigers",
+        "shortName": "COL @ DET",
+        "opponent": "Rockies",
+        "opponentAbbr": "COL",
+        "homeAway": "home",
+        "state": "in",
+        "completed": false,
+        "cancelled": false,
+        "status": "Bot 1st",
+        "ourScore": "0",
+        "opponentScore": "0",
+        "result": "",
+        "winner": null,
+        "venue": "Comerica Park",
+        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
+      },
       "last": {
         "id": "401816890",
         "date": "2026-09-11T22:40Z",
@@ -79,8 +97,8 @@
         "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
       },
       "next": {
-        "id": "401816905",
-        "date": "2026-09-12T17:10Z",
+        "id": "401816920",
+        "date": "2026-09-13T16:10Z",
         "name": "Colorado Rockies at Detroit Tigers",
         "shortName": "COL @ DET",
         "opponent": "Rockies",
@@ -89,7 +107,7 @@
         "state": "pre",
         "completed": false,
         "cancelled": false,
-        "status": "9/12 - 1:10 PM EDT",
+        "status": "9/13 - 12:10 PM EDT",
         "ourScore": "0",
         "opponentScore": "0",
         "result": "",
@@ -230,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T01:50:48.881984Z"
+  "updatedAt": "2026-09-12T17:49:29.371043Z"
 }
