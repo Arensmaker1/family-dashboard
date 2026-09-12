@@ -183,7 +183,7 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Halftime",
+        "status": "12:59 - 3rd",
         "ourScore": "42",
         "opponentScore": "0",
         "result": "",
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T21:36:36.671490Z"
+  "updatedAt": "2026-09-12T21:49:22.617252Z"
 }
