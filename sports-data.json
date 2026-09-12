@@ -70,7 +70,7 @@
         "completed": false,
         "cancelled": false,
         "status": "Bot 6th",
-        "ourScore": "1",
+        "ourScore": "5",
         "opponentScore": "1",
         "result": "",
         "winner": null,
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T00:11:31.354811Z"
+  "updatedAt": "2026-09-12T00:53:39.188151Z"
 }
