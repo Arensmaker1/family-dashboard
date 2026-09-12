@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.11.0 Household Inbox build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.12.0 Morning Brief Intelligence build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -725,6 +725,21 @@ body[data-appearance="light"] .briefInboxSection{background:#fffdf9}.briefInboxS
 @media(max-width:900px){.briefInboxGrid{grid-template-columns:1fr}.briefInboxSubgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.briefInboxHead h2{font-size:20px}.briefInboxHead{padding-right:40px}.briefInboxSubgrid{grid-template-columns:1fr}.briefInboxSection{padding:9px}.briefInboxItem{grid-template-columns:18px minmax(0,1fr) auto}.briefInboxAction .btn{padding:4px 6px}}
 
+
+/* V9.12.0 — Morning Brief Intelligence / NORAD status strip */
+.briefIntelHero{border:1px solid var(--l);border-radius:13px;padding:10px 12px;margin:0 0 10px;background:linear-gradient(135deg,#ffffff08,#ffffff02)}
+.briefIntelHero.urgent{border-color:#ff7c7c66;background:linear-gradient(135deg,#ff7c7c12,#ffffff02)}
+.briefIntelHero.warn{border-color:#f0a84c66;background:linear-gradient(135deg,#f0a84c12,#ffffff02)}
+.briefIntelHero.good{border-color:#72e26b55;background:linear-gradient(135deg,#72e26b0c,#ffffff02)}
+.briefIntelHero b{display:block;font-size:14px;line-height:1.2;margin-bottom:3px}.briefIntelHero span{display:block;color:var(--m);font-size:9px;line-height:1.35}
+.briefStatusStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 10px}
+.briefStatusChip{appearance:none;text-align:left;border:1px solid var(--l);background:var(--p);border-radius:10px;padding:8px 9px;min-width:0;cursor:pointer;color:inherit;box-shadow:none}
+.briefStatusChip:hover,.briefStatusChip:focus{border-color:var(--theme1);outline:none}.briefStatusChip.warn{border-color:#f0a84c66}.briefStatusChip.urgent{border-color:#ff7c7c66}.briefStatusChip.good{border-color:#72e26b55}
+.briefStatusChip small{display:block;font-size:7px;color:var(--m);font-weight:900;letter-spacing:.07em;margin-bottom:2px}.briefStatusChip strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.briefStatusChip em{display:block;font-style:normal;font-size:8px;color:var(--m);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.briefJumpWrap{position:relative}.briefJumpList{display:flex;flex-direction:column;gap:6px}.briefJumpRow{border:1px solid var(--l);border-radius:9px;padding:8px 9px;background:#ffffff04}.briefJumpRow b{font-size:11px}.briefJumpRow span{display:block;color:var(--m);font-size:9px;margin-top:2px}
+body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .briefJumpRow{background:#fffdf9}
+@media(max-width:720px){.briefStatusStrip{grid-template-columns:1fr 1fr}.briefIntelHero b{font-size:13px}}
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1127,7 +1142,7 @@ let familyDashboardAuthExpired_ = false;
 <div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 3.0</h2><div class=&quot;briefLine&quot;>Loading household inbox…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -2227,16 +2242,26 @@ function renderGlance(){
 }
 
 
-/* V9.11.0 — Morning Brief 3.0 / Household Inbox */
+/* V9.12.0 — Morning Brief 4.0 / Household Intelligence */
 function morningAttentionItems_(){
  let now=new Date(),items=[],conflicts=dayConflicts_(now),rs=activeBriefReminders_(),dinner=morningDinnerData_(),cs=morningChoreStats_(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[];
- conflicts.slice(0,2).forEach(pair=>items.push({rank:100,cls:"urgent",icon:"⚠️",title:"Calendar conflict",detail:`${pair[0].title} overlaps ${pair[1].title}`}));
- rs.filter(r=>daysUntil_(r.nextDue)<0).slice(0,3).forEach(r=>items.push({rank:95,cls:"urgent",icon:"🔧",title:r.name,detail:reminderDueText_(r),action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
- rs.filter(r=>daysUntil_(r.nextDue)===0).slice(0,3).forEach(r=>items.push({rank:90,cls:"warn",icon:"🔁",title:r.name,detail:"Due today",action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
- if(dinner?.need?.missing>0)items.push({rank:70,cls:"warn",icon:"🛒",title:"Dinner needs a grocery check",detail:`${dinner.need.missing} ingredient${dinner.need.missing===1?"":"s"} may still be needed`,action:`<button class="btn" onclick="closeMorningBrief_();openGroceries()">Groceries</button>`});
- if(dinner?.prep?.length)items.push({rank:65,cls:"warn",icon:"🍽️",title:"Dinner prep",detail:dinner.prep[0],action:dinner.match?`<button class="btn" onclick="closeMorningBrief_();openDinnerRecipe_('${dinner.match.source}','${esc(dinner.match.id)}')">Recipe</button>`:""});
- if(dinner?.busy&&Number(dinner.busy.count||0)>=2)items.push({rank:55,cls:"warn",icon:"📅",title:"Busy evening",detail:`${dinner.busy.count} events starting with ${dinner.busy.time} ${dinner.busy.title}`});
- if(cs.left&&now.getHours()>=17)items.push({rank:45,cls:"warn",icon:"✅",title:"Chores still open",detail:`${cs.left} chore${cs.left===1?"":"s"} remaining tonight`,action:`<button class="btn" onclick="closeMorningBrief_();openChores()">Chores</button>`});
+ conflicts.slice(0,2).forEach(pair=>items.push({rank:110,cls:"urgent",icon:"⚠️",title:"Calendar conflict",detail:`${pair[0].title} overlaps ${pair[1].title}`}));
+ rs.filter(r=>daysUntil_(r.nextDue)<0).slice(0,3).forEach(r=>items.push({rank:105,cls:"urgent",icon:"🔧",title:r.name,detail:reminderDueText_(r),action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
+ rs.filter(r=>daysUntil_(r.nextDue)===0).slice(0,3).forEach(r=>items.push({rank:100,cls:"warn",icon:"🔁",title:r.name,detail:"Due today",action:`<button class="btn" onclick="markHouseholdReminderDone_('${esc(r.id)}','brief')">✓ Done</button>`}));
+ // Connect dinner timing to the evening schedule instead of showing two unrelated warnings.
+ if(dinner?.dinner?.name && dinner?.busy && dinner?.mins && dinner.mins>=60){
+  items.push({rank:88,cls:"warn",icon:"⏱️",title:"Dinner needs a head start",detail:`${dinner.dinner.name} is ${formatCookEstimate_(dinner.mins)} and the evening has ${dinner.busy.count} event${dinner.busy.count===1?"":"s"} starting with ${dinner.busy.time} ${dinner.busy.title}`,action:dinner.match?`<button class="btn" onclick="openBriefDinnerStatus_()">Dinner</button>`:""});
+ }else if(dinner?.busy&&Number(dinner.busy.count||0)>=2){
+  items.push({rank:72,cls:"warn",icon:"📅",title:"Busy evening",detail:`${dinner.busy.count} events starting with ${dinner.busy.time} ${dinner.busy.title}`});
+ }
+ if(dinner?.need?.missing>0)items.push({rank:82,cls:"warn",icon:"🛒",title:"Dinner needs a grocery check",detail:`${dinner.need.missing} ingredient${dinner.need.missing===1?"":"s"} may still be needed`,action:`<button class="btn" onclick="openGroceriesFromBrief_()">Groceries</button>`});
+ if(dinner?.prep?.length)items.push({rank:78,cls:"warn",icon:"🍽️",title:"Dinner prep",detail:dinner.prep[0],action:dinner.match?`<button class="btn" onclick="openBriefDinnerStatus_()">Dinner</button>`:""});
+ // Tomorrow can deserve attention today when it is unusually busy or requires advance food prep.
+ let tom=new Date(now);tom.setDate(tom.getDate()+1);
+ let tomEvents=futureEventsForDay_(tom,false),tomDinner=dinnerForDate_(tom),tomMatch=recipeMatchForDinner_(tomDinner),tomPrep=tomMatch?prepIntelForRecipe_(tomMatch.recipe):[];
+ if(tomPrep.length)items.push({rank:62,cls:"warn",icon:"➡️",title:"Tomorrow needs prep today",detail:`${tomDinner?.name||"Dinner"}: ${tomPrep[0]}`});
+ if(tomEvents.length>=4)items.push({rank:58,cls:"warn",icon:"📆",title:"Tomorrow is packed",detail:`${tomEvents.length} calendar items are already scheduled`});
+ if(cs.left&&now.getHours()>=17)items.push({rank:48,cls:"warn",icon:"✅",title:"Chores still open",detail:`${cs.left} chore${cs.left===1?"":"s"} remaining tonight`,action:`<button class="btn" onclick="closeMorningBrief_();openChores()">Chores</button>`});
  pins.slice(0,2).forEach(x=>items.push({rank:30,cls:"",icon:"📌",title:"Don't forget",detail:String(x)}));
  return items.sort((a,b)=>b.rank-a.rank).slice(0,7);
 }
@@ -2268,6 +2293,27 @@ function morningComingUpHtml_(){
  if(!rows.length)return `<div class="briefInboxEmpty">Nothing major is waiting in the next few days.</div>`;
  return rows.slice(0,7).join("");
 }
+function morningIntelHeadline_(){
+ let now=new Date(),attention=morningAttentionItems_(),d=morningDinnerData_(),events=futureEventsForDay_(now,true),conflicts=dayConflicts_(now),rs=reminderStats2_(),tom=new Date(now);tom.setDate(tom.getDate()+1);let tomEvents=futureEventsForDay_(tom,false);
+ if(conflicts.length)return {cls:"urgent",title:"Schedule collision detected.",detail:`${conflicts.length} overlap${conflicts.length===1?"":"s"} on today's calendar. NORAD recommends human intervention.`};
+ if(rs.overdue)return {cls:"urgent",title:`${rs.overdue} overdue household job${rs.overdue===1?"":"s"} need attention.`,detail:"Maintenance Center has the details and can roll each item forward when completed."};
+ if(d?.dinner?.name&&d?.busy&&d?.mins>=60)return {cls:"warn",title:"Busy evening — dinner needs a head start.",detail:`${d.dinner.name} is ${formatCookEstimate_(d.mins)} and the evening calendar is already occupied.`};
+ if(d?.prep?.length)return {cls:"warn",title:"Dinner has advance prep attached.",detail:`${d.dinner?.name||"Tonight's dinner"}: ${d.prep[0]}.`};
+ if(d?.need?.missing>0)return {cls:"warn",title:"Dinner plan is set, grocery check isn't.",detail:`${d.need.missing} ingredient${d.need.missing===1?"":"s"} may still need attention.`};
+ if(attention.length>=3)return {cls:"warn",title:`${attention.length} things are competing for attention today.`,detail:"The highest-priority items are sorted below so the household can attack them in order."};
+ if(tomEvents.length>=4)return {cls:"warn",title:"Today is manageable. Tomorrow is the ambush.",detail:`${tomEvents.length} calendar items are already lined up for tomorrow.`};
+ if(!events.length&&!attention.length)return {cls:"good",title:"Light day. Nothing is on fire.",detail:"Calendar is clear, nothing urgent is due, and NORAD has no reason to manufacture drama."};
+ return {cls:"good",title:"Household systems nominal.",detail:attention.length?`${attention.length} item${attention.length===1?"":"s"} worth watching; nothing has escalated.`:"The day is moving normally with no urgent flags."};
+}
+function morningIntelHeroHtml_(){let x=morningIntelHeadline_();return `<div class="briefIntelHero ${x.cls||""}"><b>${esc(x.title)}</b><span>${esc(x.detail)}</span></div>`}
+function morningStatusStripHtml_(){
+ let now=new Date(),events=futureEventsForDay_(now,true),conf=dayConflicts_(now).length,d=morningDinnerData_(),rs=reminderStats2_(),g=(G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked).length:null;
+ let calCls=conf?"urgent":events.length?"":"good",calMain=conf?`${conf} CONFLICT${conf===1?"":"S"}`:events.length?`${events.length} LEFT`:"CLEAR",calSub=events.length?(events[0].allDay?events[0].title:`${time(events[0])} ${events[0].title}`):"No more events";
+ let dinnerCls=d?.need?.missing>0?"warn":d?.dinner?.name?"good":"",dinnerMain=d?.dinner?.name?(d?.need?.missing>0?`CHECK ${d.need.missing}`:"READY"):"OPEN",dinnerSub=d?.dinner?.name?d.dinner.name:"No dinner planned";
+ let maintCls=rs.overdue?"urgent":rs.today?"warn":rs.soon?"":"good",maintMain=rs.overdue?`${rs.overdue} OVERDUE`:rs.today?`${rs.today} DUE`:rs.soon?`${rs.soon} SOON`:"CLEAR",maintSub=rs.total?`${rs.total} tracked`:"No reminders";
+ let grocCls=g===0?"good":"",grocMain=g==null?"LOADING":g?`${g} ITEMS`:"CLEAR",grocSub=g?"Open shopping list":"Nothing waiting";
+ return `<div class="briefStatusStrip"><button class="briefStatusChip ${calCls}" onclick="openBriefCalendarStatus_()"><small>📅 CALENDAR</small><strong>${esc(calMain)}</strong><em>${esc(calSub)}</em></button><button class="briefStatusChip ${dinnerCls}" onclick="openBriefDinnerStatus_()"><small>🍽️ DINNER</small><strong>${esc(dinnerMain)}</strong><em>${esc(dinnerSub)}</em></button><button class="briefStatusChip ${maintCls}" onclick="openHouseholdReminders()"><small>🔧 MAINTENANCE</small><strong>${esc(maintMain)}</strong><em>${esc(maintSub)}</em></button><button class="briefStatusChip ${grocCls}" onclick="openGroceriesFromBrief_()"><small>🛒 GROCERIES</small><strong>${esc(grocMain)}</strong><em>${esc(grocSub)}</em></button></div>`;
+}
 function morningSummaryHtml_(){
  let now=new Date(),events=futureEventsForDay_(now,true),cs=morningChoreStats_(),attention=morningAttentionItems_(),parts=[];
  if(events.length)parts.push(`${events.length} calendar item${events.length===1?"":"s"} left`);
@@ -2276,6 +2322,18 @@ function morningSummaryHtml_(){
  if(!parts.length)parts.push("the household is looking clear");
  let greeting=now.getHours()<12?"Good morning":now.getHours()<17?"Good afternoon":"Good evening";
  return `<div class="briefSummary v911"><div class="briefSummaryIcon">☀️</div><div><b>${greeting}.</b> ${esc(parts.join(" • "))}</div></div>`;
+}
+function openBriefCalendarStatus_(){
+ let now=new Date(),events=futureEventsForDay_(now,true).sort((a,b)=>new Date(a.start)-new Date(b.start)),conf=dayConflicts_(now);
+ let body=events.length?events.slice(0,8).map(e=>`<div class="briefJumpRow"><b>${e.allDay?"All day":esc(time(e))} • ${esc(e.title)}</b><span>${esc(e.calendar||"")}${eventHasConflict_(e,events)?" • ⚠ Schedule overlap":""}</span></div>`).join(""):`<div class="briefInboxEmpty good">✓ Nothing else scheduled today.</div>`;
+ morningBriefOpen_=false;morningBriefSession_++;
+ openModal(`<div class="briefJumpWrap"><h2>📅 Today at a Glance</h2><div class="note" style="margin-bottom:8px">${conf.length?`${conf.length} schedule conflict${conf.length===1?"":"s"} detected.`:"Today's remaining calendar."}</div><div class="briefJumpList">${body}</div><div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button></div></div>`,{closeAction:"openMorningBrief()"});
+}
+function openBriefDinnerStatus_(){
+ let d=morningDinnerData_(),name=d?.dinner?.name||"No dinner planned",bits=[];
+ if(d?.mins)bits.push(`⏱️ ${formatCookEstimate_(d.mins)}`);if(d?.prep?.length)bits.push(`🧂 ${d.prep[0]}`);if(d?.need)bits.push(d.need.missing?`🛒 ${d.need.missing} ingredient${d.need.missing===1?"":"s"} to check`:`✓ groceries covered`);if(d?.busy)bits.push(`📅 ${d.busy.count} evening event${d.busy.count===1?"":"s"}`);
+ morningBriefOpen_=false;morningBriefSession_++;
+ openModal(`<div class="briefJumpWrap"><h2>🍽️ Dinner Intel</h2><div class="briefJumpRow"><b>${esc(name)}</b><span>${esc(bits.join(" • ")||"No linked recipe intelligence available yet.")}</span></div>${d?.match?`<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button><button class="btn primaryAction" onclick="openDinnerRecipe_('${d.match.source}','${esc(d.match.id)}')">Open Recipe</button></div>`:`<div class="actions"><button class="btn" onclick="openMorningBrief()">← Brief</button></div>`}</div>`,{closeAction:"openMorningBrief()"});
 }
 function morningChoreSummaryHtml_(){
  let d=new Date(),C=choresFor(d);
@@ -2297,13 +2355,15 @@ function morningPriorityHtml_(){return morningAttentionHtml_()}
 function buildMorningBriefHtml_(){
  let now=new Date(),pins=(S&&Array.isArray(S.pinnedNotes))?S.pinnedNotes:[],attention=briefSafe_("Needs Attention",()=>morningAttentionItems_(),[]),attentionCount=Array.isArray(attention)?attention.length:0;
  let summary=briefSafe_("Summary",()=>morningSummaryHtml_(),`<div class="briefSummary v911"><div class="briefSummaryIcon">☀️</div><div><b>Household brief.</b> Dashboard data is still loading.</div></div>`);
+ let intel=briefSafe_("NORAD Intelligence",()=>morningIntelHeroHtml_(),"");
+ let statusStrip=briefSafe_("Status Strip",()=>morningStatusStripHtml_(),"");
  let today=briefSafe_("Today Inbox",()=>morningTodayInboxHtml_());
  let needs=briefSafe_("Needs Attention",()=>morningAttentionHtml_());
  let coming=briefSafe_("Coming Up",()=>morningComingUpHtml_());
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">HOUSEHOLD INBOX</div><h2>☀️ Morning Brief 3.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -2339,7 +2399,7 @@ function openMorningBrief(){
  fdCrashContext_("brief-open","session "+sessionId);
  try{
   let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
-  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 3.0</h2><div class="briefLine">Loading household inbox…</div></div>`;
+  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 4.0</h2><div class="briefLine">Loading household intelligence…</div></div>`;
   if(bg)bg.style.display="grid";
  }catch(_){}
  try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
