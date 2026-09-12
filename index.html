@@ -2833,6 +2833,22 @@ function voiceWeather_(){if(!W||!W.ok||!W.current)return"Weather data isn't avai
 function voiceSportsTeamFromText_(s){s=String(s||"").toLowerCase();let aliases=[[/\b(lions|detroit lions)\b/,"lions"],[/\b(tigers|detroit tigers)\b/,"tigers"],[/\b(pistons|detroit pistons)\b/,"pistons"],[/\b(red wings|wings|detroit red wings)\b/,"redwings"],[/\b(notre dame|fighting irish|irish)\b/,"notredame"],[/\b(michigan state|msu|spartans)\b/,"msubasketball"]];let hit=aliases.find(([r])=>r.test(s));if(!hit)return null;return (SPORTS.teams||[]).find(t=>t.key===hit[1])||SPORTS_DIRECT_TEAMS_.find(t=>t.key===hit[1])||null}
 function voiceSportsWhen_(g){if(!g?.date)return"at a time I don't have yet";let d=new Date(g.date);return d.toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})+" at "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
 function voiceSportsNext_(team){if(SPORTS.loading)return"Sports are still loading. Ask me again in a moment.";if(!team)return"I couldn't tell which team you meant.";let t=(SPORTS.teams||[]).find(x=>x.key===team.key)||team;if(!t.next)return`I don't have the next ${t.shortName||t.name} game yet.`;return`${t.shortName||t.name} play ${sportsOpponentText_(t.next)} ${voiceSportsWhen_(t.next)}${t.next.broadcast?` on ${t.next.broadcast}`:""}.`}
+function voiceSportsSpeakNext_(raw){
+ let team=voiceSportsTeamFromText_(raw);
+ if(!team){speak_("I couldn't tell which team you meant.");return}
+ let current=(SPORTS.teams||[]).find(x=>x.key===team.key);
+ if(current?.next && !SPORTS.loading){speak_(voiceSportsNext_(current));return}
+ // If sports data is stale, absent, or still loading, fetch it and answer automatically
+ // instead of making the user repeat the command.
+ speak_(`Checking the next ${team.shortName||team.name} game.`);
+ Promise.resolve(loadSports(false)).then(()=>{
+   let fresh=voiceSportsTeamFromText_(raw)||team;
+   speak_(voiceSportsNext_(fresh));
+ }).catch(err=>{
+   console.warn("Voice sports lookup failed",err);
+   speak_(`I couldn't refresh the ${team.shortName||team.name} schedule right now.`);
+ });
+}
 function voiceSportsLast_(team){if(SPORTS.loading)return"Sports are still loading. Ask me again in a moment.";if(!team)return"I couldn't tell which team you meant.";let t=(SPORTS.teams||[]).find(x=>x.key===team.key)||team;if(!t.last)return`I don't have a recent ${t.shortName||t.name} result yet.`;let r=t.last.result==="W"?"won":t.last.result==="L"?"lost":"tied";return`${t.shortName||t.name} ${r} ${t.last.ourScore} to ${t.last.opponentScore} against ${t.last.opponent}.`}
 function voiceSportsToday_(d){if(!SPORTS.ok)return"";let k=key(d),games=(SPORTS.teams||[]).filter(t=>t.next&&key(new Date(t.next.date))===k);if(!games.length)return"";return games.map(t=>`${t.shortName||t.name} play ${sportsOpponentText_(t.next)} at ${new Date(t.next.date).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`).join(". ")+"."}
 function voiceOverview_(d){let isToday=same(d,new Date()),parts=[];let events=futureEventsForDay_(d,isToday);if(events.length)parts.push(`${events.length} calendar item${events.length===1?"":"s"}: ${events.slice(0,4).map(e=>(e.allDay?"all day ":time(e)+" ")+e.title).join(", ")}`);else parts.push("the calendar is clear");let c=choresFor(d),left=c.filter(x=>!S.completions[key(d)+"-"+x.i]);if(c.length)parts.push(left.length?`${left.length} chore${left.length===1?"":"s"} left`:"all chores are done");let dinner=dinnerForDate_(d);parts.push(dinner?`${isToday?"dinner":"tomorrow's dinner"} is ${dinner.name}`:`no dinner is planned ${isToday?"tonight":"tomorrow"}`);if(isToday){let due=activeBriefReminders_().filter(r=>daysUntil_(r.nextDue)<=0);if(due.length)parts.push(`${due.length} household reminder${due.length===1?" is":"s are"} due`)}let sports=voiceSportsToday_(d);let intro=isToday?"Today":"Tomorrow";return `${intro}, ${parts.join(". ")}.${sports?" "+sports:""}`}
@@ -2874,10 +2890,11 @@ function voiceMarkDinnerReady_(d){
  let dinner=dinnerForDate_(d);
  if(!dinner){speak_(`I don't see dinner planned for ${same(d,new Date())?"tonight":"that day"}.`);return}
  dinnerReadyStore_()[key(d)]=dinnerReadyFingerprint_(dinner);
- persist(()=>{
-   try{renderGlance();renderCal();renderDetail();if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)}catch(_){}
-   speak_(`${dinner.name} is marked Kitchen Ready. Grocery warnings for that dinner are cleared.`);
- });
+ // Confirm immediately. The old version waited for the backend save callback, which
+ // made a perfectly recognized command feel dead whenever the bridge was slow.
+ try{renderGlance();renderCal();renderDetail();if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)}catch(_){}
+ speak_(`${dinner.name} is marked Kitchen Ready. Grocery warnings for that dinner are cleared.`);
+ try{persist(()=>{})}catch(err){console.warn("Voice Kitchen Ready save failed",err)}
 }
 function voiceRecipeMatch_(query){
  let q=normalizeDinnerRecipeName_(query),tokens=q.split(/\s+/).filter(Boolean);
@@ -2946,7 +2963,7 @@ function handleVoiceCommand_(raw){
 
  if(/what can i say|voice help|what can you do|help me with voice/.test(n)){speak_(voiceHelp_());return true}
 
- if(/mark (?:the )?(?:dinner|kitchen) ready|dinner is ready|kitchen ready|we have everything for dinner|i have everything for dinner/.test(n)){voiceMarkDinnerReady_(new Date());return true}
+ if(/mark (?:the )?(?:dinner|kitchen)(?: as)? ready|mark dinner already|dinner(?: is)? ready|kitchen ready|we(?:'re| are)? good for dinner|we have everything for dinner|i have everything for dinner|got everything for dinner/.test(n)){voiceMarkDinnerReady_(new Date());return true}
  if(/do i need anything for dinner|anything needed for dinner|what do i need for dinner|check dinner groceries|dinner grocery check|are we good for dinner/.test(n)){speak_(voiceDinnerNeed_(new Date()));return true}
 
  if((m=n.match(/(?:pick|set|make|choose|put) (.+?) (?:for|as) dinner (today|tonight|tomorrow)$/))){
@@ -2965,7 +2982,7 @@ function handleVoiceCommand_(raw){
  if(/what chores are left|chores left|what chores do we have|what are the chores/.test(n)){speak_(voiceChoresForDate_(new Date()));return true}
  if(/anything due around the house|what is due around the house|household reminders|any reminders due|maintenance due/.test(n)){speak_(voiceReminderSummary_());return true}
  if(/what is the weather|weather today|how is the weather|temperature outside/.test(n)){speak_(voiceWeather_());return true}
- if(/when do .* play|when is .* (?:game|playing)|next .* game/.test(n)){speak_(voiceSportsNext_(voiceSportsTeamFromText_(n)));return true}
+ if(/when (?:do|does|are|is) .*?(?: play| playing| game)|who do .* play|next .* game|.* next game/.test(n)){voiceSportsSpeakNext_(n);return true}
  if(/did .* win|how did .* do|what was the .* score|score of the .* game/.test(n)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(n)));return true}
  if(/calendar today|schedule today|what is on the calendar today/.test(n)){speak_(voiceEvents_(new Date(),true));return true}
  if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
