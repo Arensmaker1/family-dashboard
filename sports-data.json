@@ -69,9 +69,9 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "End 4th",
-        "ourScore": "0",
-        "opponentScore": "0",
+        "status": "Bot 6th",
+        "ourScore": "1",
+        "opponentScore": "1",
         "result": "",
         "winner": null,
         "venue": "Comerica Park",
@@ -117,7 +117,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 35
+      "eventCount": 34
     },
     {
       "key": "pistons",
@@ -181,7 +181,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 11
+      "eventCount": 12
     },
     {
       "key": "notredame",
@@ -231,7 +231,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 6
+      "eventCount": 7
     },
     {
       "key": "msubasketball",
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-11T23:49:37.901769Z"
+  "updatedAt": "2026-09-12T00:11:31.354811Z"
 }
