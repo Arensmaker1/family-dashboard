@@ -183,8 +183,8 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "5:55 - 2nd",
-        "ourScore": "28",
+        "status": "1:59 - 2nd",
+        "ourScore": "35",
         "opponentScore": "0",
         "result": "",
         "winner": null,
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T20:53:28.936278Z"
+  "updatedAt": "2026-09-12T21:07:52.609671Z"
 }
