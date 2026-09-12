@@ -743,6 +743,9 @@ body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .bri
 
 /* V9.12.1 — exact dinner picker + kitchen-ready acknowledgement */
 .dinnerPickerWrap{max-width:760px;margin:auto}.dinnerPickerSearch{width:100%;box-sizing:border-box;margin:10px 0;padding:11px 12px;border:1px solid var(--l);border-radius:10px;background:var(--p);color:var(--t);font-size:14px}.dinnerPickerRows{max-height:54vh;overflow:auto;border:1px solid var(--l);border-radius:11px;padding:5px}.dinnerPickRow{width:100%;display:flex;flex-direction:column;gap:3px;text-align:left;padding:9px 10px;border:0;border-bottom:1px solid var(--l);background:transparent;color:var(--t);cursor:pointer}.dinnerPickRow:last-child{border-bottom:0}.dinnerPickRow:hover{background:#ffffff0b}.dinnerPickRow b{font-size:12px}.dinnerPickRow span{font-size:9px;color:var(--m)}body[data-appearance="light"] .dinnerPickerSearch{background:#fffdf9}body[data-appearance="light"] .dinnerPickRow:hover{background:#f5efe5}
+
+/* V9.13.0 — Voice 2.0 */
+.voiceV2Tag{font-size:8px;font-weight:900;letter-spacing:.55px;opacity:.58;white-space:nowrap}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1147,7 +1150,7 @@ let familyDashboardAuthExpired_ = false;
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
 <footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
-<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
+<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.0</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
  <div class="v4top">
   <button class="v4back" onclick="closeDay()">← Back to Month</button>
@@ -2833,32 +2836,139 @@ function voiceSportsNext_(team){if(SPORTS.loading)return"Sports are still loadin
 function voiceSportsLast_(team){if(SPORTS.loading)return"Sports are still loading. Ask me again in a moment.";if(!team)return"I couldn't tell which team you meant.";let t=(SPORTS.teams||[]).find(x=>x.key===team.key)||team;if(!t.last)return`I don't have a recent ${t.shortName||t.name} result yet.`;let r=t.last.result==="W"?"won":t.last.result==="L"?"lost":"tied";return`${t.shortName||t.name} ${r} ${t.last.ourScore} to ${t.last.opponentScore} against ${t.last.opponent}.`}
 function voiceSportsToday_(d){if(!SPORTS.ok)return"";let k=key(d),games=(SPORTS.teams||[]).filter(t=>t.next&&key(new Date(t.next.date))===k);if(!games.length)return"";return games.map(t=>`${t.shortName||t.name} play ${sportsOpponentText_(t.next)} at ${new Date(t.next.date).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`).join(". ")+"."}
 function voiceOverview_(d){let isToday=same(d,new Date()),parts=[];let events=futureEventsForDay_(d,isToday);if(events.length)parts.push(`${events.length} calendar item${events.length===1?"":"s"}: ${events.slice(0,4).map(e=>(e.allDay?"all day ":time(e)+" ")+e.title).join(", ")}`);else parts.push("the calendar is clear");let c=choresFor(d),left=c.filter(x=>!S.completions[key(d)+"-"+x.i]);if(c.length)parts.push(left.length?`${left.length} chore${left.length===1?"":"s"} left`:"all chores are done");let dinner=dinnerForDate_(d);parts.push(dinner?`${isToday?"dinner":"tomorrow's dinner"} is ${dinner.name}`:`no dinner is planned ${isToday?"tonight":"tomorrow"}`);if(isToday){let due=activeBriefReminders_().filter(r=>daysUntil_(r.nextDue)<=0);if(due.length)parts.push(`${due.length} household reminder${due.length===1?" is":"s are"} due`)}let sports=voiceSportsToday_(d);let intro=isToday?"Today":"Tomorrow";return `${intro}, ${parts.join(". ")}.${sports?" "+sports:""}`}
+
+/* V9.13.0 — Voice 2.0 / Kitchen NORAD intelligence */
+function voiceBriefIntel_(){
+ let now=new Date(),intel=morningIntelHeadline_(),events=futureEventsForDay_(now,true).sort((a,b)=>new Date(a.start)-new Date(b.start)),
+     cs=morningChoreStats_(),d=morningDinnerData_(),rs=reminderStats2_(),parts=[];
+ parts.push(intel.title);
+ if(events.length){
+   let names=events.slice(0,3).map(e=>(e.allDay?"all day ":time(e)+" ")+e.title).join(", ");
+   parts.push(`${events.length} calendar item${events.length===1?"":"s"} left: ${names}`);
+ }else parts.push("The rest of the calendar is clear");
+ if(cs.total)parts.push(cs.left?`${cs.left} chore${cs.left===1?"":"s"} remaining`:"All chores are done");
+ if(d?.dinner?.name){
+   let dinner=`Dinner is ${d.dinner.name}`;
+   if(d.mins)dinner+=`, about ${formatCookEstimate_(d.mins)}`;
+   if(d.ready)dinner+=", and the kitchen check is cleared";
+   else if(d.need?.missing>0)dinner+=`, with ${d.need.missing} ingredient${d.need.missing===1?"":"s"} still worth checking`;
+   parts.push(dinner);
+ }else parts.push("Dinner is not planned yet");
+ if(rs.overdue)parts.push(`${rs.overdue} maintenance item${rs.overdue===1?" is":"s are"} overdue`);
+ else if(rs.today)parts.push(`${rs.today} maintenance item${rs.today===1?" is":"s are"} due today`);
+ let sports=voiceSportsToday_(now);
+ return `Kitchen NORAD report. ${parts.join(". ")}.${sports?" "+sports:""}`;
+}
+function voiceDinnerNeed_(d){
+ let dinner=dinnerForDate_(d);
+ if(!dinner)return `I don't see dinner planned for ${same(d,new Date())?"tonight":"that day"}.`;
+ if(isDinnerReady_(d,dinner))return `${dinner.name} is already marked Kitchen Ready. You're good to go.`;
+ let m=recipeMatchForDinner_(dinner);
+ if(!m)return `${dinner.name} is planned, but I don't have a linked recipe to check.`;
+ let need=groceryNeedForRecipe_(m.recipe);
+ if(!need)return `I have the recipe for ${dinner.name}, but the grocery check isn't available yet.`;
+ if(need.missing<=0)return `The grocery check for ${dinner.name} is clear. If you have everything in the kitchen, say mark dinner ready.`;
+ return `${dinner.name} has ${need.missing} ingredient${need.missing===1?"":"s"} worth checking. If you already have everything, say mark dinner ready.`;
+}
+function voiceMarkDinnerReady_(d){
+ let dinner=dinnerForDate_(d);
+ if(!dinner){speak_(`I don't see dinner planned for ${same(d,new Date())?"tonight":"that day"}.`);return}
+ dinnerReadyStore_()[key(d)]=dinnerReadyFingerprint_(dinner);
+ persist(()=>{
+   try{renderGlance();renderCal();renderDetail();if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)}catch(_){}
+   speak_(`${dinner.name} is marked Kitchen Ready. Grocery warnings for that dinner are cleared.`);
+ });
+}
+function voiceRecipeMatch_(query){
+ let q=normalizeDinnerRecipeName_(query),tokens=q.split(/\s+/).filter(Boolean);
+ if(!q)return null;
+ let rows=dinnerPickerRecipes_().map(x=>{
+   let n=normalizeDinnerRecipeName_(x.name),score=0;
+   if(n===q)score=1000;
+   else{
+     if(n.startsWith(q))score+=300;
+     if(n.includes(q))score+=220;
+     if(q.includes(n)&&n.length>4)score+=180;
+     tokens.forEach(t=>{if(n.includes(t))score+=30});
+   }
+   return {x,n,score};
+ }).filter(v=>v.score>0).sort((a,b)=>b.score-a.score||a.x.name.localeCompare(b.x.name));
+ return rows[0]?.x||null;
+}
+function voiceAssignDinnerRecipe_(query,d){
+ let run=()=>{
+   let pick=voiceRecipeMatch_(query);
+   if(!pick){speak_(`I couldn't find a recipe matching ${query}.`);return}
+   let pool=pick.source==="plan"?(MP.recipes||[]):(R.recipes||[]),r=pool.find(x=>String(x.id)===String(pick.id));
+   if(!r){speak_(`I found ${pick.name}, but couldn't load the recipe.`);return}
+   let iso=key(d),row=(S.mealPlanWeek||[]).find(x=>x.date===iso);
+   if(row){row.dinner=r.name;row.dinnerId=r.id;row.dinnerSource=pick.source}
+   else{
+     if(!Array.isArray(S.randomDinnerWeek))S.randomDinnerWeek=[];
+     let x=S.randomDinnerWeek.find(v=>v.date===iso);
+     if(!x){x={date:iso};S.randomDinnerWeek.push(x)}
+     x.dinner=r.name;x.dinnerId=r.id;x.id=r.id;x.source=pick.source;
+   }
+   replaceMenuDinner_(d,r.name);clearDinnerReady_(d);
+   persist(()=>{
+     try{renderDetail();renderCal();renderGlance();if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)}catch(_){}
+     let when=same(d,new Date())?"tonight":(()=>{let t=new Date();t.setDate(t.getDate()+1);return same(d,t)?"tomorrow":d.toLocaleDateString([],{weekday:"long"})})();
+     speak_(`${r.name} is set for dinner ${when}.`);
+   });
+ };
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(run);else run();
+}
+function voiceHelp_(){
+ return "You can ask what's going on today, what's for dinner, do I need anything for dinner, mark dinner ready, pick a recipe for dinner tomorrow, what's due around the house, when the Lions play, add items to groceries, start a timer, or open the morning brief.";
+}
+
 function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
 function voiceStartTimer_(m){m=Number(m)||1;primeTimerAudio();kitchenTimers.push({name:nextTimerName(),end:Date.now()+m*60000,ringing:false});saveKitchenTimers();updateTimers();speak_(`${m} minute timer started.`)}
 function voiceStopTimer_(){if(!kitchenTimers.length){speak_("There are no active timers.");return}let i=kitchenTimers.findIndex(x=>x.ringing);if(i<0){let now=Date.now(),best=Infinity;i=0;kitchenTimers.forEach((x,n)=>{let left=Math.max(0,(Number(x.end)||0)-now);if(left<best){best=left;i=n}})}let name=kitchenTimers[i]?.name||"Timer";kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();updateTimers();updateCookTimerBar();speak_(`${name} stopped.`)}
 function handleVoiceCommand_(raw){
  let s=String(raw||"").toLowerCase().replace(/[’‘]/g,"'").replace(/[?.!,]/g,"").replace(/\s+/g," ").trim(),m;
  let n=s.replace(/what's/g,"what is").replace(/that's/g,"that is").replace(/i'm/g,"i am").replace(/\bplease\b/g,"").replace(/\s+/g," ").trim();
+
  if(/stop listening|voice off|microphone off|stop voice/.test(n)){stopVoiceSession(false);return true}
+
  if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return true}
+ if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:hour|hr) timer/))){voiceStartTimer_(Number(m[1])*60);return true}
  if(/^(?:stop|cancel|end)(?: the| a)? timer$|^(?:stop|silence|dismiss)(?: the)? alarm$/.test(n)){voiceStopTimer_();return true}
- if(/what is going on today|what do we have today|what is happening today|tell me about today|morning brief/.test(n)){speak_(voiceOverview_(new Date()));return true}
+
+ // Explicit navigation comes before conversational summaries so "open morning brief"
+ // cannot be swallowed by the generic "morning brief" command.
+ if(/open (?:the )?(?:brief|morning brief)/.test(n)){openMorningBrief();speak_("Opening the morning brief.");return true}
+ if(/open (?:the )?grocer/.test(n)){openGroceries();speak_("Opening groceries.");return true}
+ if(/open (?:the )?recipe/.test(n)){openRecipes();speak_("Opening recipes.");return true}
+ if(/open (?:the )?sports/.test(n)){openSportsCenter();speak_("Opening sports center.");return true}
+ if(/open (?:the )?(?:maintenance|maintenance center|household reminders)/.test(n)){openHouseholdReminders();speak_("Opening the Maintenance Center.");return true}
+ if(/go home|open (?:the )?dashboard/.test(n)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return true}
+
+ if(/what can i say|voice help|what can you do|help me with voice/.test(n)){speak_(voiceHelp_());return true}
+
+ if(/mark (?:the )?(?:dinner|kitchen) ready|dinner is ready|kitchen ready|we have everything for dinner|i have everything for dinner/.test(n)){voiceMarkDinnerReady_(new Date());return true}
+ if(/do i need anything for dinner|anything needed for dinner|what do i need for dinner|check dinner groceries|dinner grocery check|are we good for dinner/.test(n)){speak_(voiceDinnerNeed_(new Date()));return true}
+
+ if((m=n.match(/(?:pick|set|make|choose|put) (.+?) (?:for|as) dinner (today|tonight|tomorrow)$/))){
+   let d=new Date();if(m[2]==="tomorrow")d.setDate(d.getDate()+1);voiceAssignDinnerRecipe_(m[1],d);return true
+ }
+ if((m=n.match(/(?:dinner (?:today|tonight|tomorrow) (?:is|should be)|have) (.+?) for dinner (today|tonight|tomorrow)$/))){
+   let when=m[2]||(/tomorrow/.test(n)?"tomorrow":"tonight"),d=new Date();if(when==="tomorrow")d.setDate(d.getDate()+1);voiceAssignDinnerRecipe_(m[1],d);return true
+ }
+
+ if((m=n.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return true}
+
+ if(/what is going on today|what do we have today|what is happening today|tell me about today|give me (?:the )?(?:morning )?brief|morning brief$|household report|norad report/.test(n)){speak_(voiceBriefIntel_());return true}
  if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return true}
  if(/what is for dinner tomorrow|what are we having tomorrow|dinner tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceDinnerForDate_(d));return true}
  if(/what is for dinner|what are we having for dinner|dinner tonight/.test(n)){speak_(voiceDinner_());return true}
  if(/what chores are left|chores left|what chores do we have|what are the chores/.test(n)){speak_(voiceChoresForDate_(new Date()));return true}
- if(/anything due around the house|what is due around the house|household reminders|any reminders due/.test(n)){speak_(voiceReminderSummary_());return true}
+ if(/anything due around the house|what is due around the house|household reminders|any reminders due|maintenance due/.test(n)){speak_(voiceReminderSummary_());return true}
  if(/what is the weather|weather today|how is the weather|temperature outside/.test(n)){speak_(voiceWeather_());return true}
  if(/when do .* play|when is .* (?:game|playing)|next .* game/.test(n)){speak_(voiceSportsNext_(voiceSportsTeamFromText_(n)));return true}
  if(/did .* win|how did .* do|what was the .* score|score of the .* game/.test(n)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(n)));return true}
  if(/calendar today|schedule today|what is on the calendar today/.test(n)){speak_(voiceEvents_(new Date(),true));return true}
  if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
- if((m=n.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return true}
- if(/open (?:the )?grocer/.test(n)){openGroceries();speak_("Opening groceries.");return true}
- if(/open (?:the )?recipe/.test(n)){openRecipes();speak_("Opening recipes.");return true}
- if(/open (?:the )?(?:brief|morning brief)/.test(n)){openMorningBrief();speak_("Opening the morning brief.");return true}
- if(/open (?:the )?sports/.test(n)){openSportsCenter();speak_("Opening sports center.");return true}
- if(/go home|open (?:the )?dashboard/.test(n)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return true}
  if(cookRecipe){
    let steps=cookRecipe.steps||[], current=()=>steps[cookStep]||"";
    // Current step: deliberately broad, because speech recognition often drops small words.
