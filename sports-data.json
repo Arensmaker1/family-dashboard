@@ -172,7 +172,8 @@
       "emoji": "☘️",
       "league": "college-football",
       "ok": true,
-      "live": {
+      "live": null,
+      "last": {
         "id": "401859184",
         "date": "2026-09-12T19:30Z",
         "name": "Rice Owls at Notre Dame Fighting Irish",
@@ -180,34 +181,15 @@
         "opponent": "Rice",
         "opponentAbbr": "RICE",
         "homeAway": "home",
-        "state": "in",
-        "completed": false,
-        "cancelled": false,
-        "status": "2:56 - 3rd",
-        "ourScore": "52",
-        "opponentScore": "0",
-        "result": "",
-        "winner": null,
-        "venue": "Notre Dame Stadium",
-        "broadcast": "NBC"
-      },
-      "last": {
-        "id": "401858438",
-        "date": "2026-09-06T23:30Z",
-        "name": "Wisconsin Badgers at Notre Dame Fighting Irish",
-        "shortName": "WIS VS ND",
-        "opponent": "Wisconsin",
-        "opponentAbbr": "WIS",
-        "homeAway": "home",
         "state": "post",
         "completed": true,
         "cancelled": false,
         "status": "Final",
-        "ourScore": "41",
-        "opponentScore": "13",
+        "ourScore": "52",
+        "opponentScore": "0",
         "result": "W",
         "winner": true,
-        "venue": "Lambeau Field",
+        "venue": "Notre Dame Stadium",
         "broadcast": "NBC"
       },
       "next": {
@@ -248,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T23:07:29.829428Z"
+  "updatedAt": "2026-09-12T23:23:17.514838Z"
 }
