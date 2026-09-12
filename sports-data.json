@@ -58,7 +58,8 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": true,
-      "live": {
+      "live": null,
+      "last": {
         "id": "401816890",
         "date": "2026-09-11T22:40Z",
         "name": "Colorado Rockies at Detroit Tigers",
@@ -66,35 +67,16 @@
         "opponent": "Rockies",
         "opponentAbbr": "COL",
         "homeAway": "home",
-        "state": "in",
-        "completed": false,
-        "cancelled": false,
-        "status": "Top 9th",
-        "ourScore": "6",
-        "opponentScore": "2",
-        "result": "",
-        "winner": null,
-        "venue": "Comerica Park",
-        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
-      },
-      "last": {
-        "id": "401816872",
-        "date": "2026-09-09T17:10Z",
-        "name": "Minnesota Twins at Detroit Tigers",
-        "shortName": "MIN @ DET",
-        "opponent": "Twins",
-        "opponentAbbr": "MIN",
-        "homeAway": "home",
         "state": "post",
         "completed": true,
         "cancelled": false,
         "status": "Final",
-        "ourScore": "7",
+        "ourScore": "6",
         "opponentScore": "2",
         "result": "W",
         "winner": true,
         "venue": "Comerica Park",
-        "broadcast": "MLB.TV, Twins.TV, Tigers.TV"
+        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
       },
       "next": {
         "id": "401816905",
@@ -248,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T01:36:49.224831Z"
+  "updatedAt": "2026-09-12T01:50:48.881984Z"
 }
