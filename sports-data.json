@@ -8,7 +8,8 @@
       "emoji": "🦁",
       "league": "nfl",
       "ok": true,
-      "live": {
+      "live": null,
+      "last": {
         "id": "401872923",
         "date": "2026-09-13T17:00Z",
         "name": "New Orleans Saints at Detroit Lions",
@@ -16,35 +17,16 @@
         "opponent": "Saints",
         "opponentAbbr": "NO",
         "homeAway": "home",
-        "state": "in",
-        "completed": false,
-        "cancelled": false,
-        "status": "1:23 - 4th",
-        "ourScore": "24",
-        "opponentScore": "17",
-        "result": "",
-        "winner": null,
-        "venue": "Ford Field",
-        "broadcast": "FOX"
-      },
-      "last": {
-        "id": "401873308",
-        "date": "2026-08-29T17:00Z",
-        "name": "Detroit Lions at Indianapolis Colts",
-        "shortName": "DET @ IND",
-        "opponent": "Colts",
-        "opponentAbbr": "IND",
-        "homeAway": "away",
         "state": "post",
         "completed": true,
         "cancelled": false,
-        "status": "Final",
-        "ourScore": "25",
-        "opponentScore": "16",
+        "status": "Final/OT",
+        "ourScore": "31",
+        "opponentScore": "30",
         "result": "W",
         "winner": true,
-        "venue": "Lucas Oil Stadium",
-        "broadcast": "NFL Net, CBS4, Lions TV Network"
+        "venue": "Ford Field",
+        "broadcast": "FOX"
       },
       "next": {
         "id": "401872932",
@@ -248,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-13T21:07:43.633141Z"
+  "updatedAt": "2026-09-13T21:24:04.536526Z"
 }
