@@ -19,7 +19,7 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "14:22 - 1st",
+        "status": "5:59 - 1st",
         "ourScore": "0",
         "opponentScore": "0",
         "result": "",
@@ -87,7 +87,7 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Top 3rd",
+        "status": "Mid 4th",
         "ourScore": "5",
         "opponentScore": "1",
         "result": "",
@@ -266,5 +266,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-13T17:23:39.373600Z"
+  "updatedAt": "2026-09-13T17:36:39.878323Z"
 }
