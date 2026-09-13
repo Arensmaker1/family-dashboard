@@ -58,25 +58,7 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": true,
-      "live": {
-        "id": "401816920",
-        "date": "2026-09-13T16:10Z",
-        "name": "Colorado Rockies at Detroit Tigers",
-        "shortName": "COL @ DET",
-        "opponent": "Rockies",
-        "opponentAbbr": "COL",
-        "homeAway": "home",
-        "state": "in",
-        "completed": false,
-        "cancelled": false,
-        "status": "Bot 1st",
-        "ourScore": "0",
-        "opponentScore": "1",
-        "result": "",
-        "winner": null,
-        "venue": "Comerica Park",
-        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
-      },
+      "live": null,
       "last": {
         "id": "401816905",
         "date": "2026-09-12T17:10Z",
@@ -97,23 +79,23 @@
         "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
       },
       "next": {
-        "id": "401816935",
-        "date": "2026-09-14T23:07Z",
-        "name": "Detroit Tigers at Toronto Blue Jays",
-        "shortName": "DET @ TOR",
-        "opponent": "Blue Jays",
-        "opponentAbbr": "TOR",
-        "homeAway": "away",
+        "id": "401816920",
+        "date": "2026-09-13T16:10Z",
+        "name": "Colorado Rockies at Detroit Tigers",
+        "shortName": "COL @ DET",
+        "opponent": "Rockies",
+        "opponentAbbr": "COL",
+        "homeAway": "home",
         "state": "pre",
         "completed": false,
         "cancelled": false,
-        "status": "9/14 - 7:07 PM EDT",
+        "status": "9/13 - 12:10 PM EDT",
         "ourScore": "0",
         "opponentScore": "0",
         "result": "",
         "winner": null,
-        "venue": "Rogers Centre",
-        "broadcast": "MLB.TV, Tigers.TV, Sportsnet, TVA"
+        "venue": "Comerica Park",
+        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
       },
       "season": "",
       "record": "",
@@ -248,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-13T16:38:27.114580Z"
+  "updatedAt": "2026-09-13T16:51:37.325457Z"
 }
