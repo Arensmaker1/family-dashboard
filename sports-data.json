@@ -19,8 +19,8 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "9:55 - OT",
-        "ourScore": "24",
+        "status": "2:00 - OT",
+        "ourScore": "31",
         "opponentScore": "24",
         "result": "",
         "winner": null,
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-13T20:38:21.924342Z"
+  "updatedAt": "2026-09-13T20:49:51.353128Z"
 }
