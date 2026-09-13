@@ -49,7 +49,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 7
+      "eventCount": 6
     },
     {
       "key": "tigers",
@@ -99,7 +99,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 34
+      "eventCount": 33
     },
     {
       "key": "pistons",
@@ -230,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-12T23:23:17.514838Z"
+  "updatedAt": "2026-09-13T00:12:33.718144Z"
 }
