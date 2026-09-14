@@ -2015,6 +2015,8 @@ function sportsMiniTileHtml_(t){
  if(t.live){
   let score=(t.live.ourScore!==""&&t.live.opponentScore!=="")?` • ${t.live.ourScore}-${t.live.opponentScore}`:"";
   line=`LIVE • ${sportsOpponentText_(t.live)}${score}${t.live.status?` • ${t.live.status}`:""}`;
+ }else if(t.last&&(()=>{try{let y=new Date();y.setDate(y.getDate()-1);return key(new Date(t.last.date))===key(y)}catch(_){return false}})()){
+  line=`Yesterday: ${sportsResultText_(t.last)} • ${sportsWhen_(t.last.date)}`;
  }else if(t.next){
   line=`Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}${t.next.broadcast?` • ${t.next.broadcast}`:""}`;
  }else if(t.last){
@@ -2059,6 +2061,7 @@ function morningSportsHtml_(){
     let emoji = t.emoji || "🏟️";
     let line = "";
     if(t.live) line = `LIVE • ${sportsOpponentText_(t.live)}${t.live.ourScore!==""&&t.live.opponentScore!==""?` • ${t.live.ourScore}-${t.live.opponentScore}`:""}`;
+    else if(t.last&&(()=>{try{let y=new Date();y.setDate(y.getDate()-1);return key(new Date(t.last.date))===key(y)}catch(_){return false}})()) line = `Yesterday: ${sportsResultText_(t.last)} • ${sportsWhen_(t.last.date)}`;
     else if(t.next) line = `Next: ${sportsOpponentText_(t.next)} • ${sportsWhen_(t.next.date)}${t.next.broadcast?` • ${t.next.broadcast}`:""}`;
     else if(t.last) line = `Last: ${sportsResultText_(t.last)} • ${sportsWhen_(t.last.date)}`;
     return `<div class="briefSportsTile"><div class="briefSportsTeam">${esc(emoji)} ${esc(name)}</div><div class="briefSportsLine">${esc(line||"No recent game data.")}</div></div>`;
@@ -3086,7 +3089,7 @@ function renderWeekGroceries(){
   let b=document.getElementById("recipeBody");if(!WG.ok){b.innerHTML=`<div class="rEmpty"><h2>🛒 Week Groceries</h2>${esc(WG.message||"No loaded week found.")}<br><br><span class="rMeta">Load a week from Meal Plans or Plan My Week first, then come back here.</span></div>`;return}
   let warn=(WG.missing||[]).length?`<div class="wgWarning">Couldn’t match ${WG.missing.length} meal${WG.missing.length===1?"":"s"}: ${esc(WG.missing.join(", "))}</div>`:"";
   let counts=groceryIntelligenceCounts_();
-  b.innerHTML=`<div class="wgPanel"><div class="wgTopline"><div><h2 style="margin:0 0 4px">🛒 Grocery + Pantry Intelligence</h2><div class="rMeta">Built from ${WG.recipes.length} recipe${WG.recipes.length===1?"":"s"}. The Kitchen Brain now checks your pantry and current shared list before deciding what you actually need.</div></div><div class="wgActions"><button class="btn primaryAction wgSendAction" onclick="sendWeekGroceries()">🛒 Add Selected to Shared Groceries</button><button class="btn primaryAction" onclick="smartSelectWeekGroceries()">🧠 Smart Select</button><button class="btn" onclick="setWeekGroceryChecks(true)">Select All</button><button class="btn" onclick="setWeekGroceryChecks(false)">None</button><button class="btn" onclick="showGroceryGenTab()">↻ Rebuild</button></div></div>${warn}<div class="giStrip"><div class="giStat giNeed"><b>${counts.need}</b>Need to buy</div><div class="giStat giListed"><b>${counts.listed}</b>Already on list</div><div class="giStat giPantry"><b>${counts.pantry}</b>Always stocked</div></div><div class="wgSummary">🧠 <b>Smart Select</b> checks only true shopping needs. Pantry items and ingredients already sitting on Shared Groceries stay unchecked automatically.</div><div id="wgList" class="wgList">${WG.items.map((x,i)=>weekGroceryRow_(x,i)).join("")}</div><div class="wgSend"><button class="btn primaryAction wgSendAction" onclick="sendWeekGroceries()">🛒 Add Selected to Shared Groceries</button><span id="wgSendStatus" class="rMeta">Existing grocery items are protected from duplicate adds.</span></div></div>`;
+  b.innerHTML=`<div class="wgPanel"><div class="wgTopline"><div><h2 style="margin:0 0 4px">🛒 Grocery + Pantry Intelligence</h2><div class="rMeta">Built from ${WG.recipes.length} recipe${WG.recipes.length===1?"":"s"}. The Kitchen Brain now checks your pantry and current shared list before deciding what you actually need.</div></div><div class="wgActions"><button class="btn" onclick="closeRecipes();openGroceries()">🛍️ Open Groceries</button><button class="btn primaryAction wgSendAction" onclick="sendWeekGroceries()">🛒 Add Selected to Shared Groceries</button><button class="btn primaryAction" onclick="smartSelectWeekGroceries()">🧠 Smart Select</button><button class="btn" onclick="setWeekGroceryChecks(true)">Select All</button><button class="btn" onclick="setWeekGroceryChecks(false)">None</button><button class="btn" onclick="showGroceryGenTab()">↻ Rebuild</button></div></div>${warn}<div class="giStrip"><div class="giStat giNeed"><b>${counts.need}</b>Need to buy</div><div class="giStat giListed"><b>${counts.listed}</b>Already on list</div><div class="giStat giPantry"><b>${counts.pantry}</b>Always stocked</div></div><div class="wgSummary">🧠 <b>Purchase Brain</b> translates recipe math into store math — pounds of meat, bottles of spices/sauces, produce units, cans, cartons, bags, and packages — while Smart Select leaves pantry/current-list items unchecked.</div><div id="wgList" class="wgList">${WG.items.map((x,i)=>weekGroceryRow_(x,i)).join("")}</div><div class="wgSend"><button class="btn primaryAction wgSendAction" onclick="sendWeekGroceries()">🛒 Add Selected to Shared Groceries</button><span id="wgSendStatus" class="rMeta">Existing grocery items are protected from duplicate adds.</span></div></div>`;
 }
 function groceryIntelligenceCounts_(){let c={need:0,listed:0,pantry:0};(WG.items||[]).forEach(x=>{if(x.stocked)c.pantry++;else if(x.alreadyOnList)c.listed++;else c.need++});return c}
 function groceryStatusHtml_(x){if(x.stocked)return '<span class="wgStatus pantry">🥫 ALWAYS STOCKED</span>';if(x.alreadyOnList)return '<span class="wgStatus listed">🛒 ALREADY ON LIST</span>';return '<span class="wgStatus need">● NEED TO BUY</span>'}
@@ -3136,6 +3139,17 @@ function groceryCanonicalName_(name){
    [/\b(cream cheese)\b/,"cream cheese"],
    [/\b(sour cream)\b/,"sour cream"],
    [/\b(greek yogurt)\b/,"greek yogurt"],
+   [/\b(boneless skinless chicken breasts?|boneless skinless chicken|chicken breasts?|chicken breast|chicken)\b/,"chicken breast"],
+   [/\b(black peppercorns|ground black pepper|black pepper)\b/,"black pepper"],
+   [/\b(cayenne pepper|ground cayenne|cayenne)\b/,"cayenne pepper"],
+   [/\b(ground cinnamon|cinnamon)\b/,"cinnamon"],
+   [/\b(crushed red pepper flakes|red pepper flakes|crushed red pepper)\b/,"crushed red pepper"],
+   [/\b(dried oregano|oregano)\b/,"oregano"],
+   [/\b(chili powder)\b/,"chili powder"],
+   [/\b(extra virgin olive oil|extra-virgin olive oil|olive oil)\b/,"olive oil"],
+   [/\b(apple cider vinegar)\b/,"apple cider vinegar"],
+   [/\b(dijon mustard)\b/,"dijon mustard"],
+   [/\b(buffalo sauce)\b/,"buffalo sauce"],
    [/\b(roasted red peppers|roasted red pepper)\b/,"roasted red pepper"],
    [/\b(roma tomatoes|roma tomato)\b/,"roma tomatoes"],
    [/\b(sweet potatoes|sweet potato)\b/,"sweet potato"],
@@ -3187,6 +3201,17 @@ function groceryShoppingUnit_(name,rows){
  if(["mozzarella","cheddar","pepper jack","parmesan"].includes(name))return pkg(Math.max(8,oz+lbs*16+cups*4+packages*8),8,"package");
  if(name==="cream cheese")return pkg(Math.max(8,oz+lbs*16+cups*8+packages*8),8,"package");
  if(name==="sour cream"||name==="greek yogurt")return pkg(Math.max(16,oz+lbs*16+cups*8),16,"container");
+
+ // Meat is bought by pounds, not recipe-sized ounces.
+ if(name==="chicken breast"){
+   let needLbs=lbs+oz/16;
+   return `${Math.max(1,Math.ceil(needLbs-.0001))} lb${Math.max(1,Math.ceil(needLbs-.0001))===1?"":"s"}`;
+ }
+
+ // Pantry seasonings and bottled condiments are purchase units, not teaspoons.
+ let cat=String(rows[0]?.category||"").toLowerCase();
+ if(cat.includes("spice")||cat.includes("seasoning"))return "1 bottle";
+ if(cat.includes("oil")||cat.includes("sauce")||cat.includes("condiment"))return "1 bottle";
  return "";
 }
 function groceryPurchaseRule_(name,rows){
@@ -3233,9 +3258,11 @@ function smartCartConsolidate_(items){
  (items||[]).forEach((x,i)=>{
    let canon=groceryCanonicalName_(x.name);
    if(!canon){out.push(x);return}
-   let key=`${canon}|${String(x.category||"Other").toLowerCase()}`;
+   let smartCategory=x.category||"Other";
+   if(["lime","lemon"].includes(canon))smartCategory="Produce";
+   let key=`${canon}|${String(smartCategory).toLowerCase()}`;
    if(!groups.has(key))groups.set(key,[]);
-   groups.get(key).push({...x,_smartIndex:i,_canon:canon});
+   groups.get(key).push({...x,category:smartCategory,_smartIndex:i,_canon:canon});
  });
  groups.forEach(rows=>{
    let base={...rows[0]},canon=rows[0]._canon,
