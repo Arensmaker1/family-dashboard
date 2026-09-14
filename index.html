@@ -3119,6 +3119,23 @@ function groceryCanonicalName_(name){
    [/\b(berries|mixed berries|berry)\b/,"berries"],
    [/\b(celery stalks|celery stalk|celery)\b/,"celery"],
    [/\b(spinach leaves|baby spinach|spinach)\b/,"spinach"],
+   [/\b(broccoli florets|broccoli crowns|broccoli crown|broccoli)\b/,"broccoli"],
+   [/\b(cauliflower florets|cauliflower)\b/,"cauliflower"],
+   [/\b(carrots|carrot)\b/,"carrots"],
+   [/\b(mushrooms|mushroom)\b/,"mushrooms"],
+   [/\b(blueberries|blueberry)\b/,"blueberries"],
+   [/\b(strawberries|strawberry)\b/,"strawberries"],
+   [/\b(blackberries|blackberry)\b/,"blackberries"],
+   [/\b(chicken broth|chicken stock)\b/,"chicken broth"],
+   [/\b(beef broth|beef stock)\b/,"beef broth"],
+   [/\b(vegetable broth|vegetable stock|veggie broth|veggie stock)\b/,"vegetable broth"],
+   [/\b(mozzarella cheese|mozzarella)\b/,"mozzarella"],
+   [/\b(cheddar cheese|cheddar)\b/,"cheddar"],
+   [/\b(parmesan cheese|parmesan)\b/,"parmesan"],
+   [/\b(pepper jack cheese|pepper jack)\b/,"pepper jack"],
+   [/\b(cream cheese)\b/,"cream cheese"],
+   [/\b(sour cream)\b/,"sour cream"],
+   [/\b(greek yogurt)\b/,"greek yogurt"],
    [/\b(roasted red peppers|roasted red pepper)\b/,"roasted red pepper"],
    [/\b(roma tomatoes|roma tomato)\b/,"roma tomatoes"],
    [/\b(sweet potatoes|sweet potato)\b/,"sweet potato"],
@@ -3135,88 +3152,43 @@ function groceryCanonicalName_(name){
 }
 function groceryQtyParts_(x){
  let raw=`${x.qty||""} ${x.name||""}`.toLowerCase().replace(/[–—]/g,"-");
- let m=raw.match(/(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?|[½⅓⅔¼¾⅛])\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|cans?|cloves?|bunch(?:es)?|lbs?|pounds?|oz|ounces?|whole)?\b/);
+ let m=raw.match(/(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?|[½⅓⅔¼¾⅛])\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|cans?|cloves?|bunch(?:es)?|bags?|packages?|pkgs?|cartons?|pints?|quarts?|gallons?|lbs?|pounds?|oz|ounces?|whole)?\b/);
  if(!m)return {n:0,u:""};
- return {n:groceryFrac_(m[1]),u:(m[2]||"").replace(/s$/,"")};
+ let u=(m[2]||"").toLowerCase().replace(/^tablespoons?$/,"tbsp").replace(/^teaspoons?$/,"tsp").replace(/^ounces?$/,"oz").replace(/^pounds?$/,"lb").replace(/^cups?$/,"cup").replace(/^cans?$/,"can").replace(/^cloves?$/,"clove").replace(/^bunch(?:es)?$/,"bunch").replace(/^bags?$/,"bag").replace(/^(packages?|pkgs?)$/,"package").replace(/^cartons?$/,"carton").replace(/^pints?$/,"pint").replace(/^quarts?$/,"quart").replace(/^gallons?$/,"gallon").replace(/^whole$/,"");
+ return {n:groceryFrac_(m[1]),u};
 }
-
 function groceryShoppingUnit_(name,rows){
- let parts=rows.map(groceryQtyParts_),
-     sum=u=>parts.filter(p=>p.u===u).reduce((a,p)=>a+p.n,0),
-     bare=parts.filter(p=>p.n&&!p.u).reduce((a,p)=>a+p.n,0),
-     cups=sum("cup"),oz=sum("oz"),lbs=sum("lb")+sum("pound"),
-     cans=sum("can"),bunches=sum("bunch");
-
- const countText=(n,label,plural=label+"s")=>`${Math.max(1,Math.ceil(n))} ${Math.max(1,Math.ceil(n))===1?label:plural}`;
-
- // Produce should read like a shopping list, not a recipe.
- if(name==="celery"){
-   let n=Math.max(1,Math.ceil((cups||0)/4));
-   return countText(n,"bunch");
- }
- if(name==="raspberries"||name==="berries"){
-   let c=cups+(oz?oz/5:0);
-   if(c<=2)return "1 pint";
-   if(c<=4)return "1 quart";
-   return countText(c/4,"quart");
- }
- if(name==="cherry tomatoes"){
-   let c=cups+(oz?oz/8:0);
-   if(c<=2)return "1 pint";
-   if(c<=4)return "1 quart";
-   return countText(c/4,"quart");
- }
- if(name==="cucumber"){
-   return countText((bare||0)+(cups?cups/1.5:0),"cucumber");
- }
- if(name==="cilantro"||name==="parsley"){
-   return countText((bunches||0)+(cups?cups/2:0),"bunch");
- }
- if(name==="jalapeno"){
-   return countText(Math.max(1,bare||rows.length),"jalapeño");
- }
- if(name==="red onion"||name==="yellow onion"||name==="white onion"){
-   return countText(Math.max(1,bare||rows.length),name,name+"s");
- }
- if(name==="garlic"){
-   let cloves=sum("clove");
-   return countText(cloves?cloves/10:Math.max(1,bare||1),"bulb");
- }
- if(name==="lime"||name==="lemon"){
-   let tbsp=sum("tbsp"),n=(bare||0)+tbsp/2+cups*8;
-   return countText(Math.max(1,n),name);
- }
- if(name==="spinach"){
-   let bags=parts.filter(p=>p.u==="bag").reduce((a,p)=>a+p.n,0);
-   if(bags)return countText(bags,"bag");
-   return "1 bag";
- }
- if(name==="roasted red pepper"){
-   return "1 jar";
- }
- if(name==="roma tomatoes"){
-   let n=bare+(lbs?lbs*4:0)+(cups?cups/0.75:0);
-   return countText(Math.max(1,n),"Roma tomato","Roma tomatoes");
- }
- if(name==="tomato"){
-   let n=bare+(lbs?lbs*3:0)+(cups?cups/0.75:0);
-   return countText(Math.max(1,n),"tomato");
- }
- if(name==="potato"){
-   let n=bare+(oz?oz/8:0)+(lbs?lbs*2:0)+(cups?cups/1.5:0);
-   return countText(Math.max(1,n),"potato");
- }
- if(name==="sweet potato"){
-   let n=bare+(oz?oz/8:0)+(lbs?lbs*2:0)+(cups?cups/1.5:0);
-   return countText(Math.max(1,n),"sweet potato","sweet potatoes");
- }
- if(name==="crushed tomatoes"){
-   let count=Math.max(1,Math.ceil(cans+cups/1.75+oz/14.5));
-   return countText(count,"can");
- }
+ let p=rows.map(groceryQtyParts_),sum=u=>p.filter(x=>x.u===u).reduce((a,x)=>a+x.n,0),
+ bare=p.filter(x=>x.n&&!x.u).reduce((a,x)=>a+x.n,0),cups=sum("cup"),oz=sum("oz"),lbs=sum("lb"),
+ cans=sum("can"),bunches=sum("bunch"),bags=sum("bag"),packages=sum("package"),pints=sum("pint"),quarts=sum("quart"),cartons=sum("carton");
+ const ceil=n=>Math.max(1,Math.ceil(n-.0001)),ct=(n,s,pl=s+"s")=>`${ceil(n)} ${ceil(n)===1?s:pl}`,pkg=(need,size,label="package")=>ct(Math.max(1,need/size),label);
+ if(name==="celery")return ct(Math.max(1,bunches+cups/4),"bunch");
+ if(["cilantro","parsley"].includes(name))return ct(Math.max(1,bunches+cups/2),"bunch");
+ if(["raspberries","berries","blueberries","blackberries"].includes(name)){let c=cups+pints*2+quarts*4+oz/5;if(c<=2)return"1 pint";if(c<=4)return"1 quart";return ct(c/4,"quart")}
+ if(name==="strawberries")return ct(Math.max(1,lbs+cups/3+oz/16),"lb","lbs");
+ if(name==="cherry tomatoes"){let c=cups+pints*2+quarts*4+oz/8;if(c<=2)return"1 pint";if(c<=4)return"1 quart";return ct(c/4,"quart")}
+ if(name==="cucumber")return ct(bare+cups/1.5,"cucumber");
+ if(name==="jalapeno")return ct(Math.max(1,bare||rows.length),"jalapeño");
+ if(["red onion","yellow onion","white onion"].includes(name))return ct(Math.max(1,bare+cups/1.5),name,name+"s");
+ if(name==="garlic")return ct(sum("clove")?sum("clove")/10:Math.max(1,bare||1),"bulb");
+ if(name==="lime"||name==="lemon")return ct(Math.max(1,bare+sum("tbsp")/2+cups*8),name);
+ if(name==="spinach"){if(bags)return ct(bags,"bag");return pkg(Math.max(5,oz+cups*1.05+lbs*16),5,"bag")}
+ if(name==="broccoli")return ct(Math.max(1,bare+cups/3+lbs),"head");
+ if(name==="cauliflower")return ct(Math.max(1,bare+cups/4+lbs),"head");
+ if(name==="carrots")return ct(Math.max(1,lbs+cups/3+oz/16),"lb","lbs");
+ if(name==="mushrooms")return pkg(Math.max(8,oz+lbs*16+cups*3),8,"package");
+ if(name==="roasted red pepper")return"1 jar";
+ if(name==="roma tomatoes")return ct(Math.max(1,bare+lbs*4+cups/.75),"Roma tomato","Roma tomatoes");
+ if(name==="tomato")return ct(Math.max(1,bare+lbs*3+cups/.75),"tomato");
+ if(name==="potato")return ct(Math.max(1,bare+oz/8+lbs*2+cups/1.5),"potato");
+ if(name==="sweet potato")return ct(Math.max(1,bare+oz/8+lbs*2+cups/1.5),"sweet potato","sweet potatoes");
+ if(name==="crushed tomatoes")return ct(Math.max(1,cans+cups/1.75+oz/14.5),"can");
+ if(["chicken broth","beef broth","vegetable broth"].includes(name))return ct(Math.max(1,(oz+cups*8+quarts*32+cartons*32)/32),"carton");
+ if(["mozzarella","cheddar","pepper jack","parmesan"].includes(name))return pkg(Math.max(8,oz+lbs*16+cups*4+packages*8),8,"package");
+ if(name==="cream cheese")return pkg(Math.max(8,oz+lbs*16+cups*8+packages*8),8,"package");
+ if(name==="sour cream"||name==="greek yogurt")return pkg(Math.max(16,oz+lbs*16+cups*8),16,"container");
  return "";
 }
-
 function groceryPurchaseRule_(name,rows){
  let shopping=groceryShoppingUnit_(name,rows);if(shopping)return shopping;
  let parts=rows.map(groceryQtyParts_),sum=u=>parts.filter(p=>p.u===u).reduce((a,p)=>a+p.n,0),all=parts.reduce((a,p)=>a+p.n,0);
