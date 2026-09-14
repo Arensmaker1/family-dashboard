@@ -3150,6 +3150,30 @@ function groceryCanonicalName_(name){
    [/\b(apple cider vinegar)\b/,"apple cider vinegar"],
    [/\b(dijon mustard)\b/,"dijon mustard"],
    [/\b(buffalo sauce)\b/,"buffalo sauce"],
+   [/\b(romaine lettuce|romaine hearts|romaine)\b/,"romaine lettuce"],
+   [/\b(iceberg lettuce|iceberg)\b/,"iceberg lettuce"],
+   [/\b(lettuce\/cabbage|lettuce and cabbage|lettuce cabbage)\b/,"lettuce/cabbage mix"],
+   [/\b(lettuce|greens)\b/,"lettuce"],
+   [/\b(poblano\/onion|poblano and onion|poblano onion)\b/,"poblano + onion"],
+   [/\b(peppers\/onions|pepper\/onion|peppers and onions|pepper and onion|peppers onions|pepper onions)\b/,"peppers + onions"],
+   [/\b(black beans|black bean)\b/,"black beans"],
+   [/\b(cannellini beans|cannellini bean|white beans|white bean)\b/,"cannellini beans"],
+   [/\b(chickpeas|chickpea|garbanzo beans|garbanzo bean)\b/,"chickpeas"],
+   [/\b(cooked lentils|lentils|lentil)\b/,"lentils"],
+   [/\b(oats|rolled oats|old fashioned oats|old-fashioned oats)\b/,"oats"],
+   [/\b(chia seeds|chia seed|chia)\b/,"chia seeds"],
+   [/\b(ground flaxseed|ground flax seed|ground flax|flaxseed|flax seed)\b/,"ground flax"],
+   [/\b(high fiber cereal|high-fiber cereal)\b/,"high-fiber cereal"],
+   [/\b(cooked rice|rice)\b/,"rice"],
+   [/\b(fresh ginger|ginger)\b/,"fresh ginger"],
+   [/\b(harissa paste|harissa)\b/,"harissa paste"],
+   [/\b(garam masala)\b/,"garam masala"],
+   [/\b(ancho chiles?|dried ancho chiles?)\b/,"ancho chiles"],
+   [/\b(guajillo chiles?|dried guajillo chiles?)\b/,"guajillo chiles"],
+   [/\b(pickled jalapeños|pickled jalapenos)\b/,"pickled jalapeños"],
+   [/\b(pickled onions|pickled onion)\b/,"pickled onions"],
+   [/\b(pepperoncini|pepperoncinis)\b/,"pepperoncini"],
+   [/\b(chickpea falafel|falafel)\b/,"falafel"],
    [/\b(roasted red peppers|roasted red pepper)\b/,"roasted red pepper"],
    [/\b(roma tomatoes|roma tomato)\b/,"roma tomatoes"],
    [/\b(sweet potatoes|sweet potato)\b/,"sweet potato"],
@@ -3212,6 +3236,39 @@ function groceryShoppingUnit_(name,rows){
  let cat=String(rows[0]?.category||"").toLowerCase();
  if(cat.includes("spice")||cat.includes("seasoning"))return "1 bottle";
  if(cat.includes("oil")||cat.includes("sauce")||cat.includes("condiment"))return "1 bottle";
+
+ // Leafy produce and mixed vegetable components: show actual things to buy.
+ if(["lettuce","romaine lettuce","iceberg lettuce"].includes(name))return "1 head";
+ if(name==="lettuce/cabbage mix")return "1 bag slaw/lettuce mix";
+ if(name==="poblano + onion"){
+   let total=Math.max(1,cups||bare||1);
+   return total<=1 ? "1 poblano + 1 onion" : "2 poblanos + 1 onion";
+ }
+ if(name==="peppers + onions"){
+   let total=Math.max(1,cups||bare||1);
+   return total<=1.5 ? "2 bell peppers + 1 onion" : "3 bell peppers + 2 onions";
+ }
+
+ // Pantry Intelligence: convert cooking measures into normal shelf purchases.
+ if(["black beans","cannellini beans","chickpeas"].includes(name)){
+   let totalCups=cups+cans*1.5;
+   return ct(Math.max(1,totalCups/1.5),"can");
+ }
+ if(name==="lentils"){
+   let totalCups=cups||0;
+   return totalCups<=1.5 ? "1 bag" : ct(totalCups/6,"bag");
+ }
+ if(name==="oats")return "1 container";
+ if(name==="chia seeds"||name==="ground flax")return "1 bag";
+ if(name==="high-fiber cereal")return "1 box";
+ if(name==="rice")return "1 bag";
+ if(name==="fresh ginger")return "1 knob";
+ if(name==="harissa paste")return "1 jar";
+ if(name==="garam masala")return "1 bottle";
+ if(name==="ancho chiles"||name==="guajillo chiles")return "1 bag";
+ if(name==="pickled jalapeños"||name==="pickled onions"||name==="pepperoncini")return "1 jar";
+ if(name==="falafel")return "1 package";
+
  return "";
 }
 function groceryPurchaseRule_(name,rows){
@@ -3251,15 +3308,18 @@ function groceryPurchaseRule_(name,rows){
  return rows.map(x=>String(x.qty||"").trim()).filter(Boolean).join(" + ");
 }
 function groceryVague_(name){
- return /\b(crunchy vegetables|mixed vegetables|vegetables|greens|herbs|seasoning|spices|toppings|garnish|pepper\/onion\/poblano|sweet potato \+ black beans)\b/i.test(name||"");
+ return /\b(crunchy vegetables|mixed vegetables|vegetables|herbs|seasoning|spices|toppings|garnish|sweet potato \+ black beans)\b/i.test(name||"");
 }
 function smartCartConsolidate_(items){
  let groups=new Map(),out=[];
  (items||[]).forEach((x,i)=>{
+   let rawName=String(x.name||"").toLowerCase().trim();
+   if(/^(?:ice[- ]?cold\s+)?water\b/.test(rawName)||/\bwater\s*$/.test(rawName))return;
    let canon=groceryCanonicalName_(x.name);
    if(!canon){out.push(x);return}
    let smartCategory=x.category||"Other";
-   if(["lime","lemon"].includes(canon))smartCategory="Produce";
+   if(["lime","lemon","lettuce","romaine lettuce","iceberg lettuce","lettuce/cabbage mix","poblano + onion","peppers + onions","fresh ginger"].includes(canon))smartCategory="Produce";
+   if(["black beans","cannellini beans","chickpeas","lentils","oats","chia seeds","ground flax","high-fiber cereal","rice","ancho chiles","guajillo chiles","harissa paste","pickled jalapeños","pickled onions","pepperoncini","falafel"].includes(canon))smartCategory="Pantry";
    let key=`${canon}|${String(smartCategory).toLowerCase()}`;
    if(!groups.has(key))groups.set(key,[]);
    groups.get(key).push({...x,category:smartCategory,_smartIndex:i,_canon:canon});
