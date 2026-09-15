@@ -69,7 +69,7 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Bot 2nd",
+        "status": "Top 4th",
         "ourScore": "0",
         "opponentScore": "2",
         "result": "",
@@ -117,7 +117,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 32
+      "eventCount": 31
     },
     {
       "key": "pistons",
@@ -149,7 +149,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 4
+      "eventCount": 5
     },
     {
       "key": "redwings",
@@ -181,7 +181,7 @@
       },
       "season": "",
       "record": "",
-      "eventCount": 12
+      "eventCount": 13
     },
     {
       "key": "notredame",
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-14T23:50:21.870151Z"
+  "updatedAt": "2026-09-15T00:12:02.384636Z"
 }
