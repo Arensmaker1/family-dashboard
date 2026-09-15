@@ -58,7 +58,8 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": true,
-      "live": {
+      "live": null,
+      "last": {
         "id": "401816935",
         "date": "2026-09-14T23:07Z",
         "name": "Detroit Tigers at Toronto Blue Jays",
@@ -66,35 +67,16 @@
         "opponent": "Blue Jays",
         "opponentAbbr": "TOR",
         "homeAway": "away",
-        "state": "in",
-        "completed": false,
-        "cancelled": false,
-        "status": "Top 9th",
-        "ourScore": "6",
-        "opponentScore": "5",
-        "result": "",
-        "winner": null,
-        "venue": "Rogers Centre",
-        "broadcast": "MLB.TV, Tigers.TV, Sportsnet, TVA"
-      },
-      "last": {
-        "id": "401816920",
-        "date": "2026-09-13T16:10Z",
-        "name": "Colorado Rockies at Detroit Tigers",
-        "shortName": "COL @ DET",
-        "opponent": "Rockies",
-        "opponentAbbr": "COL",
-        "homeAway": "home",
         "state": "post",
         "completed": true,
         "cancelled": false,
         "status": "Final",
-        "ourScore": "8",
-        "opponentScore": "1",
+        "ourScore": "6",
+        "opponentScore": "5",
         "result": "W",
         "winner": true,
-        "venue": "Comerica Park",
-        "broadcast": "MLB.TV, Rockies.TV, Tigers.TV"
+        "venue": "Rogers Centre",
+        "broadcast": "MLB.TV, Tigers.TV, Sportsnet, TVA"
       },
       "next": {
         "id": "401816946",
@@ -248,5 +230,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-15T03:45:22.286487Z"
+  "updatedAt": "2026-09-15T03:57:12.061187Z"
 }
