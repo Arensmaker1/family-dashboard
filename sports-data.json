@@ -69,9 +69,9 @@
         "state": "in",
         "completed": false,
         "cancelled": false,
-        "status": "Top 7th",
-        "ourScore": "4",
-        "opponentScore": "2",
+        "status": "Mid 8th",
+        "ourScore": "5",
+        "opponentScore": "5",
         "result": "",
         "winner": null,
         "venue": "Rogers Centre",
@@ -248,5 +248,5 @@
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
   "message": "",
-  "updatedAt": "2026-09-15T01:44:48.979634Z"
+  "updatedAt": "2026-09-15T01:57:35.185999Z"
 }
