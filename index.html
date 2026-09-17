@@ -1165,7 +1165,7 @@ let familyDashboardAuthExpired_ = false;
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
 <footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
-<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.0</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
+<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.1</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
  <div class="v4top">
   <button class="v4back" onclick="closeDay()">← Back to Month</button>
@@ -2810,7 +2810,7 @@ function ensureVoiceListening_(){
    let t=document.getElementById("voiceTranscript");if(t)t.textContent=text?`“${text}”`:"";
    setVoiceState_("✓ Heard");
    let handled=false;for(let candidate of alts){if(handleVoiceCommand_(candidate)){handled=true;break}}
-   if(!handled)speak_("I didn't recognize that command.");
+   if(!handled)speak_("I heard you, but I’m not sure what you want me to do with that yet.");
  };
  r.onerror=e=>{
    let code=e?.error||"unknown";
@@ -2954,13 +2954,36 @@ function voiceHelp_(){
 function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
 function voiceStartTimer_(m){m=Number(m)||1;primeTimerAudio();kitchenTimers.push({name:nextTimerName(),end:Date.now()+m*60000,ringing:false});saveKitchenTimers();updateTimers();speak_(`${m} minute timer started.`)}
 function voiceStopTimer_(){if(!kitchenTimers.length){speak_("There are no active timers.");return}let i=kitchenTimers.findIndex(x=>x.ringing);if(i<0){let now=Date.now(),best=Infinity;i=0;kitchenTimers.forEach((x,n)=>{let left=Math.max(0,(Number(x.end)||0)-now);if(left<best){best=left;i=n}})}let name=kitchenTimers[i]?.name||"Timer";kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();updateTimers();updateCookTimerBar();speak_(`${name} stopped.`)}
+function normalizeVoiceCommand_(raw){
+ let n=String(raw||"").toLowerCase().replace(/[’‘]/g,"'").replace(/[?.!,;:]/g," ").replace(/\s+/g," ").trim();
+ const swaps=[
+  [/\bwhat's\b/g,"what is"],[/\bwho's\b/g,"who is"],[/\bwhen's\b/g,"when is"],[/\bwhere's\b/g,"where is"],[/\bhow's\b/g,"how is"],
+  [/\bthat's\b/g,"that is"],[/\bi'm\b/g,"i am"],[/\bwe're\b/g,"we are"],[/\bdon't\b/g,"do not"],[/\bdoesn't\b/g,"does not"],
+  [/\bcan you\b/g,""],[/\bcould you\b/g,""],[/\bwould you\b/g,""],[/\bwill you\b/g,""],[/\bplease\b/g,""],
+  [/\bhey norad\b/g,""],[/\bnorad\b/g,""],[/\bfor me\b/g,""],[/\breal quick\b/g,""],
+  [/\bwhats\b/g,"what is"],[/\bgonna\b/g,"going to"],[/\bwanna\b/g,"want to"],
+  [/\bshopping list\b/g,"grocery list"],[/\bshopping\b/g,"groceries"],[/\bfridge list\b/g,"grocery list"],
+  [/\btonights\b/g,"tonight"],[/\btomorrows\b/g,"tomorrow"]
+ ];
+ swaps.forEach(([r,v])=>n=n.replace(r,v));
+ return n.replace(/\s+/g," ").trim();
+}
+function voiceCommandDebug_(raw,n,handled){
+ try{
+  let log=JSON.parse(localStorage.getItem("noradVoice21Log")||"[]");
+  log.unshift({at:new Date().toISOString(),raw:String(raw||""),normalized:n,handled:!!handled});
+  localStorage.setItem("noradVoice21Log",JSON.stringify(log.slice(0,40)));
+ }catch(_){}
+}
 function handleVoiceCommand_(raw){
- let s=String(raw||"").toLowerCase().replace(/[’‘]/g,"'").replace(/[?.!,]/g,"").replace(/\s+/g," ").trim(),m;
- let n=s.replace(/what's/g,"what is").replace(/that's/g,"that is").replace(/i'm/g,"i am").replace(/\bplease\b/g,"").replace(/\s+/g," ").trim();
+ let n=normalizeVoiceCommand_(raw),m,handled=true;
+ const done=()=>{voiceCommandDebug_(raw,n,true);return true};
 
- if(/stop listening|voice off|microphone off|stop voice/.test(n)){stopVoiceSession(false);return true}
+ if(/stop listening|voice off|microphone off|stop voice|quit listening|turn off (?:the )?mic/.test(n)){stopVoiceSession(false);return done()}
 
- if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return true}
+ if((m=n.match(/(?:timer|countdown) (?:for )?(\d+(?:\.\d+)?) (?:minute|min)s?/))){voiceStartTimer_(m[1]);return done()}
+ if((m=n.match(/(?:give me|i need|do) (?:a )?(\d+(?:\.\d+)?) (?:minute|min)s? (?:timer|countdown)/))){voiceStartTimer_(m[1]);return done()}
+ if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:minute|min) timer/))){voiceStartTimer_(m[1]);return done()}
  if((m=n.match(/(?:start|set)(?: a)? (\d+(?:\.\d+)?) (?:hour|hr) timer/))){voiceStartTimer_(Number(m[1])*60);return true}
  if(/^(?:stop|cancel|end)(?: the| a)? timer$|^(?:stop|silence|dismiss)(?: the)? alarm$/.test(n)){voiceStopTimer_();return true}
 
@@ -2973,10 +2996,10 @@ function handleVoiceCommand_(raw){
  if(/open (?:the )?(?:maintenance|maintenance center|household reminders)/.test(n)){openHouseholdReminders();speak_("Opening the Maintenance Center.");return true}
  if(/go home|open (?:the )?dashboard/.test(n)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return true}
 
- if(/what can i say|voice help|what can you do|help me with voice/.test(n)){speak_(voiceHelp_());return true}
+ if(/what can i say|voice help|what can you do|help me with voice|how do i use voice|voice commands/.test(n)){speak_(voiceHelp_());return done()}
 
- if(/mark (?:the )?(?:dinner|kitchen)(?: as)? ready|mark dinner already|dinner(?: is)? ready|kitchen ready|we(?:'re| are)? good for dinner|we have everything for dinner|i have everything for dinner|got everything for dinner/.test(n)){voiceMarkDinnerReady_(new Date());return true}
- if(/do i need anything for dinner|anything needed for dinner|what do i need for dinner|check dinner groceries|dinner grocery check|are we good for dinner/.test(n)){speak_(voiceDinnerNeed_(new Date()));return true}
+ if(/mark (?:the )?(?:dinner|kitchen)(?: as)? ready|mark dinner already|dinner(?: is)? ready|kitchen ready|we are good for dinner|we have everything for dinner|i have everything for dinner|got everything for dinner|dinner is covered|we are set for dinner|all set for dinner/.test(n)){voiceMarkDinnerReady_(new Date());return done()}
+ if(/do i need anything for dinner|anything needed for dinner|what do i need for dinner|check dinner groceries|dinner grocery check|are we good for dinner|do we have everything for dinner|am i missing anything for dinner|anything i need to grab for dinner/.test(n)){speak_(voiceDinnerNeed_(new Date()));return done()}
 
  if((m=n.match(/(?:pick|set|make|choose|put) (.+?) (?:for|as) dinner (today|tonight|tomorrow)$/))){
    let d=new Date();if(m[2]==="tomorrow")d.setDate(d.getDate()+1);voiceAssignDinnerRecipe_(m[1],d);return true
@@ -2985,17 +3008,18 @@ function handleVoiceCommand_(raw){
    let when=m[2]||(/tomorrow/.test(n)?"tomorrow":"tonight"),d=new Date();if(when==="tomorrow")d.setDate(d.getDate()+1);voiceAssignDinnerRecipe_(m[1],d);return true
  }
 
- if((m=n.match(/add (.+?) to (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return true}
+ if((m=n.match(/(?:add|put|throw) (.+?) (?:to|on|onto) (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return done()}
+ if((m=n.match(/(?:we need|i need|we are out of|we're out of|out of) (.+)$/))){voiceAddGroceries_(m[1]);return done()}
 
- if(/what is going on today|what do we have today|what is happening today|tell me about today|give me (?:the )?(?:morning )?brief|morning brief$|household report|norad report/.test(n)){speak_(voiceBriefIntel_());return true}
- if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return true}
- if(/what is for dinner tomorrow|what are we having tomorrow|dinner tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceDinnerForDate_(d));return true}
- if(/what is for dinner|what are we having for dinner|dinner tonight/.test(n)){speak_(voiceDinner_());return true}
- if(/what chores are left|chores left|what chores do we have|what are the chores/.test(n)){speak_(voiceChoresForDate_(new Date()));return true}
+ if(/what is going on today|what do we have today|what is happening today|tell me about today|what is the plan today|what have we got today|what do i need to know today|how is today looking|give me (?:the )?(?:morning )?brief|morning brief$|household report|report$/.test(n)){speak_(voiceBriefIntel_());return done()}
+ if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow|what is the plan tomorrow|how is tomorrow looking|what have we got tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return done()}
+ if(/what is for dinner tomorrow|what are we having tomorrow|what are we eating tomorrow|what are we making tomorrow|what is dinner tomorrow|dinner tomorrow|what did we plan for tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceDinnerForDate_(d));return done()}
+ if(/what is for dinner|what are we having for dinner|what are we eating|what are we making|what is dinner|dinner tonight|what did we plan for dinner|what did i plan for dinner/.test(n)){speak_(voiceDinner_());return done()}
+ if(/what chores are left|chores left|what chores do we have|what are the chores|who has chores|what do we have left to do|what still needs to get done/.test(n)){speak_(voiceChoresForDate_(new Date()));return done()}
  if(/anything due around the house|what is due around the house|household reminders|any reminders due|maintenance due/.test(n)){speak_(voiceReminderSummary_());return true}
- if(/what is the weather|weather today|how is the weather|temperature outside/.test(n)){speak_(voiceWeather_());return true}
- if(/when (?:do|does|are|is) .*?(?: play| playing| game)|who do .* play|next .* game|.* next game/.test(n)){voiceSportsSpeakNext_(n);return true}
- if(/did .* win|how did .* do|what was the .* score|score of the .* game/.test(n)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(n)));return true}
+ if(/what is the weather|weather today|how is the weather|temperature outside|what is it like outside|how is it outside|is it cold outside|is it hot outside/.test(n)){speak_(voiceWeather_());return done()}
+ if(/when (?:do|does|are|is) .*?(?: play| playing| game)|who (?:do|does|are) .* play|who are .* playing|next .* game|.* next game|when is the .* game|when are the .* on|when do the .* go/.test(n)){voiceSportsSpeakNext_(n);return done()}
+ if(/did .* win|how did .* do|how did .* play|what was the .* score|score of the .* game|who won the .* game|what happened with the .*/.test(n)){speak_(voiceSportsLast_(voiceSportsTeamFromText_(n)));return done()}
  if(/calendar today|schedule today|what is on the calendar today/.test(n)){speak_(voiceEvents_(new Date(),true));return true}
  if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
  if(cookRecipe){
@@ -3023,6 +3047,7 @@ function handleVoiceCommand_(raw){
    if((m=n.match(/how much (.+)$/))){let x=(cookRecipe.ingredients||[]).filter(i=>i.toLowerCase().includes(m[1])).slice(0,3);speak_(x.length?x.join(". "):`I couldn't find ${m[1]} in this recipe.`);return true}
    if(/start (?:the )?timer|timer for (?:this|the current) step/.test(n)){let x=cookTimerMatches_(current());if(x.length){startCookTimer(x[0].minutes);speak_(`${x[0].label} timer started.`)}else speak_("I don't see a timer in this step.");return true}
  }
+ voiceCommandDebug_(raw,n,false);
  return false
 }
 
