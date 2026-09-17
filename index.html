@@ -2775,6 +2775,7 @@ function browserSpeakFallback_(text,seq){
 }
 async function speak_(text){
  text=String(text||"").trim();if(!text)return;
+ if(!/BLEEPING|Holy BLEEP/.test(text))text=lewisPersonality_(text);
  const seq=++noradVoiceSeq_;
  voiceSpeaking=true;
  // Never let the dashboard hear its own voice.
@@ -2903,7 +2904,19 @@ function voiceSportsLast_(team){if(SPORTS.loading)return"Sports are still loadin
 function voiceSportsToday_(d){if(!SPORTS.ok)return"";let k=key(d),games=(SPORTS.teams||[]).filter(t=>t.next&&key(new Date(t.next.date))===k);if(!games.length)return"";return games.map(t=>`${t.shortName||t.name} play ${sportsOpponentText_(t.next)} at ${new Date(t.next.date).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`).join(". ")+"."}
 function voiceOverview_(d){let isToday=same(d,new Date()),parts=[];let events=futureEventsForDay_(d,isToday);if(events.length)parts.push(`${events.length} calendar item${events.length===1?"":"s"}: ${events.slice(0,4).map(e=>(e.allDay?"all day ":time(e)+" ")+e.title).join(", ")}`);else parts.push("the calendar is clear");let c=choresFor(d),left=c.filter(x=>!S.completions[key(d)+"-"+x.i]);if(c.length)parts.push(left.length?`${left.length} chore${left.length===1?"":"s"} left`:"all chores are done");let dinner=dinnerForDate_(d);parts.push(dinner?`${isToday?"dinner":"tomorrow's dinner"} is ${dinner.name}`:`no dinner is planned ${isToday?"tonight":"tomorrow"}`);if(isToday){let due=activeBriefReminders_().filter(r=>daysUntil_(r.nextDue)<=0);if(due.length)parts.push(`${due.length} household reminder${due.length===1?" is":"s are"} due`)}let sports=voiceSportsToday_(d);let intro=isToday?"Today":"Tomorrow";return `${intro}, ${parts.join(". ")}.${sports?" "+sports:""}`}
 
-/* V9.13.0 — Voice 2.0 / Kitchen NORAD intelligence */
+/* V9.17.0 — Lewis personality + short conversational memory + championship protocol */
+const LEWIS_PERSONALITY_RATE_=0.20;
+let voiceContext_={action:"",at:0};
+function voiceRemember_(action){voiceContext_={action:String(action||""),at:Date.now()}}
+function voiceContextIs_(action,maxAgeMs=120000){return voiceContext_.action===action&&(Date.now()-voiceContext_.at)<=maxAgeMs}
+function lewisPersonalityEligible_(text){let t=String(text||"").toLowerCase();if(!t||t.length<12)return false;if(/error|failed|couldn't|cannot|permission|blocked|expired|timer (?:done|started|stopped)|opening |voice session ended/.test(t))return false;return true}
+function lewisPersonality_(text){text=String(text||"").trim();if(!lewisPersonalityEligible_(text)||Math.random()>=LEWIS_PERSONALITY_RATE_)return text;const remarks=[" Civilization endures."," A remarkably civilized arrangement."," Against all reasonable expectations, everything appears to be under control."," I shall pretend this level of organization was inevitable."," Splendid. Try not to ruin it."," Efficient. Disturbingly so."," Kitchen NORAD remains, somehow, ahead of the situation."," I am choosing to regard this as progress."];return text+remarks[Math.floor(Math.random()*remarks.length)]}
+function championshipSpec_(team){const specs={lions:{label:"Super Bowl",match:/\bsuper bowl\b/i},tigers:{label:"World Series",match:/\bworld series\b/i},pistons:{label:"NBA championship",match:/\b(?:nba finals|nba championship|world champions?)\b/i},redwings:{label:"Stanley Cup",match:/\b(?:stanley cup|stanley cup final|nhl championship)\b/i},notredame:{label:"national championship",match:/\b(?:national championship|cfp championship|college football playoff national championship)\b/i},msubasketball:{label:"national championship",match:/\b(?:national championship|ncaa (?:men'?s )?(?:basketball )?championship|final four championship)\b/i}};return specs[String(team?.key||"")]||null}
+function championshipWinForTeam_(team){if(!team||!team.last||team.last.result!=="W")return null;const spec=championshipSpec_(team);if(!spec)return null;const g=team.last,blob=[g.name,g.shortName,g.status,g.detail,g.seasonType,g.notes,g.headline,g.stage].filter(Boolean).join(" ");if(!spec.match.test(blob))return null;return {team,spec,game:g,id:String(g.id||g.date||blob)}}
+function pendingChampionshipWin_(){const teams=(SPORTS&&Array.isArray(SPORTS.teams))?SPORTS.teams:[];for(const t of teams){const hit=championshipWinForTeam_(t);if(!hit)continue;const storageKey=`familyDashboardLewisChampionship:${t.key}:${hit.id}`;try{if(localStorage.getItem(storageKey)==="1")continue}catch(_){}hit.storageKey=storageKey;return hit}return null}
+function lewisChampionshipBreakdown_(hit){if(!hit)return"";const t=hit.team,g=hit.game,name=t.shortName||t.name||"They",opp=g.opponent||"their opponent",a=g.ourScore,b=g.opponentScore;let score=(a!==""&&b!==""&&a!=null&&b!=null)?` ${a} to ${b}`:"";let history=t.key==="notredame"?"After wandering through the doldrums, they have somehow dragged themselves all the way back to the summit.":"They have actually gone and done it.";try{localStorage.setItem(hit.storageKey,"1")}catch(_){}return ` Holy BLEEP. ${name} have won the BLEEPING ${hit.spec.label}! I genuinely cannot believe it. ${history} They defeated ${opp}${score} for the title. Absolutely stunning. Brilliant. Completely ridiculous. Someone check whether reality is functioning properly. Ahem. Right. Back to household operations.`}
+
+/* V9.17.0 — Voice 2.2 / Kitchen NORAD intelligence */
 function voiceBriefIntel_(){
  let now=new Date(),intel=morningIntelHeadline_(),events=futureEventsForDay_(now,true).sort((a,b)=>new Date(a.start)-new Date(b.start)),
      cs=morningChoreStats_(),d=morningDinnerData_(),rs=reminderStats2_(),parts=[];
@@ -2923,7 +2936,9 @@ function voiceBriefIntel_(){
  if(rs.overdue)parts.push(`${rs.overdue} maintenance item${rs.overdue===1?" is":"s are"} overdue`);
  else if(rs.today)parts.push(`${rs.today} maintenance item${rs.today===1?" is":"s are"} due today`);
  let sports=voiceSportsToday_(now);
- return `Kitchen NORAD report. ${parts.join(". ")}.${sports?" "+sports:""}`;
+ let report=`Kitchen NORAD report. ${parts.join(". ")}.${sports?" "+sports:""}`;
+ let championship=pendingChampionshipWin_();if(championship)report+=lewisChampionshipBreakdown_(championship);
+ return report;
 }
 function voiceDinnerNeed_(d){
  let dinner=dinnerForDate_(d);
@@ -2989,7 +3004,7 @@ function voiceHelp_(){
  return "You can ask what's going on today, what's for dinner, do I need anything for dinner, mark dinner ready, pick a recipe for dinner tomorrow, what's due around the house, when the Lions play, add items to groceries, start a timer, or open the morning brief.";
 }
 
-function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
+function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;voiceRemember_("groceries");speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
 function voiceStartTimer_(m){m=Number(m)||1;primeTimerAudio();kitchenTimers.push({name:nextTimerName(),end:Date.now()+m*60000,ringing:false});saveKitchenTimers();updateTimers();speak_(`${m} minute timer started.`)}
 function voiceStopTimer_(){if(!kitchenTimers.length){speak_("There are no active timers.");return}let i=kitchenTimers.findIndex(x=>x.ringing);if(i<0){let now=Date.now(),best=Infinity;i=0;kitchenTimers.forEach((x,n)=>{let left=Math.max(0,(Number(x.end)||0)-now);if(left<best){best=left;i=n}})}let name=kitchenTimers[i]?.name||"Timer";kitchenTimers.splice(i,1);saveKitchenTimers();syncTimerAlarmLoop();updateTimers();updateCookTimerBar();speak_(`${name} stopped.`)}
 function normalizeVoiceCommand_(raw){
@@ -3018,6 +3033,9 @@ function handleVoiceCommand_(raw){
  const done=()=>{voiceCommandDebug_(raw,n,true);return true};
 
  if(/stop listening|voice off|microphone off|stop voice|quit listening|turn off (?:the )?mic/.test(n)){stopVoiceSession(false);return done()}
+
+ // Short conversational memory: continue the last grocery action for two minutes.
+ if(voiceContextIs_("groceries") && ((m=n.match(/^(?:add\s+)?(.+?)\s+too$/)) || (m=n.match(/^(?:and|also|plus)\s+(.+)$/)))){voiceAddGroceries_(m[1]);return done()}
 
  if((m=n.match(/(?:timer|countdown) (?:for )?(\d+(?:\.\d+)?) (?:minute|min)s?/))){voiceStartTimer_(m[1]);return done()}
  if((m=n.match(/(?:give me|i need|do) (?:a )?(\d+(?:\.\d+)?) (?:minute|min)s? (?:timer|countdown)/))){voiceStartTimer_(m[1]);return done()}
