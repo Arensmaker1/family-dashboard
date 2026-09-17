@@ -2757,16 +2757,54 @@ function openPlanFlavor(id,backRecipeId,fromLibrary){let x=(MP.flavors||[]).find
 
 let voiceRecognition=null,voiceSessionEnd=0,voiceSessionUnlimited=false,voiceSessionTick=null,voiceWanted=false,voiceSpeaking=false;
 function voiceSupported_(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
-function speak_(text){text=String(text||"").trim();if(!text||!("speechSynthesis" in window))return;
- voiceSpeaking=true;
- // Never let the dashboard hear its own voice.
- try{if(voiceRecognition){voiceRecognition.abort();voiceRecognition=null}}catch(e){}
+const NORAD_VOICE_URL="http://127.0.0.1:8765/speak";
+let noradVoiceAudio_=null,noradVoiceSeq_=0;
+function voiceFinish_(seq){
+ if(seq!==noradVoiceSeq_)return;
+ voiceSpeaking=false;
+ if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250);
+}
+function browserSpeakFallback_(text,seq){
+ if(!("speechSynthesis" in window)){voiceFinish_(seq);return}
  try{
    speechSynthesis.cancel();
    let u=new SpeechSynthesisUtterance(text);u.rate=1;
-   let finish=()=>{voiceSpeaking=false;if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250)};
+   let finish=()=>voiceFinish_(seq);
    u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);
- }catch(e){voiceSpeaking=false;if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250)}
+ }catch(e){voiceFinish_(seq)}
+}
+async function speak_(text){
+ text=String(text||"").trim();if(!text)return;
+ const seq=++noradVoiceSeq_;
+ voiceSpeaking=true;
+ // Never let the dashboard hear its own voice.
+ try{if(voiceRecognition){voiceRecognition.abort();voiceRecognition=null}}catch(e){}
+ try{speechSynthesis?.cancel()}catch(e){}
+ try{
+   if(noradVoiceAudio_){try{noradVoiceAudio_.pause();noradVoiceAudio_.src=""}catch(e){}noradVoiceAudio_=null}
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),20000);
+   const r=await fetch(NORAD_VOICE_URL,{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({text}),
+     signal:controller.signal,
+     cache:"no-store"
+   });
+   clearTimeout(timeout);
+   if(seq!==noradVoiceSeq_)return;
+   if(!r.ok)throw new Error("Local voice HTTP "+r.status);
+   const blob=await r.blob();
+   if(!blob.size)throw new Error("Local voice returned empty audio");
+   const url=URL.createObjectURL(blob);
+   const a=new Audio(url);noradVoiceAudio_=a;
+   const finish=()=>{try{URL.revokeObjectURL(url)}catch(e){}if(noradVoiceAudio_===a)noradVoiceAudio_=null;voiceFinish_(seq)};
+   a.onended=finish;
+   a.onerror=()=>{try{URL.revokeObjectURL(url)}catch(e){}if(noradVoiceAudio_===a)noradVoiceAudio_=null;browserSpeakFallback_(text,seq)};
+   await a.play();
+ }catch(e){
+   if(seq===noradVoiceSeq_)browserSpeakFallback_(text,seq);
+ }
 }
 function openVoiceControl(){toggleVoiceListening_()}
 function toggleVoiceListening_(){
