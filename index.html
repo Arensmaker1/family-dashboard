@@ -1165,7 +1165,7 @@ let familyDashboardAuthExpired_ = false;
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
 <footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
-<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.1</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
+<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.3</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
  <div class="v4top">
   <button class="v4back" onclick="closeDay()">← Back to Month</button>
@@ -3070,8 +3070,68 @@ function voiceAssignDinnerRecipe_(query,d){
  };
  if(!R.loaded||!MP.loaded)ensureDinnerData_(run);else run();
 }
+
+/* V9.18.0 — Lewis Household Intelligence */
+function voiceGroceryCount_(){return (G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked).length:null}
+function voiceChorePeople_(d){
+ let out={};choresFor(d).forEach(x=>{if(S.completions[key(d)+"-"+x.i])return;let who=String(x.who||"Unassigned").trim()||"Unassigned";out[who]=(out[who]||0)+1});return out;
+}
+function voiceChoresForPerson_(name,d=new Date()){
+ let q=String(name||"").trim().toLowerCase(),rows=choresFor(d).filter(x=>!S.completions[key(d)+"-"+x.i]&&String(x.who||"").trim().toLowerCase()===q);
+ let display=choresFor(d).find(x=>String(x.who||"").trim().toLowerCase()===q)?.who||name;
+ if(!rows.length)return `${display} has no chores left today.`;
+ return `${display} has ${rows.length} chore${rows.length===1?"":"s"} left: ${rows.slice(0,8).map(x=>x.name).join(", ")}.`;
+}
+function voiceWhoHasChores_(){
+ let people=voiceChorePeople_(new Date()),rows=Object.entries(people).filter(([,n])=>n>0);
+ if(!rows.length)return "Everybody is clear. There are no chores left today.";
+ return rows.map(([who,n])=>`${who} has ${n}`).join(", ")+` chore${rows.reduce((a,x)=>a+x[1],0)===1?"":"s"} remaining in total.`;
+}
+function householdIntelSnapshot_(){
+ let now=new Date(),events=futureEventsForDay_(now,true).sort((a,b)=>new Date(a.start)-new Date(b.start)),cs=morningChoreStats_(),d=morningDinnerData_(),rs=reminderStats2_(),g=voiceGroceryCount_();
+ return {now,events,cs,d,rs,g,weather:voiceWeather_(),sports:voiceSportsToday_(now)};
+}
+function householdReadinessCode_(x){
+ let issues=(x.rs.overdue||0)+(x.rs.today||0)+(x.cs.left||0)+(x.d?.dinner?0:1)+(x.d?.need?.missing||0);
+ if((x.rs.overdue||0)>0)return "Household readiness is elevated. Maintenance has entered the chat.";
+ if((x.d?.need?.missing||0)>0)return "DEFCON DINNER is mildly elevated. Dinner ingredients deserve attention.";
+ if((x.cs.left||0)>=5)return "Chore threat level: unnecessarily ambitious.";
+ if(issues===0)return "Household systems nominal.";
+ return "Household systems are mostly nominal.";
+}
+function voiceHouseStatus_(){
+ let x=householdIntelSnapshot_(),p=[];
+ if(x.cs.total)p.push(x.cs.left?`${x.cs.left} chore${x.cs.left===1?"":"s"} remain`:"chores are complete");
+ if(!x.d?.dinner)p.push("dinner is not planned");
+ else if(x.d.ready)p.push(`${x.d.dinner.name} is Kitchen Ready`);
+ else if(x.d.need?.missing>0)p.push(`${x.d.need.missing} dinner ingredient${x.d.need.missing===1?"":"s"} should be checked`);
+ else p.push(`dinner is ${x.d.dinner.name}`);
+ if(x.rs.overdue)p.push(`${x.rs.overdue} maintenance item${x.rs.overdue===1?" is":"s are"} overdue`);
+ else if(x.rs.today)p.push(`${x.rs.today} maintenance item${x.rs.today===1?" is":"s are"} due today`);
+ if(x.g!=null&&x.g>0)p.push(`${x.g} grocery item${x.g===1?"":"s"} remain on the list`);
+ let opener=(x.rs.overdue||x.d?.need?.missing>0||x.cs.left>=5)?"Not entirely.":"Yes. We're in decent shape.";
+ return `${opener} ${p.join(". ")}. ${householdReadinessCode_(x)}`;
+}
+function voiceNeedToKnow_(){
+ let x=householdIntelSnapshot_(),p=[];
+ if(x.events.length){let e=x.events[0];p.push(`Next on the calendar: ${e.allDay?"all day ":time(e)+" "}${e.title}`)}
+ if(x.rs.overdue)p.push(`${x.rs.overdue} maintenance item${x.rs.overdue===1?" is":"s are"} overdue`);
+ else if(x.rs.today)p.push(`${x.rs.today} maintenance item${x.rs.today===1?" is":"s are"} due today`);
+ if(x.d?.dinner){if(x.d.ready)p.push(`Dinner is ${x.d.dinner.name}, and Kitchen Ready is cleared`);else if(x.d.need?.missing>0)p.push(`Dinner is ${x.d.dinner.name}; ${x.d.need.missing} ingredient${x.d.need.missing===1?"":"s"} should be checked`);else p.push(`Dinner is ${x.d.dinner.name}`)}else p.push("Dinner is not planned yet");
+ if(x.cs.left)p.push(`${x.cs.left} chore${x.cs.left===1?"":"s"} remain`);
+ if(x.sports)p.push(x.sports.replace(/\.$/,""));
+ if(!p.length)return "Nothing urgent. Household systems nominal.";
+ return `Here's what matters. ${p.slice(0,5).join(". ")}.`;
+}
+function voiceBeforeLeaving_(){
+ let x=householdIntelSnapshot_(),p=[x.weather];
+ if(x.events.length){let e=x.events[0];p.push(`Your next calendar item is ${e.allDay?"all day ":time(e)+" "}${e.title}`)}
+ if(x.g!=null&&x.g>0)p.push(`There are ${x.g} items still on the grocery list`);
+ if(x.rs.overdue||x.rs.today)p.push(`${x.rs.overdue+x.rs.today} household item${x.rs.overdue+x.rs.today===1?"":"s"} need attention today`);
+ return `Before you head out: ${p.join(". ")}.`;
+}
 function voiceHelp_(){
- return "You can ask what's going on today, what's for dinner, do I need anything for dinner, mark dinner ready, pick a recipe for dinner tomorrow, what's due around the house, when the Lions play, add items to groceries, start a timer, or open the morning brief.";
+ return "You can ask what you need to know, are we good, who has chores left, what does someone have left, what to know before leaving, what is going on today, what is for dinner, check dinner groceries, mark dinner ready, ask about sports, add groceries, start a timer, or open the morning brief.";
 }
 
 function voiceAddGroceries_(raw){let a=raw.split(/\s*(?:,|\band\b)\s*/i).filter(Boolean).slice(0,8),left=a.length;if(!left)return;voiceRemember_("groceries");speak_(`Adding ${left} item${left===1?"":"s"} to groceries.`);a.forEach(n=>google.script.run.withSuccessHandler(g=>{G=g;if(--left===0&&document.getElementById("groceryOverlay")?.classList.contains("open"))renderGroceries()}).addGroceryItem(n,guessGroceryCategory(n),""))}
@@ -3136,6 +3196,14 @@ function handleVoiceCommand_(raw){
 
  if((m=n.match(/(?:add|put|throw) (.+?) (?:to|on|onto) (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return done()}
  if((m=n.match(/(?:we need|i need|we are out of|we're out of|out of) (.+)$/))){voiceAddGroceries_(m[1]);return done()}
+
+
+ // Household Intelligence: concise situational answers without opening another screen.
+ if(/anything i need to know|what do i need to know|what should i know|give me the important stuff|anything important|status report|house status/.test(n)){speak_(voiceNeedToKnow_());return done()}
+ if(/^(?:are we good|are we okay|are we all good|how are we looking|household status|systems check|status check)$/.test(n)){speak_(voiceHouseStatus_());return done()}
+ if(/who has chores|who has chores left|who still has chores|who has stuff left to do|is everybody done|is everyone done/.test(n)){speak_(voiceWhoHasChores_());return done()}
+ if((m=n.match(/what does ([a-z][a-z '\-]+?) have left(?: to do)?$/))||(m=n.match(/what chores does ([a-z][a-z '\-]+?) have(?: left)?$/))||(m=n.match(/does ([a-z][a-z '\-]+?) have (?:any )?chores left$/))){speak_(voiceChoresForPerson_(m[1]));return done()}
+ if(/what do i need before i leave|anything before i leave|before i head out|what should i know before i leave|departure check|leaving the house/.test(n)){speak_(voiceBeforeLeaving_());return done()}
 
  if(/what is going on today|what do we have going on today|what do we have today|what is happening today|what is happening around here today|tell me about today|what is the plan today|what have we got today|what do i need to know today|how is today looking|what is on (?:the )?schedule today|what is on tap today|give me (?:the )?(?:morning )?brief|give me (?:today(?:\x27s)?|the) rundown|read (?:me )?(?:the )?(?:morning )?brief|read (?:me )?(?:today(?:\x27s)?|the) (?:brief|rundown)|brief me(?: on today)?|morning brief$|household report|report$/.test(n)){speak_(voiceBriefIntel_());return done()}
  if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow|what is the plan tomorrow|how is tomorrow looking|what have we got tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return done()}
