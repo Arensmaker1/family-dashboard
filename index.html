@@ -3071,7 +3071,7 @@ function voiceAssignDinnerRecipe_(query,d){
  if(!R.loaded||!MP.loaded)ensureDinnerData_(run);else run();
 }
 
-/* V9.18.0 — Lewis Household Intelligence */
+/* V9.18.1 — Lewis Household Intelligence + Field Test Intent Router Fixes */
 function voiceGroceryCount_(){return (G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked).length:null}
 function voiceChorePeople_(d){
  let out={};choresFor(d).forEach(x=>{if(S.completions[key(d)+"-"+x.i])return;let who=String(x.who||"Unassigned").trim()||"Unassigned";out[who]=(out[who]||0)+1});return out;
@@ -3124,11 +3124,39 @@ function voiceNeedToKnow_(){
  return `Here's what matters. ${p.slice(0,5).join(". ")}.`;
 }
 function voiceBeforeLeaving_(){
- let x=householdIntelSnapshot_(),p=[x.weather];
+ let x=householdIntelSnapshot_(),p=[];
+ let today=key(new Date()),wi=W?.daily?.time?.indexOf(today)??-1,rain=wi>=0?Number(W.daily?.precipitation_probability_max?.[wi]||0):null;
+ if(rain!=null&&rain>=50)p.push(`Grab an umbrella. Today\'s precipitation chance is ${Math.round(rain)} percent`);else if(rain!=null&&rain>=30)p.push(`An umbrella would not hurt. Today\'s precipitation chance is ${Math.round(rain)} percent`);else p.push(x.weather);
  if(x.events.length){let e=x.events[0];p.push(`Your next calendar item is ${e.allDay?"all day ":time(e)+" "}${e.title}`)}
  if(x.g!=null&&x.g>0)p.push(`There are ${x.g} items still on the grocery list`);
  if(x.rs.overdue||x.rs.today)p.push(`${x.rs.overdue+x.rs.today} household item${x.rs.overdue+x.rs.today===1?"":"s"} need attention today`);
  return `Before you head out: ${p.join(". ")}.`;
+}
+function voiceGroceryList_(){
+ let rows=(G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked):[];
+ if(!rows.length)return "The grocery list is clear.";
+ let names=rows.slice(0,10).map(x=>String(x.name||x.item||"").trim()).filter(Boolean);
+ let extra=Math.max(0,rows.length-names.length);
+ return `There ${rows.length===1?"is":"are"} ${rows.length} item${rows.length===1?"":"s"} on the grocery list: ${names.join(", ")}${extra?`, plus ${extra} more`:""}.`;
+}
+function voiceTimerRemaining_(){
+ if(!kitchenTimers.length)return "There are no active timers.";
+ let now=Date.now(),rows=kitchenTimers.map(x=>({name:x.name||"Timer",ms:Math.max(0,(Number(x.end)||0)-now)})).sort((a,b)=>a.ms-b.ms);
+ return rows.slice(0,4).map(x=>{let sec=Math.ceil(x.ms/1000);if(sec<60)return `${x.name} has ${sec} second${sec===1?"":"s"} left`;let min=Math.floor(sec/60),rem=sec%60;return `${x.name} has ${min} minute${min===1?"":"s"}${rem?` and ${rem} seconds`:""} left`}).join(". ")+".";
+}
+function voiceUmbrella_(){
+ if(!W||!W.ok)return "Weather data isn't available right now.";
+ let today=key(new Date()),i=W.daily?.time?.indexOf(today)??-1,rain=i>=0?Number(W.daily?.precipitation_probability_max?.[i]||0):0;
+ if(rain>=50)return `Yes. I would grab an umbrella. Today's precipitation chance is ${Math.round(rain)} percent.`;
+ if(rain>=30)return `It would not hurt to grab an umbrella. Today's precipitation chance is ${Math.round(rain)} percent.`;
+ return `You can probably leave the umbrella. Today's precipitation chance is ${Math.round(rain)} percent.`;
+}
+function voiceDinnerReadyStatus_(){
+ let d=morningDinnerData_();
+ if(!d?.dinner)return "Dinner is not planned yet.";
+ if(d.ready)return `Yes. ${d.dinner.name} is marked Kitchen Ready.`;
+ if(d.need?.missing>0)return `Not quite. Dinner is ${d.dinner.name}, and ${d.need.missing} ingredient${d.need.missing===1?" needs":"s need"} attention.`;
+ return `Dinner is ${d.dinner.name}. It is not marked Kitchen Ready yet, but I do not see a grocery warning.`;
 }
 function voiceHelp_(){
  return "You can ask what you need to know, are we good, who has chores left, what does someone have left, what to know before leaving, what is going on today, what is for dinner, check dinner groceries, mark dinner ready, ask about sports, add groceries, start a timer, or open the morning brief.";
@@ -3164,6 +3192,19 @@ function handleVoiceCommand_(raw){
 
  if(/stop listening|voice off|microphone off|stop voice|quit listening|turn off (?:the )?mic/.test(n)){stopVoiceSession(false);return done()}
 
+ // V9.18.1 — high-priority natural-language intents. Questions must never fall into grocery-add parsing.
+ if(/^(?:anything i need to know|what do i need to know|what should i know|give me the important stuff|anything important|status report|house status)$/.test(n)){speak_(voiceNeedToKnow_());return done()}
+ if(/^(?:are we good|are we okay|are we all good|how are we looking|how are things looking|household status|systems check|status check)$/.test(n)){speak_(voiceHouseStatus_());return done()}
+ if(/^(?:what is going on around here|what is happening around here|what is going on in the house|what is happening in the house)$/.test(n)){speak_(voiceNeedToKnow_());return done()}
+ if(/(?:before i leave|before i go|before heading out|before i head out|leave the house|head out|heading out)/.test(n)&&/(?:need|grab|know|anything|should)/.test(n)){speak_(voiceBeforeLeaving_());return done()}
+ if(/^(?:do i need|should i (?:take|bring|grab)|will i need) (?:an? )?umbrella(?: today)?$/.test(n)){speak_(voiceUmbrella_());return done()}
+ if(/^(?:are we ready for dinner|is dinner ready|are we set for dinner|are we good for dinner)$/.test(n)){speak_(voiceDinnerReadyStatus_());return done()}
+ if(/^(?:what is on|what do we have on|read|read me|tell me) (?:the )?(?:grocery list|groceries)$|^(?:what is|whats) on (?:the )?grocery list$/.test(n)){speak_(voiceGroceryList_());return done()}
+ if(/^(?:what sports are on today|what games are on today|any sports today|who plays today|what teams play today)$/.test(n)){let z=voiceSportsToday_(new Date());speak_(z||"None of the tracked teams play today.");return done()}
+ if(/^(?:how much time is left|how long is left|time left|timer status|how much longer on (?:the )?timer)$/.test(n)){speak_(voiceTimerRemaining_());return done()}
+ if(/^(?:close|exit|dismiss|done with) (?:the )?(?:groceries|grocery list)$/.test(n)){closeGroceries();speak_("Groceries closed.");return done()}
+ if(/^(?:close|exit|dismiss|done with) (?:the )?(?:sports|sports center)$/.test(n)){closeSportsCenter_();speak_("Sports center closed.");return done()}
+
  // Short conversational memory: continue the last grocery action for two minutes.
  if(voiceContextIs_("groceries") && ((m=n.match(/^(?:add\s+)?(.+?)\s+too$/)) || (m=n.match(/^(?:and|also|plus)\s+(.+)$/)))){voiceAddGroceries_(m[1]);return done()}
 
@@ -3195,15 +3236,15 @@ function handleVoiceCommand_(raw){
  }
 
  if((m=n.match(/(?:add|put|throw) (.+?) (?:to|on|onto) (?:the )?(?:grocery|groceries|grocery list)$/))){voiceAddGroceries_(m[1]);return done()}
- if((m=n.match(/(?:we need|i need|we are out of|we're out of|out of) (.+)$/))){voiceAddGroceries_(m[1]);return done()}
+ if((m=n.match(/^(?:we are out of|we're out of|out of) (.+)$/))){voiceAddGroceries_(m[1]);return done()}
 
 
  // Household Intelligence: concise situational answers without opening another screen.
- if(/anything i need to know|what do i need to know|what should i know|give me the important stuff|anything important|status report|house status/.test(n)){speak_(voiceNeedToKnow_());return done()}
+ if(/anything i need to know|what do i need to know|what should i know|give me the important stuff|anything important|status report|house status|what is going on around here|what is happening around here/.test(n)){speak_(voiceNeedToKnow_());return done()}
  if(/^(?:are we good|are we okay|are we all good|how are we looking|household status|systems check|status check)$/.test(n)){speak_(voiceHouseStatus_());return done()}
  if(/who has chores|who has chores left|who still has chores|who has stuff left to do|is everybody done|is everyone done/.test(n)){speak_(voiceWhoHasChores_());return done()}
  if((m=n.match(/what does ([a-z][a-z '\-]+?) have left(?: to do)?$/))||(m=n.match(/what chores does ([a-z][a-z '\-]+?) have(?: left)?$/))||(m=n.match(/does ([a-z][a-z '\-]+?) have (?:any )?chores left$/))){speak_(voiceChoresForPerson_(m[1]));return done()}
- if(/what do i need before i leave|anything before i leave|before i head out|what should i know before i leave|departure check|leaving the house/.test(n)){speak_(voiceBeforeLeaving_());return done()}
+ if(/what do i need before i leave|anything before i leave|before i go|before i head out|before heading out|should i grab anything before i go|anything i should know before heading out|departure check|leaving the house/.test(n)){speak_(voiceBeforeLeaving_());return done()}
 
  if(/what is going on today|what do we have going on today|what do we have today|what is happening today|what is happening around here today|tell me about today|what is the plan today|what have we got today|what do i need to know today|how is today looking|what is on (?:the )?schedule today|what is on tap today|give me (?:the )?(?:morning )?brief|give me (?:today(?:\x27s)?|the) rundown|read (?:me )?(?:the )?(?:morning )?brief|read (?:me )?(?:today(?:\x27s)?|the) (?:brief|rundown)|brief me(?: on today)?|morning brief$|household report|report$/.test(n)){speak_(voiceBriefIntel_());return done()}
  if(/what is going on tomorrow|what do we have tomorrow|what is happening tomorrow|tell me about tomorrow|what is the plan tomorrow|how is tomorrow looking|what have we got tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceOverview_(d));return done()}
