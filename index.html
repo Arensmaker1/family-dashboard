@@ -2764,6 +2764,72 @@ function voiceFinish_(seq){
  voiceSpeaking=false;
  if(voiceWanted&&!window._voiceQuick)setTimeout(ensureVoiceListening_,250);
 }
+// V9.17.2 — speech-only normalization. Display text remains untouched.
+function speechNormalize_(text){
+ let t=String(text||"");
+ // Team/school shorthand that commonly appears in ESPN/calendar strings.
+ const phrases=[
+   [/\bMichigan\s+St\.?\b/gi,"Michigan State"],
+   [/\bMich\.?\s+St\.?\b/gi,"Michigan State"],
+   [/\bMSU\b/g,"Michigan State"],
+   [/\bNotre\s+Dame\s+Fighting\s+Irish\b/gi,"Notre Dame"],
+   [/\bND\b/g,"Notre Dame"]
+ ];
+ phrases.forEach(([re,v])=>{t=t.replace(re,v)});
+ // Matchup and record shorthand.
+ t=t.replace(/\bvs\.?\b/gi,"versus")
+    .replace(/\bv\.?\s+(?=[A-Z])/g,"versus ")
+    .replace(/\bW\s*[-–]\s*(?=\d)/g,"win, ")
+    .replace(/\bL\s*[-–]\s*(?=\d)/g,"loss, ");
+ // Day/month abbreviations that can otherwise be read as letters or odd words.
+ const days={Mon:"Monday",Tue:"Tuesday",Tues:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Thur:"Thursday",Thurs:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
+ Object.entries(days).forEach(([k,v])=>{t=t.replace(new RegExp("\\b"+k+"\\.?\\b","g"),v)});
+ const months={Jan:"January",Feb:"February",Mar:"March",Apr:"April",Jun:"June",Jul:"July",Aug:"August",Sep:"September",Sept:"September",Oct:"October",Nov:"November",Dec:"December"};
+ Object.entries(months).forEach(([k,v])=>{t=t.replace(new RegExp("\\b"+k+"\\.?\\b","g"),v)});
+ // Make clock suffixes explicit for Kokoro and the browser fallback.
+ t=t.replace(/\bA\.?M\.?\b/gi,"A M").replace(/\bP\.?M\.?\b/gi,"P M");
+
+ // V9.17.2 — kitchen/recipe measurements. This is speech-only: recipes and UI text
+ // stay exactly as written. Longest/specific units come first to avoid collisions.
+ const kitchenUnits=[
+   [/\btbsp\.?\b/gi,"tablespoon"],[/\btbs\.?\b/gi,"tablespoon"],[/\bT\.(?=\s|$)/g,"tablespoon"],
+   [/\btsp\.?\b/gi,"teaspoon"],[/\btsps\.?\b/gi,"teaspoons"],
+   [/\bfl\.?\s*oz\.?\b/gi,"fluid ounce"],[/\boz\.?\b/gi,"ounce"],
+   [/\blbs?\.?\b/gi,"pound"],
+   [/\bqts?\.?\b/gi,"quart"],[/\bpts?\.?\b/gi,"pint"],
+   [/\bcups?\b/gi,"cup"],[/\bc\.(?=\s|$)/gi,"cup"],
+   [/\bml\b/gi,"milliliter"],[/\bL\b/g,"liter"],[/\bg\b/gi,"gram"],[/\bkg\b/gi,"kilogram"],
+   [/\bin\.?\b/gi,"inch"],[/\bmins?\.?\b/gi,"minute"],[/\bhrs?\.?\b/gi,"hour"]
+ ];
+ kitchenUnits.forEach(([re,v])=>{t=t.replace(re,v)});
+ // Pluralize common spoken units when the written quantity is clearly not one.
+ t=t.replace(/\b(\d+(?:\.\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s+\d+\/\d+|\d+\/\d+)\s+(tablespoon|teaspoon|fluid ounce|ounce|pound|quart|pint|cup|milliliter|liter|gram|kilogram|inch|minute|hour)\b/gi,(m,q,u)=>{
+   const one=/^(?:1|1\.0+)$/.test(q.trim()); return q+" "+u+(one?"":"s");
+ });
+ // Common recipe fractions sound much more natural when expanded before TTS.
+ const fractions=[["⅛","one eighth"],["¼","one quarter"],["⅓","one third"],["⅜","three eighths"],["½","one half"],["⅝","five eighths"],["⅔","two thirds"],["¾","three quarters"],["⅞","seven eighths"]];
+ fractions.forEach(([a,b])=>{t=t.split(a).join(b)});
+ t=t.replace(/\b(\d+)\s+(1\/2|1\/3|1\/4|2\/3|3\/4)\b/g,(m,w,f)=>w+" and "+({"1/2":"one half","1/3":"one third","1/4":"one quarter","2/3":"two thirds","3/4":"three quarters"}[f]||f));
+ t=t.replace(/\b(1\/8|1\/4|1\/3|3\/8|1\/2|5\/8|2\/3|3\/4|7\/8)\b/g,m=>({"1/8":"one eighth","1/4":"one quarter","1/3":"one third","3/8":"three eighths","1/2":"one half","5/8":"five eighths","2/3":"two thirds","3/4":"three quarters","7/8":"seven eighths"}[m]||m));
+ // Temperatures and common oven notation.
+ t=t.replace(/(\d{2,3})\s*°\s*F\b/gi,"$1 degrees Fahrenheit")
+    .replace(/(\d{2,3})\s*°\s*C\b/gi,"$1 degrees Celsius")
+    .replace(/(\d{2,3})\s*degrees?\s*F\b/gi,"$1 degrees Fahrenheit")
+    .replace(/(\d{2,3})\s*degrees?\s*C\b/gi,"$1 degrees Celsius");
+ // A few kitchen symbols/notations that TTS engines tend to mangle.
+ t=t.replace(/\bapprox\.?\b/gi,"approximately")
+    .replace(/\bw\//gi,"with ")
+    .replace(/\btemp\.?\b/gi,"temperature");
+
+ // Scores: only convert a bare numeric dash when it looks like a sports score,
+ // not dates or ordinary hyphenated prose.
+ t=t.replace(/\b(\d{1,3})\s*[-–]\s*(\d{1,3})\b/g,(m,a,b)=>{
+   const x=Number(a),y=Number(b);
+   return (x<=199&&y<=199)?`${a} to ${b}`:m;
+ });
+ // Clean punctuation/spacing introduced by source feeds without changing meaning.
+ return t.replace(/\s{2,}/g," ").replace(/\s+([,.!?;:])/g,"$1").trim();
+}
 function browserSpeakFallback_(text,seq){
  if(!("speechSynthesis" in window)){voiceFinish_(seq);return}
  try{
@@ -2776,6 +2842,7 @@ function browserSpeakFallback_(text,seq){
 async function speak_(text){
  text=String(text||"").trim();if(!text)return;
  if(!/BLEEPING|Holy BLEEP/.test(text))text=lewisPersonality_(text);
+ text=speechNormalize_(text);
  const seq=++noradVoiceSeq_;
  voiceSpeaking=true;
  // Never let the dashboard hear its own voice.
