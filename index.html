@@ -1010,10 +1010,16 @@ let familyDashboardAuthExpired_ = false;
         familyDashboardAutoRefreshInFlight_=false;
         if(notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())){
           fdCrashContext_("auth-auto-unavailable",reason||"existing-session");
-          if(reason==="startup"){
-            renderGoogleFallbackButton_();
-          }else{
-            showAuthBanner_("Google needs a quick confirmation to keep the dashboard connected.","Reconnect");
+          // A skipped/not-displayed One Tap prompt does NOT mean the dashboard is
+          // disconnected. Chrome may simply suppress the prompt while the current
+          // credential is still valid. Keep NORAD quiet until the token actually
+          // expires; at startup we still expose Google's normal Continue button.
+          if(reason==="startup") renderGoogleFallbackButton_();
+          else if(reason==="expiry"){
+            familyDashboardAuthExpired_=true;
+            familyDashboardIdToken="";
+            failExpiredQueue_();
+            showAuthBanner_("Google session paused — tap Reconnect to refresh dashboard data.","Reconnect");
           }
         }
       });
@@ -1022,7 +1028,12 @@ let familyDashboardAuthExpired_ = false;
       familyDashboardAutoRefreshInFlight_=false;
       fdCrashContext_("auth-auto-error",e?.message||String(e));
       if(reason==="startup") renderGoogleFallbackButton_();
-      else showAuthBanner_("Google needs a quick confirmation to keep the dashboard connected.","Reconnect");
+      else if(reason==="expiry"){
+        familyDashboardAuthExpired_=true;
+        familyDashboardIdToken="";
+        failExpiredQueue_();
+        showAuthBanner_("Google session paused — tap Reconnect to refresh dashboard data.","Reconnect");
+      }
       return false;
     }
   }
@@ -2139,28 +2150,21 @@ async function sportsFetchJson_(url,force,timeoutMs=4500){
 }
 async function sportsFetchTeamDirect_(cfg,force){
  let now=new Date(),events=[],data={};
-
- // College feeds behave differently from the pro scoreboards. ESPN's team-schedule
- // endpoint is much more reliable for Notre Dame and other independents, and it
- // gives us the full season in one request instead of depending on scoreboard groups.
- if(cfg.college){
-  let season=now.getFullYear();
-  if(cfg.league==="mens-college-basketball"&&now.getMonth()>=7)season+=1;
-  let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/teams/${encodeURIComponent(cfg.teamId)}/schedule?season=${season}`;
-  data=await sportsFetchJson_(url,force);
-  events=Array.isArray(data.events)?data.events:[];
- }else{
-  let from=new Date(now.getTime()-21*86400000),to=new Date(now.getTime()+35*86400000),range=`${sportsDirectDateKey_(from)}-${sportsDirectDateKey_(to)}`;
-  let params=new URLSearchParams({dates:range,limit:"1000"});
-  let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/scoreboard?${params.toString()}`;
-  data=await sportsFetchJson_(url,force);
-  events=Array.isArray(data.events)?data.events:[];
- }
+ // Hardened V9.15.2 path: use the team schedule endpoint for every league.
+ // The previous pro scoreboard request asked ESPN for a wide multi-week date
+ // range; ESPN can reject that request with HTTP 400 for every team at once.
+ // A team schedule is smaller, team-specific, and already contains the LAST/NEXT
+ // information Kitchen NORAD needs.
+ let season=now.getFullYear();
+ if((cfg.league==="mens-college-basketball"||cfg.league==="nba"||cfg.league==="nhl")&&now.getMonth()>=7)season+=1;
+ let url=`https://site.api.espn.com/apis/site/v2/sports/${encodeURIComponent(cfg.sport)}/${encodeURIComponent(cfg.league)}/teams/${encodeURIComponent(cfg.teamId)}/schedule?season=${season}`;
+ data=await sportsFetchJson_(url,force,6500);
+ events=Array.isArray(data.events)?data.events:[];
 
  let teamEvents=events.filter(e=>{let cs=e?.competitions?.[0]?.competitors||[];return cs.some(c=>String(c?.team?.id||"")===String(cfg.teamId)||String(c?.team?.abbreviation||"").toUpperCase()===String(cfg.abbr||"").toUpperCase())});
  let normalized=teamEvents.map(e=>sportsNormalizeEventDirect_(cfg,e)).filter(Boolean).sort((a,b)=>new Date(a.date)-new Date(b.date)),nowMs=Date.now();
  let live=normalized.find(e=>e.state==="in")||null,last=normalized.filter(e=>e.completed&&new Date(e.date).getTime()<=nowMs).sort((a,b)=>new Date(b.date)-new Date(a.date))[0]||null,next=normalized.find(e=>!e.completed&&e.state!=="in"&&new Date(e.date).getTime()>=nowMs-10800000&&!e.cancelled)||null;
- return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||data.season?.year||"",record:"",eventCount:normalized.length};
+ return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:true,live,last,next,season:data.season?.displayName||data.season?.year||String(season),record:"",eventCount:normalized.length};
 }
 function sportsReadDirectCache_(allowStale=false){
  try{
@@ -2178,54 +2182,55 @@ async function loadSports(force=false){
   SPORTS.loading=true;
   refreshSportsViews_();
 
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),6000);
-  let response;
+  let githubResult=null,githubError=null;
   try{
-   response=await fetch(SPORTS_JSON_URL+(force?("?v="+Date.now()):""),{
-    cache:"no-store",
-    headers:{Accept:"application/json"},
-    signal:controller.signal
-   });
-  }finally{
-   clearTimeout(timer);
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),6000);
+   let response;
+   try{
+    response=await fetch(SPORTS_JSON_URL+(force?("?v="+Date.now()):""),{cache:"no-store",headers:{Accept:"application/json"},signal:controller.signal});
+   }finally{clearTimeout(timer)}
+   if(!response.ok)throw new Error(`Sports JSON returned HTTP ${response.status}.`);
+   githubResult=await response.json();
+  }catch(err){githubError=err;console.warn("GitHub sports JSON unavailable; trying direct recovery",err)}
+
+  let githubTeams=Array.isArray(githubResult?.teams)?githubResult.teams:[];
+  let byKey=new Map(githubTeams.map(t=>[t.key,t]));
+  let updatedMs=Date.parse(githubResult?.updatedAt||"")||0;
+  let stale=!updatedMs || (Date.now()-updatedMs)>6*60*60*1000;
+  let needsRepair=force||stale||!githubTeams.length||SPORTS_DIRECT_TEAMS_.some(cfg=>!byKey.get(cfg.key)?.ok);
+
+  if(needsRepair){
+   let repaired=await Promise.all(SPORTS_DIRECT_TEAMS_.map(async cfg=>{
+    let existing=byKey.get(cfg.key);
+    try{return await sportsFetchTeamDirect_(cfg,force)}
+    catch(err){
+     console.warn(`Direct sports recovery failed for ${cfg.name}`,err);
+     if(existing?.ok)return existing;
+     return {key:cfg.key,name:cfg.name,shortName:cfg.shortName,emoji:cfg.emoji,league:cfg.league,ok:false,error:err?.message||String(err),live:null,last:null,next:null};
+    }
+   }));
+   let anyOk=repaired.some(t=>t.ok);
+   if(anyOk){
+    SPORTS={loading:false,ok:true,teams:repaired,updatedAt:new Date().toISOString(),source:"ESPN direct recovery",message:repaired.some(t=>!t.ok)?"Some sports feeds are temporarily unavailable.":""};
+    sportsWriteDirectCache_(SPORTS);
+    refreshSportsViews_();
+    return;
+   }
   }
 
-  if(!response.ok)throw new Error(`Sports JSON returned HTTP ${response.status}.`);
-  const result=await response.json();
-  const teams=Array.isArray(result?.teams)?result.teams:[];
-  if(!teams.length)throw new Error("Sports JSON returned no teams.");
-
-  SPORTS={
-   loading:false,
-   ok:true,
-   teams,
-   updatedAt:result.updatedAt||new Date().toISOString(),
-   source:result.source||"GitHub sports JSON",
-   message:result.message||""
-  };
-  sportsWriteDirectCache_(SPORTS);
+  if(githubTeams.length){
+   SPORTS={loading:false,ok:true,teams:githubTeams,updatedAt:githubResult.updatedAt||new Date().toISOString(),source:githubResult.source||"GitHub sports JSON",message:githubResult.message||""};
+   sportsWriteDirectCache_(SPORTS);
+  }else throw githubError||new Error("Sports JSON returned no teams.");
  }catch(err){
-  console.error("Direct sports JSON load failed",err);
+  console.error("Sports load failed",err);
   let cached=sportsReadDirectCache_(true);
-  if(cached&&cached.data){
-   SPORTS=cached.data;
-   SPORTS.loading=false;
-   SPORTS.message="Showing cached sports data.";
-  }else{
-   SPORTS={
-    loading:false,
-    ok:false,
-    teams:[],
-    updatedAt:new Date().toISOString(),
-    source:"GitHub sports JSON",
-    message:err?.message||String(err||"Sports unavailable.")
-   };
-  }
+  if(cached&&cached.data){SPORTS=cached.data;SPORTS.loading=false;SPORTS.message="Showing cached sports data."}
+  else SPORTS={loading:false,ok:false,teams:[],updatedAt:new Date().toISOString(),source:"Sports recovery",message:err?.message||String(err||"Sports unavailable.")};
  }
  refreshSportsViews_();
 }
-
 function morningBriefAutoKey_(){return "familyDashboardMorningBrief-"+key(new Date())}
 function inMorningBriefWindow_(){let h=new Date().getHours();return h>=5&&h<11}
 function markMorningBriefSeen_(){if(!inMorningBriefWindow_())return;try{localStorage.setItem(morningBriefAutoKey_(),"1")}catch(_){}}
