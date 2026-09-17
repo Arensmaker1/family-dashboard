@@ -2929,6 +2929,9 @@ function ensureVoiceListening_(){
    if(code==="audio-capture"){setVoiceState_("No microphone found",true);return}
    if(code==="network"){setVoiceState_("Voice service unavailable",true);return}
    if(code==="no-speech"){setVoiceState_("🎙️ Listening");return}
+   // Recognition is intentionally aborted whenever Lewis begins speaking so NORAD does not hear itself.
+   // Chrome reports that normal handoff as an "aborted" error; keep it out of the UI.
+   if(code==="aborted"){if(voiceWanted)setVoiceState_(voiceSpeaking?"🔊 Lewis speaking":"🎙️ Listening");return}
    setVoiceState_("Voice error: "+code,true);
  };
  r.onend=()=>{
@@ -2976,7 +2979,7 @@ const LEWIS_PERSONALITY_RATE_=0.20;
 let voiceContext_={action:"",at:0};
 function voiceRemember_(action){voiceContext_={action:String(action||""),at:Date.now()}}
 function voiceContextIs_(action,maxAgeMs=120000){return voiceContext_.action===action&&(Date.now()-voiceContext_.at)<=maxAgeMs}
-function lewisPersonalityEligible_(text){let t=String(text||"").toLowerCase();if(!t||t.length<12)return false;if(/error|failed|couldn't|cannot|permission|blocked|expired|timer (?:done|started|stopped)|opening |voice session ended/.test(t))return false;return true}
+function lewisPersonalityEligible_(text){let t=String(text||"").toLowerCase();if(!t||t.length<12)return false;/* Cook Mode is a focus zone: instructions, ingredients, timers, and measurements stay concise and personality-free. */if(cookRecipe&&document.getElementById("cookOverlay")?.classList.contains("open"))return false;if(/error|failed|couldn't|cannot|permission|blocked|expired|timer (?:done|started|stopped)|opening |voice session ended/.test(t))return false;return true}
 function lewisPersonality_(text){text=String(text||"").trim();if(!lewisPersonalityEligible_(text)||Math.random()>=LEWIS_PERSONALITY_RATE_)return text;const remarks=[" Civilization endures."," A remarkably civilized arrangement."," Against all reasonable expectations, everything appears to be under control."," I shall pretend this level of organization was inevitable."," Splendid. Try not to ruin it."," Efficient. Disturbingly so."," Kitchen NORAD remains, somehow, ahead of the situation."," I am choosing to regard this as progress."];return text+remarks[Math.floor(Math.random()*remarks.length)]}
 function championshipSpec_(team){const specs={lions:{label:"Super Bowl",match:/\bsuper bowl\b/i},tigers:{label:"World Series",match:/\bworld series\b/i},pistons:{label:"NBA championship",match:/\b(?:nba finals|nba championship|world champions?)\b/i},redwings:{label:"Stanley Cup",match:/\b(?:stanley cup|stanley cup final|nhl championship)\b/i},notredame:{label:"national championship",match:/\b(?:national championship|cfp championship|college football playoff national championship)\b/i},msubasketball:{label:"national championship",match:/\b(?:national championship|ncaa (?:men'?s )?(?:basketball )?championship|final four championship)\b/i}};return specs[String(team?.key||"")]||null}
 function championshipWinForTeam_(team){if(!team||!team.last||team.last.result!=="W")return null;const spec=championshipSpec_(team);if(!spec)return null;const g=team.last,blob=[g.name,g.shortName,g.status,g.detail,g.seasonType,g.notes,g.headline,g.stage].filter(Boolean).join(" ");if(!spec.match.test(blob))return null;return {team,spec,game:g,id:String(g.id||g.date||blob)}}
