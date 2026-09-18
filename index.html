@@ -3071,7 +3071,7 @@ function voiceAssignDinnerRecipe_(query,d){
  if(!R.loaded||!MP.loaded)ensureDinnerData_(run);else run();
 }
 
-/* V9.19.0 — Lewis Cook Mode Intelligence */
+/* V9.19.1 — Lewis Recipe-Wide Intelligence */
 function voiceGroceryCount_(){return (G&&Array.isArray(G.items))?G.items.filter(x=>!x.checked).length:null}
 function voiceChorePeople_(d){
  let out={};choresFor(d).forEach(x=>{if(S.completions[key(d)+"-"+x.i])return;let who=String(x.who||"Unassigned").trim()||"Unassigned";out[who]=(out[who]||0)+1});return out;
@@ -3186,46 +3186,70 @@ function voiceCommandDebug_(raw,n,handled){
   localStorage.setItem("noradVoice21Log",JSON.stringify(log.slice(0,40)));
  }catch(_){}
 }
-// V9.19.0 — active-recipe intelligence for hands-free Cook Mode.
-function cookVoiceClean_(s){return String(s||"").toLowerCase().replace(/[^a-z0-9°' -]/g," ").replace(/\s+/g," ").trim()}
+// V9.19.1 — recipe-wide intelligence for hands-free Cook Mode.
+let cookVoiceContext_={ingredient:"",at:0};
+function cookRememberIngredient_(name){let x=String(name||"").trim();if(x)cookVoiceContext_={ingredient:x,at:Date.now()}}
+function cookRecentIngredient_(){return cookVoiceContext_.ingredient&&Date.now()-cookVoiceContext_.at<120000?cookVoiceContext_.ingredient:""}
+function cookVoiceClean_(s){return String(s||"").toLowerCase().replace(/[’‘]/g,"'").replace(/[¼]/g," 1/4 ").replace(/[½]/g," 1/2 ").replace(/[¾]/g," 3/4 ").replace(/[^a-z0-9°/' -]/g," ").replace(/\s+/g," ").trim()}
+function cookWordStem_(w){w=String(w||"").toLowerCase();if(w.length>4&&w.endsWith("ies"))return w.slice(0,-3)+"y";if(w.length>4&&w.endsWith("oes"))return w.slice(0,-2);if(w.length>3&&w.endsWith("s")&&!w.endsWith("ss"))return w.slice(0,-1);return w}
+function cookContentWords_(s){
+ const stop=new Set(["the","a","an","some","my","our","this","that","ingredient","ingredients","please","again","do","i","we","you","need","use","using","used","add","added","put","in","into","mix","stir","when","what","how","much","many","does","should","am","is","are","it","yet","now","recipe","of"]);
+ return cookVoiceClean_(s).split(/\s+/).map(cookWordStem_).filter(w=>w.length>1&&!stop.has(w));
+}
 function cookVoiceTerms_(q){
- let t=cookVoiceClean_(q).replace(/\b(?:the|a|an|some|my|our|this|that|ingredient|ingredients)\b/g," ").replace(/\s+/g," ").trim();
- const aliases={"garlic":"garlic","oil":"oil","olive oil":"olive oil","salt":"salt","pepper":"pepper","black pepper":"black pepper","butter":"butter","onion":"onion","onions":"onion","tomato":"tomato","tomatoes":"tomato","chicken":"chicken","beef":"beef","pork":"pork","sauce":"sauce"};
+ let t=cookVoiceClean_(q).replace(/\b(?:how much|how many|when do i|when should i|when does|what step do i|what step does|do i need|do i use|am i using|is it time for|where does|where do i|tell me when)\b/g," ").replace(/\b(?:add|use|put in|put|mix in|mix|stir in|stir|go in|goes in|need|yet|now|again|the|a|an|some|my|our|this|that|ingredient|ingredients)\b/g," ").replace(/\s+/g," ").trim();
+ if(/^(?:it|that|that one|this one)$/.test(t))t=cookRecentIngredient_();
+ const aliases={"onions":"onion","tomatoes":"tomato","peppers":"pepper","cloves":"clove","chiles":"chile","chilies":"chile","scallions":"scallion"};
  return aliases[t]||t;
+}
+function cookMatchScore_(text,term){
+ let z=cookVoiceClean_(text),t=cookVoiceClean_(term);if(!t)return 0;if(z.includes(t))return 100;
+ let tw=cookContentWords_(t),zw=new Set(cookContentWords_(z));if(!tw.length)return 0;let hits=tw.filter(w=>zw.has(w)).length;
+ if(hits===tw.length)return 80+hits;return hits/tw.length>=.67?50+hits:0;
 }
 function cookFindIngredients_(q){
  if(!cookRecipe)return[];let term=cookVoiceTerms_(q);if(!term)return[];
- let words=term.split(/\s+/).filter(x=>x.length>1);
- return (cookRecipe.ingredients||[]).filter(line=>{let z=cookVoiceClean_(line);return z.includes(term)||words.every(w=>z.includes(w))}).slice(0,4);
+ return (cookRecipe.ingredients||[]).map((line,i)=>({line,i,score:cookMatchScore_(line,term)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,4).map(x=>x.line);
 }
-function cookFindStepMention_(q,start=0){
- if(!cookRecipe)return null;let term=cookVoiceTerms_(q),words=term.split(/\s+/).filter(x=>x.length>1),steps=cookRecipe.steps||[];
- for(let i=Math.max(0,start);i<steps.length;i++){let z=cookVoiceClean_(steps[i]);if(z.includes(term)||(words.length&&words.every(w=>z.includes(w))))return{i,step:steps[i]};}
- return null;
+function cookFindStepMentions_(q){
+ if(!cookRecipe)return[];let term=cookVoiceTerms_(q);if(!term)return[];
+ return (cookRecipe.steps||[]).map((step,i)=>({i,step,score:cookMatchScore_(step,term)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.i-b.i);
+}
+function cookFindStepMention_(q,start=0){let hits=cookFindStepMentions_(q).filter(x=>x.i>=Math.max(0,start));return hits[0]||null}
+function cookQuantityAnswer_(q){
+ let term=cookVoiceTerms_(q),hits=cookFindIngredients_(term);if(hits.length){cookRememberIngredient_(term);return hits.join(". ")}
+ // Some imported monster recipes mention an item only in prose. Do not invent a quantity.
+ let step=cookFindStepMentions_(term)[0];if(step){cookRememberIngredient_(term);return `I found ${term} in step ${step.i+1}, but I do not see a separate quantity for it in the ingredient list.`}
+ return `I couldn't find ${term||q} in this recipe.`;
+}
+function cookTemperatureHits_(){
+ if(!cookRecipe)return[];let out=[];(cookRecipe.steps||[]).forEach((step,i)=>{
+  let re=/\b(\d{2,3})\s*(?:°\s*)?(?:degrees?\s*)?(f|c|fahrenheit|celsius)\b/ig,m;while((m=re.exec(step)))out.push({i,step,value:m[1],unit:/^c/i.test(m[2])?"Celsius":"Fahrenheit"});
+  let re2=/\b(\d{2,3})\s*°(?!\s*[fc])/ig;while((m=re2.exec(step)))out.push({i,step,value:m[1],unit:"Fahrenheit"});
+ });return out;
 }
 function cookCurrentTemperature_(){
- if(!cookRecipe)return "There is no active recipe.";let steps=cookRecipe.steps||[],cur=steps[cookStep]||"",near=[cur,steps[cookStep-1]||"",steps[cookStep+1]||""].join(" ");
- let m=near.match(/\b(\d{2,3})\s*(?:°|degrees?\s*)?(f|c|fahrenheit|celsius)\b/i)||near.match(/\b(\d{2,3})\s*°/i);
- if(m)return `The recipe calls for ${m[1]} degrees ${m[2]&&/^c/i.test(m[2])?"Celsius":"Fahrenheit"}.`;
- return "I don't see a temperature in this step or the steps immediately around it.";
+ if(!cookRecipe)return "There is no active recipe.";let hits=cookTemperatureHits_();if(!hits.length)return "I don't see a cooking temperature anywhere in this recipe.";
+ let hit=hits.find(x=>x.i===cookStep)||hits.find(x=>x.i>cookStep)||hits[0];let where=hit.i===cookStep?"The current step":hit.i>cookStep?`Step ${hit.i+1}`:`Step ${hit.i+1}`;
+ return `${where} calls for ${hit.value} degrees ${hit.unit}.`;
+}
+function cookDurationHits_(){
+ if(!cookRecipe)return[];let out=[];(cookRecipe.steps||[]).forEach((step,i)=>{let re=/\b(\d+(?:\.\d+)?(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?)\s*(seconds?|minutes?|hours?)\b/ig,m;while((m=re.exec(step)))out.push({i,step,label:m[0]})});return out;
 }
 function cookCurrentDuration_(){
- if(!cookRecipe)return "There is no active recipe.";let step=(cookRecipe.steps||[])[cookStep]||"",hits=cookTimerMatches_(step);
- if(hits.length)return `This step calls for ${hits.map(x=>x.label).join(" or ")}.`;
- let m=step.match(/\b(\d+(?:\.\d+)?(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?)\s*(seconds?|minutes?|hours?)\b/i);
- return m?`This step calls for ${m[0]}.`:"I don't see a cooking time in the current step.";
+ if(!cookRecipe)return "There is no active recipe.";let hits=cookDurationHits_();if(!hits.length)return "I don't see a cooking time anywhere in this recipe.";
+ let hit=hits.find(x=>x.i===cookStep)||hits.find(x=>x.i>cookStep)||hits[0];let where=hit.i===cookStep?"The current step":`Step ${hit.i+1}`;return `${where} calls for ${hit.label}.`;
 }
 function cookNeedYet_(q){
- if(!cookRecipe)return "There is no active recipe.";let term=cookVoiceTerms_(q),steps=cookRecipe.steps||[],cur=cookVoiceClean_(steps[cookStep]||"");
- let words=term.split(/\s+/).filter(x=>x.length>1),has=z=>z.includes(term)||(words.length&&words.every(w=>z.includes(w)));
- if(has(cur))return `Yes. ${term} is used in the current step: ${steps[cookStep]}`;
- let future=cookFindStepMention_(term,cookStep+1);if(future)return `Not yet. ${term} first appears in step ${future.i+1}: ${future.step}`;
- for(let i=0;i<cookStep;i++)if(has(cookVoiceClean_(steps[i])))return `${term} appeared earlier, in step ${i+1}.`;
+ if(!cookRecipe)return "There is no active recipe.";let term=cookVoiceTerms_(q)||cookRecentIngredient_();if(!term)return "Which ingredient do you mean?";cookRememberIngredient_(term);
+ let hits=cookFindStepMentions_(term).sort((a,b)=>a.i-b.i),cur=hits.find(x=>x.i===cookStep);if(cur)return `Yes. ${term} is used in the current step: ${cur.step}`;
+ let future=hits.find(x=>x.i>cookStep);if(future)return `Not yet. ${term} appears in step ${future.i+1}: ${future.step}`;
+ let earlier=[...hits].reverse().find(x=>x.i<cookStep);if(earlier)return `${term} appeared earlier, in step ${earlier.i+1}.`;
  let ing=cookFindIngredients_(term);return ing.length?`${ing.join(". ")} is in the ingredient list, but I don't see it named in the cooking steps.`:`I don't see ${term} in this recipe.`;
 }
 function cookWhenUse_(q){
- if(!cookRecipe)return "There is no active recipe.";let term=cookVoiceTerms_(q),hit=cookFindStepMention_(term,0);
- if(hit)return `${term} appears in step ${hit.i+1}: ${hit.step}`;
+ if(!cookRecipe)return "There is no active recipe.";let term=cookVoiceTerms_(q)||cookRecentIngredient_();if(!term)return "Which ingredient do you mean?";cookRememberIngredient_(term);
+ let hits=cookFindStepMentions_(term).sort((a,b)=>a.i-b.i);if(hits.length){let hit=hits.find(x=>x.i>=cookStep)||hits[0];return `${term} appears in step ${hit.i+1}: ${hit.step}`}
  let ing=cookFindIngredients_(term);return ing.length?`${ing.join(". ")} is listed as an ingredient, but the instructions do not clearly say when to use it.`:`I don't see ${term} in this recipe.`;
 }
 function cookPeekNext_(){let steps=cookRecipe?.steps||[];return cookStep<steps.length-1?`Next is step ${cookStep+2}. ${steps[cookStep+1]}`:"You're on the last step."}
@@ -3303,14 +3327,17 @@ function handleVoiceCommand_(raw){
  if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
  if(cookRecipe){
    let steps=cookRecipe.steps||[], current=()=>steps[cookStep]||"";
-   // Recipe-aware questions: answer from the active recipe without changing screens.
-   if(/^(?:what temperature|what temp|what temperature do i need|what temp do i need|how hot|what should (?:the )?(?:oven|grill|smoker|pan) be|what do i set (?:the )?(?:oven|grill|smoker) to)$/.test(n)){speak_(cookCurrentTemperature_());return done()}
-   if(/^(?:how long|how long does this cook|how long do i cook this|how long for this step|how much longer does this step take|what is the cook time|what is the cooking time)$/.test(n)){speak_(cookCurrentDuration_());return done()}
-   if((m=n.match(/^(?:do i need|do i use|am i using|is it time for) (.+?) (?:yet|now)$/))){speak_(cookNeedYet_(m[1]));return done()}
-   if((m=n.match(/^(?:when do i|when should i|what step do i) (?:add|use|put in|mix in|stir in) (.+)$/))){speak_(cookWhenUse_(m[1]));return done()}
+   // V9.19.1 Recipe-Wide Intelligence: classify first, then search the entire active recipe.
+   if(/(?:what|which) (?:temperature|temp)|how hot|set (?:the )?(?:oven|grill|smoker)|(?:oven|grill|smoker) (?:temperature|temp)|preheat/.test(n)){speak_(cookCurrentTemperature_());return done()}
+   if(/how long|cook time|cooking time|how much longer|how many (?:minutes|hours)/.test(n)){speak_(cookCurrentDuration_());return done()}
+   if((m=n.match(/(?:do i need|do i use|am i using|is it time for|do i add|should i add) (.+?)(?: yet| now)?$/))){speak_(cookNeedYet_(m[1]));return done()}
+   if((m=n.match(/(?:when|what step|where) (?:do i |should i |does (?:the )?)?(?:add|use|put|mix|stir|goes?|go) (?:in )?(?:the )?(.+)$/))){speak_(cookWhenUse_(m[1]));return done()}
+   if((m=n.match(/(?:when|what step|where) (?:is|are|does|do) (?:the )?(.+?) (?:used|added|go in|goes in|come in)$/))){speak_(cookWhenUse_(m[1]));return done()}
+   if(/^(?:when do i add it|when do i use it|when does it go in|what step is it used|when should i add it)$/.test(n)){speak_(cookWhenUse_(cookRecentIngredient_()));return done()}
    if(/^(?:what comes after this|what comes next|what is after this|what is the next step without moving|peek next)$/.test(n)){speak_(cookPeekNext_());return done()}
    if(/^(?:what am i doing|what am i doing now|where am i|where are we|current step)$/.test(n)){speak_(`You're on step ${cookStep+1} of ${Math.max(1,steps.length)}. ${current()}`);return done()}
-   if((m=n.match(/^(?:how much|how many) (.+?)(?: do i need| does it need| is in this)?$/))){let x=cookFindIngredients_(m[1]);speak_(x.length?x.join(". "):`I couldn't find ${m[1]} in this recipe.`);return done()}
+   if((m=n.match(/(?:how much|how many) (.+?)(?: do i need| does it need| is in this| is there)?$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
+   if((m=n.match(/^(?:what about|and how much|how about) (.+)$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    // Current step: deliberately broad, because speech recognition often drops small words.
    if(/^(?:read|say|tell me|repeat)(?: me)?(?: this| the| current)?(?: cooking)? (?:step|instruction|direction)$/.test(n)||
       /^(?:read|say|tell me|repeat)(?: this| that| it| the step| current step)$/.test(n)||
