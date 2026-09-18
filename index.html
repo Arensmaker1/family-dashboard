@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.20.1 NORAD Morning Wake-Up Fix build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.21.0 NORAD Music Center build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -755,6 +755,10 @@ body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .bri
 .noradSituation{margin:8px 0 10px;padding:9px 11px;border:1px solid var(--l);border-radius:10px;background:#0b1721;display:flex;gap:9px;align-items:center}
 .noradSituation .sitIcon{font-size:20px;line-height:1}.noradSituation .sitText{min-width:0}.noradSituation b{display:block;font-size:11px;letter-spacing:.05em;color:var(--theme1)}.noradSituation span{display:block;font-size:10px;color:var(--m);margin-top:2px}.noradSituation.warn{border-color:#8b6b2d}.noradSituation.urgent{border-color:#9a4141}.noradSituation.good{border-color:#356f49}
 body[data-appearance="light"] .noradSituation{background:#f7fafc}
+
+/* V9.21.0 NORAD MUSIC CENTER */
+.musicCenterWrap{max-width:880px;margin:auto}.musicCenterHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:48px;margin-bottom:12px}.musicCenterHead h2{margin:0}.musicNow{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:center;border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p)}.musicArt{aspect-ratio:16/9;border-radius:10px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:42px}.musicArt img{width:100%;height:100%;object-fit:cover}.musicTitle{font-size:18px;font-weight:900;line-height:1.2}.musicArtist{font-size:11px;color:var(--m);margin-top:5px}.musicControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.musicControls .btn{min-width:54px}.musicVolume{display:flex;align-items:center;gap:8px;margin-top:10px}.musicVolume input{width:min(280px,100%)}.musicPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px}.musicPreset{border:1px solid var(--l);border-radius:10px;padding:10px;background:#ffffff05}.musicPreset b{display:block;margin-bottom:7px}.musicSetup{margin-top:12px;border-top:1px solid var(--l);padding-top:12px}.musicSetupRow{display:grid;grid-template-columns:120px 1fr auto;gap:7px;margin:7px 0}.musicSetupRow input{min-width:0}.musicHint{font-size:10px;color:var(--m);line-height:1.45}.musicMini{position:fixed;left:12px;bottom:70px;z-index:24;display:none;align-items:center;gap:8px;max-width:min(520px,calc(100vw - 100px));padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.musicMini.open{display:flex}.musicMiniText{min-width:0;flex:1}.musicMiniText b,.musicMiniText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.musicMiniText span{font-size:9px;color:var(--m)}#ytMusicPlayerHost{position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;overflow:hidden}.musicSearchRow{display:flex;gap:7px;margin:10px 0}.musicSearchRow input{flex:1;min-width:0}@media(max-width:650px){.musicNow{grid-template-columns:1fr}.musicArt{max-width:260px}.musicSetupRow{grid-template-columns:1fr}.musicMini{left:8px;right:68px;max-width:none}}
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1168,7 +1172,7 @@ let familyDashboardAuthExpired_ = false;
 <div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="openMusicCenter()"><span class="navIcon">🎵</span>Music</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.4 — Situational Awareness</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -1205,10 +1209,15 @@ let familyDashboardAuthExpired_ = false;
  <div class="cookTop"><button class="v4back" onclick="hideCookMode_()">← Dashboard</button><div class="cookTitle"><h1 id="cookRecipeTitle">Cook Mode</h1><div id="cookRecipeMeta" class="cookMeta"></div><div id="cookScaleBar" class="cookScaleBar"></div></div><div class="cookTopActions"><button id="cookVoiceBtn" class="btn" onclick="toggleVoiceListening_()">🎙️ Tap to Listen</button><div class="cookQuickTimers"><button class="btn" onclick="startCookTimer(5)">5m</button><button class="btn" onclick="startCookTimer(10)">10m</button><button class="btn" onclick="startCookTimer(15)">15m</button><button class="btn" onclick="startCookTimer(30)">30m</button></div><button id="cookWakeBtn" class="btn cookWakeBtn" onclick="toggleCookWakeLock()">☀️ Keep Awake</button><button id="cookAllStepsBtn" class="btn" onclick="toggleCookAllSteps()">☷ All Steps</button><button class="btn" onclick="openTimers()">⏱️ Timers</button></div><div id="cookTimerStrip" class="cookTimerStrip"></div></div>
  <div class="cookBody"><div class="cookIngredients"><h2>INGREDIENTS</h2><div id="cookIngredients"></div></div><div class="cookStepPanel"><div class="cookProgress"><span id="cookStepCount" class="cookStepCount"></span><div class="cookProgressBar"><div id="cookProgressBar"></div></div></div><div id="cookSingleStep" class="cookStepSingle"><div id="cookStepText" class="cookStepText"></div><div id="cookDetectedTimers" class="cookDetectedTimers"></div></div><div id="cookAllSteps" class="cookAllSteps"></div><div class="cookNav"><button id="cookPrevBtn" class="btn" onclick="cookPrevStep()">← Previous</button><button id="cookNextBtn" class="btn primaryAction" onclick="cookNextStep()">Next →</button><button class="btn" onclick="closeCookMode()">✓ Finish Cooking</button></div></div></div>
 </div>
+<div id="musicMini" class="musicMini"><button class="btn" onclick="musicTogglePlay_()">⏯</button><div class="musicMiniText"><b id="musicMiniTitle">Music</b><span id="musicMiniArtist">Ready</span></div><button class="btn" onclick="musicNext_()">⏭</button><button class="btn" onclick="openMusicCenter()">Open</button></div>
+<div id="ytMusicPlayerHost"><div id="ytMusicPlayer"></div></div>
 <div id="modalbg" class="modalbg" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div>
 <script>
 let D={events:[],calendars:[]},S={chores:[],menu:{},notes:"",hiddenCalendars:[],completions:{}},W=null,view=new Date(),sel=new Date(),idle;
 let SPORTS={loading:true,ok:false,teams:[],updatedAt:null,message:""};
+let MUSIC={player:null,ready:false,playing:false,shuffle:false,currentTitle:"Nothing playing",currentArtist:"",currentVideoId:"",presets:[]};
+const MUSIC_PRESETS_KEY_="familyDashboardMusicPresetsV921";
+
 let G={items:[],updatedAt:null},groceryTimer=null,STOCK={items:[]};
 let kitchenTimers=[];let timerDraftMinutes=10;let timerAudioCtx=null;let timerAlarmLoop=null;
 let R={recipes:[],loaded:false},MP={plans:[],recipes:[],sources:[],loaded:false},recipeView="recipes",currentPlanId="";
@@ -2087,6 +2096,92 @@ function morningSportsHtml_(){
   return `<div class="briefLine briefWarn">⚠️ Sports card render error.</div>`;
  }
 }
+
+function musicLoadPresets_(){
+ try{MUSIC.presets=JSON.parse(localStorage.getItem(MUSIC_PRESETS_KEY_)||"null")||[
+  {name:"Cooking",playlist:""},
+  {name:"Jeff",playlist:""},
+  {name:"Family",playlist:""},
+  {name:"Wife",playlist:""}
+ ]}catch(_){MUSIC.presets=[]}
+}
+function musicSavePresets_(){try{localStorage.setItem(MUSIC_PRESETS_KEY_,JSON.stringify(MUSIC.presets))}catch(_){}}
+function musicPlaylistId_(v){
+ v=String(v||"").trim();
+ let m=v.match(/[?&]list=([^&#]+)/i);if(m)return decodeURIComponent(m[1]);
+ if(/^[A-Za-z0-9_-]{10,}$/.test(v))return v;
+ return "";
+}
+function ensureYouTubePlayer_(){
+ if(MUSIC.player||window.YT?.Player){if(!MUSIC.player&&window.YT?.Player)createYouTubeMusicPlayer_();return}
+ if(!document.getElementById("ytIframeApi")){
+  let t=document.createElement("script");t.id="ytIframeApi";t.src="https://www.youtube.com/iframe_api";document.head.appendChild(t);
+ }
+}
+let oldYouTubeReady_=window.onYouTubeIframeAPIReady;
+window.onYouTubeIframeAPIReady=function(){try{if(typeof oldYouTubeReady_==="function")oldYouTubeReady_()}catch(_){}createYouTubeMusicPlayer_()};
+function createYouTubeMusicPlayer_(){
+ if(MUSIC.player||!window.YT?.Player)return;
+ MUSIC.player=new YT.Player("ytMusicPlayer",{height:"180",width:"320",playerVars:{playsinline:1,controls:0,rel:0},events:{
+  onReady:e=>{MUSIC.ready=true;try{e.target.setVolume(65)}catch(_){}musicRefreshUi_()},
+  onStateChange:e=>{MUSIC.playing=e.data===YT.PlayerState.PLAYING;musicSyncNow_();musicRefreshUi_()},
+  onError:e=>{console.warn("Music player error",e.data);musicRefreshUi_("That track cannot be played in the embedded player.")}
+ }});
+}
+function musicSyncNow_(){
+ if(!MUSIC.player||!MUSIC.ready)return;
+ try{
+  let d=MUSIC.player.getVideoData()||{};
+  MUSIC.currentTitle=d.title||MUSIC.currentTitle||"Music";
+  MUSIC.currentArtist=d.author||"YouTube";
+  MUSIC.currentVideoId=d.video_id||"";
+ }catch(_){}
+}
+function musicThumb_(){return MUSIC.currentVideoId?`https://i.ytimg.com/vi/${encodeURIComponent(MUSIC.currentVideoId)}/hqdefault.jpg`:""}
+function musicCenterHtml_(msg=""){
+ musicSyncNow_();
+ let vol=65;try{if(MUSIC.ready)vol=MUSIC.player.getVolume()}catch(_){}
+ let presets=MUSIC.presets.map((p,i)=>`<div class="musicPreset"><b>🎵 ${esc(p.name)}</b><button class="btn ${p.playlist?"primaryAction":""}" onclick="musicPlayPreset_(${i})">${p.playlist?"Play":"Set playlist"}</button></div>`).join("");
+ let setup=MUSIC.presets.map((p,i)=>`<div class="musicSetupRow"><input id="musicPresetName${i}" value="${esc(p.name)}" aria-label="Preset name"><input id="musicPresetUrl${i}" value="${esc(p.playlist||"")}" placeholder="YouTube playlist URL or playlist ID"><button class="btn" onclick="musicSavePresetRow_(${i})">Save</button></div>`).join("");
+ return `<div class="musicCenterWrap"><div class="musicCenterHead"><div><h2>🎵 NORAD Music Center</h2><div class="musicHint">YouTube-powered kitchen audio • playlists stay on this dashboard</div></div></div>${msg?`<div class="note">${esc(msg)}</div>`:""}<div class="musicNow"><div class="musicArt">${musicThumb_()?`<img src="${musicThumb_()}" alt="">`:"🎵"}</div><div><div class="musicTitle">${esc(MUSIC.currentTitle||"Nothing playing")}</div><div class="musicArtist">${esc(MUSIC.currentArtist||"Choose a playlist below")}</div><div class="musicControls"><button class="btn" onclick="musicPrevious_()">⏮</button><button class="btn primaryAction" onclick="musicTogglePlay_()">${MUSIC.playing?"⏸ Pause":"▶ Play"}</button><button class="btn" onclick="musicNext_()">⏭</button><button class="btn ${MUSIC.shuffle?"active":""}" onclick="musicShuffle_()">🔀 Shuffle</button></div><div class="musicVolume"><span>🔈</span><input type="range" min="0" max="100" value="${vol}" oninput="musicVolume_(this.value)"><span>🔊</span></div></div></div><h3 style="margin:14px 0 6px">PLAYLISTS</h3><div class="musicPresetGrid">${presets}</div><div class="musicSetup"><h3>⚙️ PLAYLIST SETUP</h3><div class="musicHint">Paste a normal YouTube playlist URL or playlist ID. Public/unlisted embeddable playlists work best. You only have to save these once on the kitchen PC.</div>${setup}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+}
+function openMusicCenter(){musicLoadPresets_();ensureYouTubePlayer_();openModal(musicCenterHtml_(),{closeAction:"closeModal()"});activity()}
+function musicRefreshUi_(msg=""){
+ musicSyncNow_();
+ let m=document.getElementById("modal");if(m?.querySelector(".musicCenterWrap"))m.innerHTML=musicCenterHtml_(msg);
+ let mini=document.getElementById("musicMini"),t=document.getElementById("musicMiniTitle"),a=document.getElementById("musicMiniArtist");
+ if(t)t.textContent=MUSIC.currentTitle||"Music";if(a)a.textContent=MUSIC.currentArtist||"YouTube";
+ if(mini)mini.classList.toggle("open",!!(MUSIC.currentVideoId||MUSIC.playing));
+}
+function musicSavePresetRow_(i){
+ let n=document.getElementById("musicPresetName"+i)?.value.trim()||MUSIC.presets[i]?.name||("Playlist "+(i+1));
+ let raw=document.getElementById("musicPresetUrl"+i)?.value.trim()||"",id=musicPlaylistId_(raw);
+ if(raw&&!id){musicRefreshUi_("I couldn't read that playlist link. Paste a YouTube playlist URL or playlist ID.");return}
+ MUSIC.presets[i]={name:n,playlist:id};musicSavePresets_();musicRefreshUi_("Playlist saved.");
+}
+function musicPlayPreset_(i){
+ let p=MUSIC.presets[i];if(!p?.playlist){musicRefreshUi_("Add a playlist URL or ID for that button first.");return}
+ ensureYouTubePlayer_();
+ if(!MUSIC.ready){setTimeout(()=>musicPlayPreset_(i),500);return}
+ try{MUSIC.player.loadPlaylist({list:p.playlist,listType:"playlist",index:0,startSeconds:0});setTimeout(()=>{try{MUSIC.player.setShuffle(MUSIC.shuffle)}catch(_){}},600);MUSIC.currentTitle=p.name;MUSIC.currentArtist="Playlist";musicRefreshUi_()}catch(e){musicRefreshUi_("YouTube could not load that playlist.")}
+}
+function musicTogglePlay_(){if(!MUSIC.ready){ensureYouTubePlayer_();return}try{MUSIC.playing?MUSIC.player.pauseVideo():MUSIC.player.playVideo()}catch(_){}}
+function musicNext_(){if(MUSIC.ready)try{MUSIC.player.nextVideo()}catch(_){}}
+function musicPrevious_(){if(MUSIC.ready)try{MUSIC.player.previousVideo()}catch(_){}}
+function musicShuffle_(){MUSIC.shuffle=!MUSIC.shuffle;if(MUSIC.ready)try{MUSIC.player.setShuffle(MUSIC.shuffle)}catch(_){}musicRefreshUi_()}
+function musicVolume_(v){if(MUSIC.ready)try{MUSIC.player.setVolume(Math.max(0,Math.min(100,Number(v)||0)))}catch(_){}}
+function musicFindPreset_(q){
+ q=String(q||"").toLowerCase().trim();return MUSIC.presets.findIndex(p=>p.playlist&&(q.includes(String(p.name).toLowerCase())||String(p.name).toLowerCase().includes(q)));
+}
+function voiceMusicPlay_(q){
+ musicLoadPresets_();let i=musicFindPreset_(q);
+ if(i>=0){musicPlayPreset_(i);speak_(`Playing ${MUSIC.presets[i].name}.`);return}
+ speak_("I don't have that playlist saved yet. Open Music Center and add it.");
+}
+musicLoadPresets_();
+ensureYouTubePlayer_();
+
+
 function sportsGameBlock_(label,g,isLive){
  if(!g)return `<div class="sportsBlock"><div class="sportsLabel">${label}</div><div class="sportsMeta">No game available.</div></div>`;
  let main=isLive?`${sportsOpponentText_(g)} • ${(g.ourScore||"0")}-${(g.opponentScore||"0")}`:(g.completed?sportsResultText_(g):sportsOpponentText_(g));
@@ -3335,6 +3430,16 @@ function handleVoiceCommand_(raw){
  if(/^(?:how much time is left|how long is left|time left|timer status|how much longer on (?:the )?timer)$/.test(n)){speak_(voiceTimerRemaining_());return done()}
  if(/^(?:close|exit|dismiss|done with) (?:the )?(?:groceries|grocery list)$/.test(n)){closeGroceries();speak_("Groceries closed.");return done()}
  if(/^(?:close|exit|dismiss|done with) (?:the )?(?:sports|sports center)$/.test(n)){closeSportsCenter_();speak_("Sports center closed.");return done()}
+
+ // V9.21 Music Center voice controls.
+ if(/^(?:pause|stop) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.pauseVideo()}catch(_){};speak_("Music paused.");return done()}
+ if(/^(?:resume|continue|play) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.playVideo()}catch(_){};speak_("Music resumed.");return done()}
+ if(/^(?:skip|next)(?: song| track)?$|^(?:skip|next) (?:the )?(?:song|track)$/.test(n)){musicNext_();speak_("Skipping.");return done()}
+ if(/^(?:previous|last)(?: song| track)?$|^(?:go back|previous) (?:song|track)$/.test(n)){musicPrevious_();speak_("Going back.");return done()}
+ if(/^(?:shuffle|shuffle the music|shuffle this playlist)$/.test(n)){musicShuffle_();speak_(MUSIC.shuffle?"Shuffle on.":"Shuffle off.");return done()}
+ if(/^(?:what song is this|what is this song|what is playing|what's playing|whats playing)$/.test(n)){musicSyncNow_();speak_(MUSIC.currentTitle&&MUSIC.currentTitle!=="Nothing playing"?`${MUSIC.currentTitle}${MUSIC.currentArtist?` by ${MUSIC.currentArtist}`:""}.`:"Nothing is playing right now.");return done()}
+ if((m=n.match(/^(?:play|start) (?:my |the )?(.+?)(?: playlist)?$/))&&!/(timer|countdown|recipe|brief|sports|grocer|calendar)/.test(m[1])){voiceMusicPlay_(m[1]);return done()}
+ if(/open (?:the )?(?:music|music center)/.test(n)){openMusicCenter();speak_("Opening Music Center.");return done()}
 
  // Short conversational memory: continue the last grocery action for two minutes.
  if(voiceContextIs_("groceries") && ((m=n.match(/^(?:add\s+)?(.+?)\s+too$/)) || (m=n.match(/^(?:and|also|plus)\s+(.+)$/)))){voiceAddGroceries_(m[1]);return done()}
