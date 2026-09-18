@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.12.1 Morning Brief Intelligence build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.20.0 NORAD Situational Awareness build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -750,6 +750,11 @@ body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .bri
 /* V9.14.0 Grocery Center 2.0 */
 .wgSmartNote{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;border:1px solid #3f7d65;font-size:9px;font-weight:800;opacity:.9}
 
+
+/* V9.20.0 — NORAD Situational Awareness */
+.noradSituation{margin:8px 0 10px;padding:9px 11px;border:1px solid var(--l);border-radius:10px;background:#0b1721;display:flex;gap:9px;align-items:center}
+.noradSituation .sitIcon{font-size:20px;line-height:1}.noradSituation .sitText{min-width:0}.noradSituation b{display:block;font-size:11px;letter-spacing:.05em;color:var(--theme1)}.noradSituation span{display:block;font-size:10px;color:var(--m);margin-top:2px}.noradSituation.warn{border-color:#8b6b2d}.noradSituation.urgent{border-color:#9a4141}.noradSituation.good{border-color:#356f49}
+body[data-appearance="light"] .noradSituation{background:#f7fafc}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1165,7 +1170,7 @@ let familyDashboardAuthExpired_ = false;
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
 <footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
-<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.3</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
+<div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.4 — Situational Awareness</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
  <div class="v4top">
   <button class="v4back" onclick="closeDay()">← Back to Month</button>
@@ -2400,7 +2405,7 @@ function buildMorningBriefHtml_(){
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${briefSafe_("Situational Awareness",()=>morningSituationalHtml_(),"")}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -3099,6 +3104,29 @@ function householdReadinessCode_(x){
  if(issues===0)return "Household systems nominal.";
  return "Household systems are mostly nominal.";
 }
+/* V9.20.0 — shared situational-awareness engine. Visual Brief and Lewis use the same state. */
+function recentSportsWin_(){
+ let now=Date.now(),day=86400000,hits=[];
+ (SPORTS?.teams||[]).forEach(t=>{let g=t?.last;if(!g||g.result!=="W"||!g.date)return;let age=now-new Date(g.date).getTime();if(age>=0&&age<=36*60*60*1000)hits.push({team:t,game:g})});
+ return hits[0]||null;
+}
+function noradSituation_(){
+ let x=householdIntelSnapshot_(),h=x.now.getHours(),day=x.now.getDay(),today=key(x.now),wi=W?.daily?.time?.indexOf(today)??-1,
+     rain=wi>=0?Number(W.daily?.precipitation_probability_max?.[wi]||0):0,code=Number(W?.current?.weather_code),temp=Number(W?.current?.temperature_2m),win=recentSportsWin_();
+ if([95,96,99].includes(code))return {level:"urgent",icon:"⚡",title:"WEATHER THREAT: ELEVATED",detail:"Thunderstorms are in the area. Outdoor operations deserve a weather check.",spoken:"Weather threat is elevated. Thunderstorms are in the area, so outdoor operations deserve a weather check."};
+ if((x.rs.overdue||0)>0)return {level:"urgent",icon:"🔧",title:"MAINTENANCE ALERT",detail:`${x.rs.overdue} household job${x.rs.overdue===1?" is":"s are"} overdue.`,spoken:`Maintenance alert. ${x.rs.overdue} household job${x.rs.overdue===1?" is":"s are"} overdue.`};
+ if(x.d?.dinner?.name&&!x.d.ready&&h>=18&&(x.d.need?.missing||0)>0)return {level:"warn",icon:"🍽️",title:"DEFCON DINNER",detail:`${x.d.dinner.name} is planned and ${x.d.need.missing} ingredient${x.d.need.missing===1?"":"s"} still need a check.`,spoken:`DEFCON DINNER. ${x.d.dinner.name} is planned, and ${x.d.need.missing} ingredient${x.d.need.missing===1?"":"s"} still need a check.`};
+ if((x.cs.left||0)>=5&&h>=15)return {level:"warn",icon:"✅",title:"CHORE THREAT: ELEVATED",detail:`${x.cs.left} chores remain. Domestic operations are becoming unnecessarily ambitious.`,spoken:`Chore threat is elevated. ${x.cs.left} chores remain. Domestic operations are becoming unnecessarily ambitious.`};
+ if(rain>=70)return {level:"warn",icon:"☔",title:"UMBRELLA PROTOCOL",detail:`Precipitation chance is ${Math.round(rain)}%.`,spoken:`Umbrella protocol is active. Precipitation chance is ${Math.round(rain)} percent.`};
+ if(Number.isFinite(temp)&&temp>=90)return {level:"warn",icon:"🔥",title:"OUTSIDE HAS BEEN CANCELLED",detail:`It is ${Math.round(temp)} degrees outside.`,spoken:`Outside has been cancelled. It is ${Math.round(temp)} degrees.`};
+ if(Number.isFinite(temp)&&temp<=10)return {level:"warn",icon:"🥶",title:"AIR HURTS YOUR FACE",detail:`It is ${Math.round(temp)} degrees outside.`,spoken:`Cold weather protocol. It is ${Math.round(temp)} degrees, and the air hurts your face.`};
+ if(x.cs.total>0&&x.cs.left===0&&h>=15)return {level:"good",icon:"🏆",title:"HOUSEHOLD READINESS: 100%",detail:"Today's chores are complete. Frankly, suspicious.",spoken:"Household readiness is one hundred percent. Today's chores are complete. Frankly, suspicious."};
+ if(win){let n=win.team.shortName||win.team.name||"One of the tracked teams";return {level:"good",icon:"🏟️",title:"SPORTS DESK: WIN CONFIRMED",detail:`${n} picked up a win.`,spoken:`Sports desk update. ${n} picked up a win.`}}
+ if(day===5&&h>=15)return {level:"good",icon:"🟢",title:"WEEKEND OPERATIONS: NEARLY AUTHORIZED",detail:"Friday afternoon protocols are in effect.",spoken:"Weekend operations are nearly authorized. Friday afternoon protocols are in effect."};
+ return {level:"good",icon:"🛰️",title:"HOUSEHOLD SYSTEMS NOMINAL",detail:"No unusual conditions require escalation.",spoken:"Household systems nominal. No unusual conditions require escalation."};
+}
+function morningSituationalHtml_(){let z=noradSituation_();return `<div class="noradSituation ${z.level}"><div class="sitIcon">${z.icon}</div><div class="sitText"><b>${esc(z.title)}</b><span>${esc(z.detail)}</span></div></div>`}
+function situationalVoiceLine_(){return noradSituation_().spoken||""}
 function voiceHouseStatus_(){
  let x=householdIntelSnapshot_(),p=[];
  if(x.cs.total)p.push(x.cs.left?`${x.cs.left} chore${x.cs.left===1?"":"s"} remain`:"chores are complete");
@@ -3110,7 +3138,7 @@ function voiceHouseStatus_(){
  else if(x.rs.today)p.push(`${x.rs.today} maintenance item${x.rs.today===1?" is":"s are"} due today`);
  if(x.g!=null&&x.g>0)p.push(`${x.g} grocery item${x.g===1?"":"s"} remain on the list`);
  let opener=(x.rs.overdue||x.d?.need?.missing>0||x.cs.left>=5)?"Not entirely.":"Yes. We're in decent shape.";
- return `${opener} ${p.join(". ")}. ${householdReadinessCode_(x)}`;
+ let sit=noradSituation_();return `${opener} ${p.join(". ")}. ${sit.spoken}`;
 }
 function voiceNeedToKnow_(){
  let x=householdIntelSnapshot_(),p=[];
@@ -3120,8 +3148,9 @@ function voiceNeedToKnow_(){
  if(x.d?.dinner){if(x.d.ready)p.push(`Dinner is ${x.d.dinner.name}, and Kitchen Ready is cleared`);else if(x.d.need?.missing>0)p.push(`Dinner is ${x.d.dinner.name}; ${x.d.need.missing} ingredient${x.d.need.missing===1?"":"s"} should be checked`);else p.push(`Dinner is ${x.d.dinner.name}`)}else p.push("Dinner is not planned yet");
  if(x.cs.left)p.push(`${x.cs.left} chore${x.cs.left===1?"":"s"} remain`);
  if(x.sports)p.push(x.sports.replace(/\.$/,""));
- if(!p.length)return "Nothing urgent. Household systems nominal.";
- return `Here's what matters. ${p.slice(0,5).join(". ")}.`;
+ let sit=noradSituation_();
+ if(!p.length)return `Nothing urgent. ${sit.spoken}`;
+ return `Here's what matters. ${p.slice(0,5).join(". ")}. ${sit.title!=="HOUSEHOLD SYSTEMS NOMINAL"?sit.spoken:""}`.trim();
 }
 function voiceBeforeLeaving_(){
  let x=householdIntelSnapshot_(),p=[];
