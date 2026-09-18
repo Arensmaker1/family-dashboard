@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.20.0 NORAD Situational Awareness build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.20.1 NORAD Morning Wake-Up Fix build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -1217,7 +1217,7 @@ let planWeekDraft=[],randomDinnerDraft=[],WG={items:[],recipes:[],loaded:false};
 let cookRecipe=null,cookStep=0,cookAllStepsOpen=false,cookCheckedIngredients=new Set(),cookCompletedSteps=new Set(),cookWakeLock=null,cookKeepAwake=false,cookScale=1;
 let coreLoadInFlight_=false,weatherLoadInFlight_=false,pantryLoadInFlight_=false,groceryLoadInFlight_=false;
 let mealPlanSourceAddInFlight_=false;
-let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0;
+let lastCalendarSignature_="",lastCoreRefreshAt_=0,lastMinuteUiAt_=0,lastActivityAt_=0,dashboardHiddenAt_=0;
 let fdDiagLongTasks_=0,fdDiagLongestTask_=0,fdDiagLastHeartbeat_=Date.now(),fdDiagHeartbeatLag_=0,fdDiagSampler_=null,fdDiagHeartbeatTimer_=null;
 const FD_CRASH_CONTEXT_KEY_="familyDashboardCrashContextV1";
 function initRendererSafePreference_(){
@@ -2405,7 +2405,11 @@ function buildMorningBriefHtml_(){
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="closeMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${briefSafe_("Situational Awareness",()=>morningSituationalHtml_(),"")}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="closeMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="dismissMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${briefSafe_("Situational Awareness",()=>morningSituationalHtml_(),"")}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="dismissMorningBrief_()">Done</button></div></div>`;
+}
+function dismissMorningBrief_(){
+ try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
+ closeMorningBrief_();
 }
 function closeMorningBrief_(){
  morningBriefOpen_=false;
@@ -2444,7 +2448,6 @@ function openMorningBrief(){
   if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 4.0</h2><div class="briefLine">Loading household intelligence…</div></div>`;
   if(bg)bg.style.display="grid";
  }catch(_){}
- try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
  try{ensureHouseholdReminders_()}catch(err){console.warn("Morning Brief reminders prep failed",err)}
  try{refreshMorningBrief_(sessionId)}catch(err){console.error("Morning Brief initial render failed",err)}
 
@@ -3842,7 +3845,7 @@ function load(force=false){
    renderCountdowns();
    maybeTriggerTodaySpecial_();
    refreshPantry();
-   loadSports(false);
+   loadSports(!!force);
    loadWeather();
    activity();
   })
@@ -3863,11 +3866,18 @@ function minuteDashboardTick_(){
  if(!fdRendererSafe_)maybeRareCreature();
 }
 document.addEventListener("visibilitychange",()=>{
- if(!document.hidden){
-  clock();
-  minuteDashboardTick_();
-  if(Date.now()-lastCoreRefreshAt_>300000)load();
+ if(document.hidden){
+  dashboardHiddenAt_=Date.now();
+  return;
  }
+ const hiddenFor=dashboardHiddenAt_?Date.now()-dashboardHiddenAt_:0;
+ dashboardHiddenAt_=0;
+ clock();
+ minuteDashboardTick_();
+ if(Date.now()-lastCoreRefreshAt_>300000)load();
+ // V9.20.1: after a meaningful sleep/idle period, bypass any stale GitHub/CDN
+ // sports state so last night's in-progress score cannot survive into morning.
+ if(hiddenFor>600000)loadSports(true);
 });
 initAppearance();
 loadKitchenTimers();
