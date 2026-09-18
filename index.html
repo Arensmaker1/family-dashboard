@@ -3186,7 +3186,7 @@ function voiceCommandDebug_(raw,n,handled){
   localStorage.setItem("noradVoice21Log",JSON.stringify(log.slice(0,40)));
  }catch(_){}
 }
-// V9.19.2 — context-aware timing + ingredient-category intelligence for hands-free Cook Mode.
+// V9.19.3 — Cook router/resolution polish: chile categories, natural duration, ingredient usage.
 let cookVoiceContext_={ingredient:"",at:0};
 function cookRememberIngredient_(name){let x=String(name||"").trim();if(x)cookVoiceContext_={ingredient:x,at:Date.now()}}
 function cookRecentIngredient_(){return cookVoiceContext_.ingredient&&Date.now()-cookVoiceContext_.at<120000?cookVoiceContext_.ingredient:""}
@@ -3199,7 +3199,7 @@ function cookContentWords_(s){
 function cookVoiceTerms_(q){
  let t=cookVoiceClean_(q).replace(/\b(?:how much|how many|when do i|when should i|when does|what step do i|what step does|do i need|do i use|am i using|is it time for|where does|where do i|tell me when)\b/g," ").replace(/\b(?:add|use|put in|put|mix in|mix|stir in|stir|go in|goes in|need|yet|now|again|the|a|an|some|my|our|this|that|ingredient|ingredients)\b/g," ").replace(/\s+/g," ").trim();
  if(/^(?:it|that|that one|this one)$/.test(t))t=cookRecentIngredient_();
- const aliases={"onions":"onion","tomatoes":"tomato","peppers":"pepper","cloves":"clove","chiles":"chile","chilies":"chile","scallions":"scallion"};
+ const aliases={"onions":"onion","tomatoes":"tomato","peppers":"pepper","cloves":"clove","chile":"chile","chiles":"chile","chili":"chile","chilis":"chile","chilies":"chile","chillies":"chile","scallions":"scallion"};
  return aliases[t]||t;
 }
 function cookMatchScore_(text,term){
@@ -3256,7 +3256,7 @@ function cookDurationFor_(kind){
 function cookCurrentDuration_(){return cookDurationFor_("cook")}
 function cookCategoryTerms_(term){
  let t=cookVoiceClean_(term), map={
-  "chile":["chile","chili","pepper"],"chiles":["chile","chili","pepper"],"chilies":["chile","chili","pepper"],
+  "chile":["chile","chili","chiles","chilies","pepper"],"chiles":["chile","chili","chiles","chilies","pepper"],"chili":["chile","chili","chiles","chilies","pepper"],"chilis":["chile","chili","chiles","chilies","pepper"],"chilies":["chile","chili","chiles","chilies","pepper"],"chillies":["chile","chili","chiles","chilies","pepper"],
   "pepper":["pepper","chile","chili"],"peppers":["pepper","chile","chili"],
   "cheese":["cheese","cheddar","mozzarella","parmesan","pecorino","jack","queso","feta","gruyere"],
   "onion":["onion","shallot","scallion","green onion"],"onions":["onion","shallot","scallion","green onion"],
@@ -3358,18 +3358,20 @@ function handleVoiceCommand_(raw){
  if(/calendar tomorrow|schedule tomorrow|what is on the calendar tomorrow/.test(n)){let d=new Date();d.setDate(d.getDate()+1);speak_(voiceEvents_(d,false));return true}
  if(cookRecipe){
    let steps=cookRecipe.steps||[], current=()=>steps[cookStep]||"";
-   // V9.19.2 Context-Aware Recipe Intelligence: classify first, then search the entire active recipe.
+   // V9.19.3 Cook Router + Resolution Polish: classify first, then search the entire active recipe.
    if(/(?:what|which) (?:temperature|temp)|how hot|set (?:the )?(?:oven|grill|smoker)|(?:oven|grill|smoker) (?:temperature|temp)|preheat/.test(n)){speak_(cookCurrentTemperature_());return done()}
    if(/how long.*(?:marinat|in (?:the )?marinade)|marinat(?:e|ing) time/.test(n)){speak_(cookDurationFor_("marinate"));return done()}
    if(/how long.*(?:rest|sit)|rest(?:ing)? time/.test(n)){speak_(cookDurationFor_("rest"));return done()}
    if(/how long.*(?:freez|chill|refrigerat|fridge)|(?:freez|chill|refrigerat)(?:ing)? time/.test(n)){speak_(cookDurationFor_("chill"));return done()}
-   if(/how long.*(?:cook|bake|roast|grill|smok|fry|simmer|oven)|cook time|cooking time|how much longer|how many (?:minutes|hours)/.test(n)){speak_(cookDurationFor_("cook"));return done()}
+   if(/how long.*(?:cook|bake|roast|grill|smok|fry|simmer|oven)|how long (?:is|will|does) (?:this|it|the recipe|the cook)(?: going to)? take|how long is this (?:going to )?take|how long will (?:this|it|the cook) take|how long does (?:this|it|the cook) take|how long is this thing (?:going to )?take|cook time|cooking time|total cook time|how much longer|how many (?:minutes|hours)/.test(n)){speak_(cookDurationFor_("cook"));return done()}
    if((m=n.match(/(?:do i need|do i use|am i using|is it time for|do i add|should i add) (.+?)(?: yet| now)?$/))){speak_(cookNeedYet_(m[1]));return done()}
    if((m=n.match(/(?:when|what step|where) (?:do i |should i |does (?:the )?)?(?:add|use|put|mix|stir|goes?|go) (?:in )?(?:the )?(.+)$/))){speak_(cookWhenUse_(m[1]));return done()}
    if((m=n.match(/(?:when|what step|where) (?:is|are|does|do) (?:the )?(.+?) (?:used|added|go in|goes in|come in)$/))){speak_(cookWhenUse_(m[1]));return done()}
+   if((m=n.match(/^(?:what (?:am i|are we) supposed to do with|what do i do with|what should i do with|how do i use|where do i use) (?:the )?(.+)$/))){speak_(cookWhenUse_(m[1]));return done()}
    if(/^(?:when do i add it|when do i use it|when does it go in|what step is it used|when should i add it)$/.test(n)){speak_(cookWhenUse_(cookRecentIngredient_()));return done()}
    if(/^(?:what comes after this|what comes next|what is after this|what is the next step without moving|peek next)$/.test(n)){speak_(cookPeekNext_());return done()}
    if(/^(?:what am i doing|what am i doing now|where am i|where are we|current step)$/.test(n)){speak_(`You're on step ${cookStep+1} of ${Math.max(1,steps.length)}. ${current()}`);return done()}
+   if((m=n.match(/^(?:what|which) (chile|chiles|chili|chilis|chilies|chillies|pepper|peppers|cheese|cheeses|onion|onions|meat|meats|spice|spices) (?:do i need|does this need|are in this|are there)$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    if((m=n.match(/(?:how much|how many) (.+?)(?: do i need| does it need| is in this| is there)?$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    if((m=n.match(/^(?:what about|and how much|how about) (.+)$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    // Current step: deliberately broad, because speech recognition often drops small words.
