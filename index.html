@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.21.0 NORAD Music Center build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.22.0 NORAD Music Search & Discovery build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -759,6 +759,9 @@ body[data-appearance="light"] .noradSituation{background:#f7fafc}
 /* V9.21.0 NORAD MUSIC CENTER */
 .musicCenterWrap{max-width:880px;margin:auto}.musicCenterHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:48px;margin-bottom:12px}.musicCenterHead h2{margin:0}.musicNow{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:center;border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p)}.musicArt{aspect-ratio:16/9;border-radius:10px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:42px}.musicArt img{width:100%;height:100%;object-fit:cover}.musicTitle{font-size:18px;font-weight:900;line-height:1.2}.musicArtist{font-size:11px;color:var(--m);margin-top:5px}.musicControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.musicControls .btn{min-width:54px}.musicVolume{display:flex;align-items:center;gap:8px;margin-top:10px}.musicVolume input{width:min(280px,100%)}.musicPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px}.musicPreset{border:1px solid var(--l);border-radius:10px;padding:10px;background:#ffffff05}.musicPreset b{display:block;margin-bottom:7px}.musicSetup{margin-top:12px;border-top:1px solid var(--l);padding-top:12px}.musicSetupRow{display:grid;grid-template-columns:120px 1fr auto;gap:7px;margin:7px 0}.musicSetupRow input{min-width:0}.musicHint{font-size:10px;color:var(--m);line-height:1.45}.musicMini{position:fixed;left:12px;bottom:70px;z-index:24;display:none;align-items:center;gap:8px;max-width:min(520px,calc(100vw - 100px));padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.musicMini.open{display:flex}.musicMiniText{min-width:0;flex:1}.musicMiniText b,.musicMiniText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.musicMiniText span{font-size:9px;color:var(--m)}#ytMusicPlayerHost{position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;overflow:hidden}.musicSearchRow{display:flex;gap:7px;margin:10px 0}.musicSearchRow input{flex:1;min-width:0}@media(max-width:650px){.musicNow{grid-template-columns:1fr}.musicArt{max-width:260px}.musicSetupRow{grid-template-columns:1fr}.musicMini{left:8px;right:68px;max-width:none}}
 
+
+/* V9.22.0 MUSIC SEARCH + DISCOVERY */
+.musicSearchResults{display:grid;gap:7px;margin:8px 0 12px}.musicSearchResult{display:grid;grid-template-columns:88px 1fr auto;gap:9px;align-items:center;border:1px solid var(--l);border-radius:10px;padding:7px;background:#ffffff05}.musicSearchResult img{width:88px;aspect-ratio:16/9;object-fit:cover;border-radius:7px}.musicSearchResult b{font-size:11px;line-height:1.25}.musicSearchResult span{display:block;font-size:9px;color:var(--m);margin-top:3px}.musicDiscoveryActions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.musicDiscoveryActions .btn{min-height:40px}.musicSearchStatus{font-size:10px;color:var(--m);min-height:15px;margin-top:5px}@media(max-width:650px){.musicSearchResult{grid-template-columns:72px 1fr}.musicSearchResult img{width:72px}.musicSearchResult .btn{grid-column:1/-1;width:100%}}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1215,7 +1218,7 @@ let familyDashboardAuthExpired_ = false;
 <script>
 let D={events:[],calendars:[]},S={chores:[],menu:{},notes:"",hiddenCalendars:[],completions:{}},W=null,view=new Date(),sel=new Date(),idle;
 let SPORTS={loading:true,ok:false,teams:[],updatedAt:null,message:""};
-let MUSIC={player:null,ready:false,playing:false,shuffle:false,currentTitle:"Nothing playing",currentArtist:"",currentVideoId:"",presets:[]};
+let MUSIC={player:null,ready:false,playing:false,shuffle:false,currentTitle:"Nothing playing",currentArtist:"",currentVideoId:"",presets:[],searchResults:[],searching:false,lastQuery:"",history:[]};
 const MUSIC_PRESETS_KEY_="familyDashboardMusicPresetsV921";
 
 let G={items:[],updatedAt:null},groceryTimer=null,STOCK={items:[]};
@@ -2139,11 +2142,11 @@ function musicSyncNow_(){
 }
 function musicThumb_(){return MUSIC.currentVideoId?`https://i.ytimg.com/vi/${encodeURIComponent(MUSIC.currentVideoId)}/hqdefault.jpg`:""}
 function musicCenterHtml_(msg=""){
- musicSyncNow_();
- let vol=65;try{if(MUSIC.ready)vol=MUSIC.player.getVolume()}catch(_){}
+ musicSyncNow_();let vol=65;try{if(MUSIC.ready)vol=MUSIC.player.getVolume()}catch(_){}
  let presets=MUSIC.presets.map((p,i)=>`<div class="musicPreset"><b>🎵 ${esc(p.name)}</b><button class="btn ${p.playlist?"primaryAction":""}" onclick="musicPlayPreset_(${i})">${p.playlist?"Play":"Set playlist"}</button></div>`).join("");
- let setup=MUSIC.presets.map((p,i)=>`<div class="musicSetupRow"><input id="musicPresetName${i}" value="${esc(p.name)}" aria-label="Preset name"><input id="musicPresetUrl${i}" value="${esc(p.playlist||"")}" placeholder="YouTube playlist URL or playlist ID"><button class="btn" onclick="musicSavePresetRow_(${i})">Save</button></div>`).join("");
- return `<div class="musicCenterWrap"><div class="musicCenterHead"><div><h2>🎵 NORAD Music Center</h2><div class="musicHint">YouTube-powered kitchen audio • playlists stay on this dashboard</div></div></div>${msg?`<div class="note">${esc(msg)}</div>`:""}<div class="musicNow"><div class="musicArt">${musicThumb_()?`<img src="${musicThumb_()}" alt="">`:"🎵"}</div><div><div class="musicTitle">${esc(MUSIC.currentTitle||"Nothing playing")}</div><div class="musicArtist">${esc(MUSIC.currentArtist||"Choose a playlist below")}</div><div class="musicControls"><button class="btn" onclick="musicPrevious_()">⏮</button><button class="btn primaryAction" onclick="musicTogglePlay_()">${MUSIC.playing?"⏸ Pause":"▶ Play"}</button><button class="btn" onclick="musicNext_()">⏭</button><button class="btn ${MUSIC.shuffle?"active":""}" onclick="musicShuffle_()">🔀 Shuffle</button></div><div class="musicVolume"><span>🔈</span><input type="range" min="0" max="100" value="${vol}" oninput="musicVolume_(this.value)"><span>🔊</span></div></div></div><h3 style="margin:14px 0 6px">PLAYLISTS</h3><div class="musicPresetGrid">${presets}</div><div class="musicSetup"><h3>⚙️ PLAYLIST SETUP</h3><div class="musicHint">Paste a normal YouTube playlist URL or playlist ID. Public/unlisted embeddable playlists work best. You only have to save these once on the kitchen PC.</div>${setup}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
+ let setup=MUSIC.presets.map((p,i)=>`<div class="musicSetupRow"><input id="musicPresetName${i}" value="${esc(p.name)}"><input id="musicPresetUrl${i}" value="${esc(p.playlist||"")}" placeholder="YouTube playlist URL or playlist ID"><button class="btn" onclick="musicSavePresetRow_(${i})">Save</button></div>`).join("");
+ let results=(MUSIC.searchResults||[]).map((r,i)=>`<div class="musicSearchResult"><img src="${esc(r.thumbnail||"")}" alt=""><div><b>${esc(r.title||"Track")}</b><span>${esc(r.channel||"YouTube")}</span></div><button class="btn primaryAction" onclick="musicPlaySearchResult_(${i})">▶ Play</button></div>`).join("");
+ return `<div class="musicCenterWrap"><div class="musicCenterHead"><div><h2>🎵 NORAD Music Center</h2><div class="musicHint">Ask Lewis for a song, artist, playlist, or let NORAD pick something.</div></div></div>${msg?`<div class="note">${esc(msg)}</div>`:""}<div class="musicNow"><div class="musicArt">${musicThumb_()?`<img src="${musicThumb_()}" alt="">`:"🎵"}</div><div><div class="musicTitle">${esc(MUSIC.currentTitle||"Nothing playing")}</div><div class="musicArtist">${esc(MUSIC.currentArtist||"Choose some music below")}</div><div class="musicControls"><button class="btn" onclick="musicPrevious_()">⏮</button><button class="btn primaryAction" onclick="musicTogglePlay_()">${MUSIC.playing?"⏸ Pause":"▶ Play"}</button><button class="btn" onclick="musicNext_()">⏭</button><button class="btn ${MUSIC.shuffle?"active":""}" onclick="musicShuffle_()">🔀 Shuffle</button></div><div class="musicVolume"><span>🔈</span><input type="range" min="0" max="100" value="${vol}" oninput="musicVolume_(this.value)"><span>🔊</span></div></div></div><h3 style="margin:14px 0 6px">🔎 FIND SOMETHING</h3><div class="musicSearchRow"><input id="musicSearchInput" value="${esc(MUSIC.lastQuery||"")}" placeholder="Song, artist, album…" onkeydown="if(event.key==='Enter')musicSearchUI_()"><button class="btn primaryAction" onclick="musicSearchUI_()">Search</button></div><div class="musicDiscoveryActions"><button class="btn" onclick="musicRandom_()">🎲 Play Something</button><button class="btn" onclick="musicRandom_()">🔁 Something Else</button>${MUSIC.currentArtist?'<button class="btn" onclick="musicMoreLikeThis_()">✨ More Like This</button>':""}</div><div class="musicSearchStatus">${MUSIC.searching?"Searching the music bunker…":""}</div>${results?`<div class="musicSearchResults">${results}</div>`:""}<h3 style="margin:14px 0 6px">PLAYLISTS</h3><div class="musicPresetGrid">${presets}</div><div class="musicSetup"><h3>⚙️ PLAYLIST SETUP</h3><div class="musicHint">Paste a YouTube playlist URL or playlist ID.</div>${setup}</div><div class="actions"><button class="btn" onclick="closeModal()">Done</button></div></div>`;
 }
 function openMusicCenter(){musicLoadPresets_();ensureYouTubePlayer_();openModal(musicCenterHtml_(),{closeAction:"closeModal()"});activity()}
 function musicRefreshUi_(msg=""){
@@ -2173,10 +2176,20 @@ function musicVolume_(v){if(MUSIC.ready)try{MUSIC.player.setVolume(Math.max(0,Ma
 function musicFindPreset_(q){
  q=String(q||"").toLowerCase().trim();return MUSIC.presets.findIndex(p=>p.playlist&&(q.includes(String(p.name).toLowerCase())||String(p.name).toLowerCase().includes(q)));
 }
+function musicSearchBackend_(q,autoPlay=false){
+ q=String(q||"").trim();if(!q)return;MUSIC.lastQuery=q;MUSIC.searching=true;MUSIC.searchResults=[];musicRefreshUi_();
+ google.script.run.withSuccessHandler(r=>{MUSIC.searching=false;if(!r?.ok){musicRefreshUi_(r?.message||"Music search failed.");return}MUSIC.searchResults=Array.isArray(r.items)?r.items:[];if(autoPlay&&MUSIC.searchResults.length){musicPlaySearchResult_(0);return}musicRefreshUi_(MUSIC.searchResults.length?`Found ${MUSIC.searchResults.length} music matches.`:"No playable music matches found.");}).withFailureHandler(e=>{MUSIC.searching=false;musicRefreshUi_(e?.message||String(e));}).searchNoradMusic(q,8);
+}
+function musicSearchUI_(){let q=document.getElementById("musicSearchInput")?.value.trim();if(q)musicSearchBackend_(q,false)}
+function musicPlayVideo_(id,title="",artist=""){if(!id)return;ensureYouTubePlayer_();if(!MUSIC.ready){setTimeout(()=>musicPlayVideo_(id,title,artist),400);return}try{MUSIC.currentVideoId=id;MUSIC.currentTitle=title||"Music";MUSIC.currentArtist=artist||"YouTube";MUSIC.player.loadVideoById(id);musicRefreshUi_()}catch(_){musicRefreshUi_("That track could not be played.")}}
+function musicPlaySearchResult_(i){let r=MUSIC.searchResults?.[i];if(r)musicPlayVideo_(r.videoId,r.title,r.channel)}
+function musicRandom_(){MUSIC.searching=true;musicRefreshUi_();google.script.run.withSuccessHandler(r=>{MUSIC.searching=false;if(!r?.ok||!r.item){musicRefreshUi_(r?.message||"NORAD couldn't find a random track.");return}musicPlayVideo_(r.item.videoId,r.item.title,r.item.channel)}).withFailureHandler(e=>{MUSIC.searching=false;musicRefreshUi_(e?.message||String(e));}).randomNoradMusic()}
+function musicMoreLikeThis_(){musicSearchBackend_([MUSIC.currentArtist,MUSIC.currentTitle].filter(Boolean).join(" ")||"Americana country rock",true)}
+
 function voiceMusicPlay_(q){
- musicLoadPresets_();let i=musicFindPreset_(q);
+ musicLoadPresets_();q=String(q||"").trim();let i=musicFindPreset_(q);
  if(i>=0){musicPlayPreset_(i);speak_(`Playing ${MUSIC.presets[i].name}.`);return}
- speak_("I don't have that playlist saved yet. Open Music Center and add it.");
+ speak_(`Looking for ${q}.`);musicSearchBackend_(q,true);
 }
 musicLoadPresets_();
 ensureYouTubePlayer_();
@@ -3438,6 +3451,9 @@ function handleVoiceCommand_(raw){
  if(/^(?:previous|last)(?: song| track)?$|^(?:go back|previous) (?:song|track)$/.test(n)){musicPrevious_();speak_("Going back.");return done()}
  if(/^(?:shuffle|shuffle the music|shuffle this playlist)$/.test(n)){musicShuffle_();speak_(MUSIC.shuffle?"Shuffle on.":"Shuffle off.");return done()}
  if(/^(?:what song is this|what is this song|what is playing|what's playing|whats playing)$/.test(n)){musicSyncNow_();speak_(MUSIC.currentTitle&&MUSIC.currentTitle!=="Nothing playing"?`${MUSIC.currentTitle}${MUSIC.currentArtist?` by ${MUSIC.currentArtist}`:""}.`:"Nothing is playing right now.");return done()}
+ if(/^(?:play something|play something random|give me something|surprise me|random song|play a random song)$/.test(n)){musicRandom_();speak_("NORAD roulette.");return done()}
+ if(/^(?:something else|another one|play another|give me another|different song)$/.test(n)){musicRandom_();speak_("Rolling again.");return done()}
+ if(/^(?:play something like this|more like this|something similar)$/.test(n)){musicMoreLikeThis_();speak_("Finding something similar.");return done()}
  if((m=n.match(/^(?:play|start) (?:my |the )?(.+?)(?: playlist)?$/))&&!/(timer|countdown|recipe|brief|sports|grocer|calendar)/.test(m[1])){voiceMusicPlay_(m[1]);return done()}
  if(/open (?:the )?(?:music|music center)/.test(n)){openMusicCenter();speak_("Opening Music Center.");return done()}
 
