@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.23.2 NORAD Exterior Illumination Polish build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.24.0 NORAD Final Hardening build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -84,7 +84,7 @@ body[data-appearance="light"] .quote,body[data-appearance="light"] .quoteMain{co
 body[data-appearance="light"] .countdownChip{background:#fff8ed}body[data-appearance="light"] .specialBanner{background:#fffdf9ee;color:#292722}
 body[data-appearance="light"] .dailyCelebrate{background:radial-gradient(circle,#d9f0d9dd 0%,#f5f1e833 42%,transparent 70%)}body[data-appearance="light"] .dailyCelebrateBox{background:#fffdf9f2;color:#292722}
 body[data-appearance="light"] #load{background:var(--bg)}
-.appearanceToggle{min-width:42px;padding-left:9px!important;padding-right:9px!important}
+.appearanceToggle{min-width:42px;padding-left:9px!important;padding-right:9px!important;background:var(--p)!important;border-color:var(--l)!important;color:var(--t)!important}
 
 
 
@@ -676,7 +676,7 @@ body.fdRendererSafe .ufoBeam{animation:none!important}
  display:grid;place-items:center;
 }
 .fdDiagBtn{
- position:fixed;right:10px;bottom:10px;z-index:95;
+ position:fixed;right:10px;top:112px;z-index:95;
  width:38px;height:38px;border-radius:999px;
  border:1px solid var(--l);background:var(--p);color:var(--t);
  opacity:.7;font-size:17px;
@@ -757,14 +757,15 @@ body[data-appearance="light"] .briefIntelHero,body[data-appearance="light"] .bri
 body[data-appearance="light"] .noradSituation{background:#f7fafc}
 
 /* V9.21.0 NORAD MUSIC CENTER */
-.musicCenterWrap{max-width:880px;margin:auto}.musicCenterHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:48px;margin-bottom:12px}.musicCenterHead h2{margin:0}.musicNow{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:center;border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p)}.musicArt{aspect-ratio:16/9;border-radius:10px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:42px}.musicArt img{width:100%;height:100%;object-fit:cover}.musicTitle{font-size:18px;font-weight:900;line-height:1.2}.musicArtist{font-size:11px;color:var(--m);margin-top:5px}.musicControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.musicControls .btn{min-width:54px}.musicVolume{display:flex;align-items:center;gap:8px;margin-top:10px}.musicVolume input{width:min(280px,100%)}.musicPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px}.musicPreset{border:1px solid var(--l);border-radius:10px;padding:10px;background:#ffffff05}.musicPreset b{display:block;margin-bottom:7px}.musicSetup{margin-top:12px;border-top:1px solid var(--l);padding-top:12px}.musicSetupRow{display:grid;grid-template-columns:120px 1fr auto;gap:7px;margin:7px 0}.musicSetupRow input{min-width:0}.musicHint{font-size:10px;color:var(--m);line-height:1.45}.musicMini{position:fixed;left:12px;bottom:70px;z-index:24;display:none;align-items:center;gap:8px;max-width:min(520px,calc(100vw - 100px));padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.musicMini.open{display:flex}.musicMiniText{min-width:0;flex:1}.musicMiniText b,.musicMiniText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.musicMiniText span{font-size:9px;color:var(--m)}#ytMusicPlayerHost{position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;overflow:hidden}.musicSearchRow{display:flex;gap:7px;margin:10px 0}.musicSearchRow input{flex:1;min-width:0}@media(max-width:650px){.musicNow{grid-template-columns:1fr}.musicArt{max-width:260px}.musicSetupRow{grid-template-columns:1fr}.musicMini{left:8px;right:68px;max-width:none}}
+.musicCenterWrap{max-width:880px;margin:auto}.musicCenterHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:48px;margin-bottom:12px}.musicCenterHead h2{margin:0}.musicNow{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:center;border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p)}.musicArt{aspect-ratio:16/9;border-radius:10px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:42px}.musicArt img{width:100%;height:100%;object-fit:cover}.musicTitle{font-size:18px;font-weight:900;line-height:1.2}.musicArtist{font-size:11px;color:var(--m);margin-top:5px}.musicControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.musicControls .btn{min-width:54px}.musicVolume{display:flex;align-items:center;gap:8px;margin-top:10px}.musicVolume input{width:min(280px,100%)}.musicPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px}.musicPreset{border:1px solid var(--l);border-radius:10px;padding:10px;background:#ffffff05}.musicPreset b{display:block;margin-bottom:7px}.musicSetup{margin-top:12px;border-top:1px solid var(--l);padding-top:12px}.musicSetupRow{display:grid;grid-template-columns:120px 1fr auto;gap:7px;margin:7px 0}.musicSetupRow input{min-width:0}.musicHint{font-size:10px;color:var(--m);line-height:1.45}.musicMini{position:fixed;left:12px;bottom:70px;z-index:24;display:none;align-items:center;gap:8px;max-width:min(520px,calc(100vw - 100px));padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.musicMini.open{display:none!important}.musicMiniText{min-width:0;flex:1}.musicMiniText b,.musicMiniText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.musicMiniText span{font-size:9px;color:var(--m)}#ytMusicPlayerHost{position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;overflow:hidden}.musicSearchRow{display:flex;gap:7px;margin:10px 0}.musicSearchRow input{flex:1;min-width:0}@media(max-width:650px){.musicNow{grid-template-columns:1fr}.musicArt{max-width:260px}.musicSetupRow{grid-template-columns:1fr}.musicMini{left:8px;right:68px;max-width:none}}
 
 
 /* V9.22.0 MUSIC SEARCH + DISCOVERY */
 .musicSearchResults{display:grid;gap:7px;margin:8px 0 12px}.musicSearchResult{display:grid;grid-template-columns:88px 1fr auto;gap:9px;align-items:center;border:1px solid var(--l);border-radius:10px;padding:7px;background:#ffffff05}.musicSearchResult img{width:88px;aspect-ratio:16/9;object-fit:cover;border-radius:7px}.musicSearchResult b{font-size:11px;line-height:1.25}.musicSearchResult span{display:block;font-size:9px;color:var(--m);margin-top:3px}.musicDiscoveryActions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.musicDiscoveryActions .btn{min-height:40px}.musicSearchStatus{font-size:10px;color:var(--m);min-height:15px;margin-top:5px}@media(max-width:650px){.musicSearchResult{grid-template-columns:72px 1fr}.musicSearchResult img{width:72px}.musicSearchResult .btn{grid-column:1/-1;width:100%}}
 
 /* V9.23.2 — NORAD Exterior Illumination Division polish */
-.modal:has(.lightsWrap){width:min(820px,94vw);max-height:90vh;padding:20px}.lightsWrap{max-width:100%;margin:auto}.lightsSectionTitle{margin:16px 0 7px;font-size:13px;letter-spacing:.06em;color:var(--theme1)}.lightsHero{border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p);margin-bottom:12px}.lightsStatus{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.lightsStatus b{font-size:18px}.lightsDot{width:12px;height:12px;border-radius:50%;display:inline-block;background:#667;margin-right:7px;box-shadow:0 0 10px #0008}.lightsDot.on{background:#fff;box-shadow:0 0 12px #fff8}.lightsControls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.lightsCard{border:1px solid var(--l);border-radius:12px;padding:12px;background:#ffffff05}.lightsCard h3{margin:0 0 9px}.lightsRange{width:100%}.lightsColorRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.lightsColorRow input[type=color]{width:64px;height:44px;padding:2px;background:#071018;border:1px solid #344657;border-radius:8px}.lightsPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}.lightsPresetGrid .btn{min-height:48px}.lightsMsg{font-size:10px;color:var(--m);min-height:16px;margin-top:8px}.lightsMini{position:fixed;right:12px;bottom:70px;z-index:23;display:none;gap:6px;align-items:center;padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.lightsMini.open{display:flex}@media(max-width:650px){.lightsControls{grid-template-columns:1fr}.lightsMini{right:8px}}
+.modal:has(.lightsWrap){width:min(820px,94vw);max-height:90vh;padding:20px}.lightsWrap{max-width:100%;margin:auto}.lightsSectionTitle{margin:16px 0 7px;font-size:13px;letter-spacing:.06em;color:var(--theme1)}.lightsHero{border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p);margin-bottom:12px}.lightsStatus{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.lightsStatus b{font-size:18px}.lightsDot{width:12px;height:12px;border-radius:50%;display:inline-block;background:#667;margin-right:7px;box-shadow:0 0 10px #0008}.lightsDot.on{background:#fff;box-shadow:0 0 12px #fff8}.lightsControls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.lightsCard{border:1px solid var(--l);border-radius:12px;padding:12px;background:#ffffff05}.lightsCard h3{margin:0 0 9px}.lightsRange{width:100%}.lightsColorRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.lightsColorRow input[type=color]{width:64px;height:44px;padding:2px;background:#071018;border:1px solid #344657;border-radius:8px}.lightsPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}.lightsPresetGrid .btn{min-height:48px}.lightsMsg{font-size:10px;color:var(--m);min-height:16px;margin-top:8px}.lightsMini{position:fixed;right:12px;bottom:70px;z-index:23;display:none;gap:6px;align-items:center;padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.lightsMini.open{display:none!important}@media(max-width:650px){.lightsControls{grid-template-columns:1fr}.lightsMini{right:8px}}
+.menuWeekVertical{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}.menuDayEdit{border:1px solid var(--l);border-radius:11px;padding:11px;background:#ffffff04}.menuDayEdit h3{margin:0 0 8px;color:var(--theme1);font-size:14px}.menuDayEdit label{display:grid;grid-template-columns:82px 1fr;gap:8px;align-items:center;margin:6px 0;font-size:10px;color:var(--m);font-weight:800}.menuDayEdit input{min-width:0;width:100%;background:#071018;color:var(--t);border:1px solid var(--l);border-radius:8px;padding:8px 9px}body[data-appearance="light"] .menuDayEdit{background:#fffdf9}body[data-appearance="light"] .menuDayEdit input{background:#fff;color:#292722;border-color:#cfc4b5}@media(max-width:650px){.menuDayEdit label{grid-template-columns:1fr;gap:3px}}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1639,8 +1640,9 @@ function addChore(){captureChoreEdits();S.chores.push({name:"",who:"",days:[1,2,
 function delChore(i){captureChoreEdits();S.chores.splice(i,1);openChores()}
 function cancelChores(){let dirty=choresDirty();if(dirty&&!confirm("You have unsaved chore changes. Discard them?"))return;if(choreEditOriginal)S.chores=JSON.parse(JSON.stringify(choreEditOriginal));choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail()}
 function saveChores(){S.chores=choreEditorData().map(x=>({name:x.name.trim(),who:x.who.trim(),days:x.days})).filter(x=>x.name);choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail();persist()}
-function openMenu(){openModal(`<h2>Edit weekly menu</h2>${Object.entries(S.menu).map(([d,m])=>`<div class="field"><label>${d}</label><input id="meal${d}" value="${esc(m)}"></div>`).join("")}<div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`)}
-function saveMenu(){Object.keys(S.menu).forEach(d=>S.menu[d]=document.getElementById("meal"+d).value.trim());closeModal();renderDetail();persist()}
+function menuMeals_(raw){let out={breakfast:"",lunch:"",dinner:""},parts=String(raw||"").split(/\s*•\s*/).map(x=>x.trim()).filter(Boolean);parts.forEach((x,i)=>{if(/^🌅/u.test(x))out.breakfast=x.replace(/^🌅\s*/u,"");else if(/^☀️/u.test(x))out.lunch=x.replace(/^☀️\s*/u,"");else if(/^🌙/u.test(x))out.dinner=x.replace(/^🌙\s*/u,"");else if(i===0)out.breakfast=x;else if(i===1)out.lunch=x;else out.dinner=x});return out}
+function openMenu(){let order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};openModal(`<h2>Edit weekly menu</h2><div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(S.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<input id="meal${d}Breakfast" value="${esc(m.breakfast)}"></label><label>Lunch<input id="meal${d}Lunch" value="${esc(m.lunch)}"></label><label>Dinner<input id="meal${d}Dinner" value="${esc(m.dinner)}"></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`) }
+function saveMenu(){["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach(d=>{let b=document.getElementById("meal"+d+"Breakfast")?.value.trim()||"",l=document.getElementById("meal"+d+"Lunch")?.value.trim()||"",x=document.getElementById("meal"+d+"Dinner")?.value.trim()||"";S.menu[d]=[["🌅",b],["☀️",l],["🌙",x]].filter(z=>z[1]).map(z=>z[0]+" "+z[1]).join("  •  ")});closeModal();renderDetail();persist()}
 function openNotes(){S.pinnedNotes=S.pinnedNotes||[];openModal(`<h2>Family Notes</h2><div class="field"><label>General notes</label><textarea id="notes">${esc(S.notes)}</textarea></div><h3>📌 PINNED / IMPORTANT</h3><div class="note">These stay visible in the dashboard glance until you remove them.</div><div id="pinEditor">${S.pinnedNotes.map((x,i)=>`<div class="pinEditRow"><input id="pin${i}" value="${esc(x)}"><button class="x" onclick="removePinEditor(${i})">×</button></div>`).join("")}</div><button class="btn" onclick="addPinEditor()">+ Pin reminder</button><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveNotes()">Save</button></div>`)}
 function addPinEditor(){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.push("");openNotes()}
 function removePinEditor(i){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.splice(i,1);openNotes()}
@@ -1830,7 +1832,7 @@ function durationMinutesFromText_(text){
  // Recipe steps usually contain sequential durations; cap absurd totals.
  total=found.reduce((a,b)=>a+b,0);return Math.min(total,1440);
 }
-function formatCookEstimate_(mins){if(!mins)return "";if(mins>=240)return mins>=480?"Long cook":`~${Math.round(mins/60)} hr`;if(mins>=60){let h=Math.floor(mins/60),m=Math.round((mins%60)/5)*5;return `~${h} hr${m?" "+m+" min":""}`}return `~${Math.max(5,Math.round(mins/5)*5)} min`}
+function formatCookEstimate_(mins){if(!mins)return "";if(mins>=240)return mins>=480?"Long cook":`~${Math.round(mins/60)} hr`;if(mins>=60){let h=Math.floor(mins/60),m=Math.round((mins%60)/5)*5;return `${h} hr${m?" "+m+" min":""}`}return `${Math.max(5,Math.round(mins/5)*5)} min`}
 function prepIntelForRecipe_(recipe){
  let s=[recipe?.ingredients,recipe?.instructions,recipe?.notes].filter(Boolean).join(" ").toLowerCase(),hits=[];
  if(/\bovernight\b/.test(s))hits.push("overnight prep");
@@ -2082,8 +2084,8 @@ function morningSportsHtml_(){
     return !!(t && (t.live || t.next || t.last));
   });
 
-  if(!relevant.length) relevant = teams.filter(Boolean).slice(0,3);
-  else relevant = relevant.slice(0,3);
+  const sportsRank_=t=>{try{if(t?.live)return 0;if(t?.next&&key(new Date(t.next.date))===key(new Date()))return 1;if(t?.last){let y=new Date();y.setDate(y.getDate()-1);if(key(new Date(t.last.date))===key(y))return 3}if(t?.next)return 2;return 4}catch(_){return 9}};
+  relevant=(relevant.length?relevant:teams.filter(Boolean)).sort((a,b)=>sportsRank_(a)-sportsRank_(b)||((new Date(a?.next?.date||8640000000000000))-(new Date(b?.next?.date||8640000000000000)))).slice(0,3);
 
   return relevant.map(t=>{
     try{
@@ -2193,7 +2195,7 @@ function musicMoreLikeThis_(){musicSearchBackend_([MUSIC.currentArtist,MUSIC.cur
 function voiceMusicPlay_(q){
  musicLoadPresets_();q=String(q||"").trim();let i=musicFindPreset_(q);
  if(i>=0){musicPlayPreset_(i);speak_(`Playing ${MUSIC.presets[i].name}.`);return}
- speak_(`Looking for ${q}.`);musicSearchBackend_(q,true);
+ let searchQ=/\sby\s/i.test(q)?`${q} official audio`:q;speak_(`Looking for ${q}.`);musicSearchBackend_(searchQ,true);
 }
 musicLoadPresets_();
 ensureYouTubePlayer_();
@@ -3455,6 +3457,7 @@ function lightsWarm_(){lightsPreset_("warm")}
 function lightsPreset_(name){LIGHTS.lastPreset=name;lightsCall_("setNoradLightsPreset",[name],()=>{LIGHTS.on=true})}
 function voiceLightsPreset_(name){lightsPreset_(name);let pretty=({warm:"warm white",lions:"Lions",tigers:"Tigers",redwings:"Red Wings",pistons:"Pistons",msu:"MSU",notredame:"Notre Dame",newyear:"New Year’s",valentines:"Valentine’s Day",stpatricks:"St. Patrick’s Day",easter:"Easter",memorial:"Memorial Day",july4:"Fourth of July",laborday:"Labor Day",halloween:"Halloween",thanksgiving:"Thanksgiving",christmas:"Christmas"})[name]||name;speak_(`${pretty} exterior lighting engaged.`)}
 
+function voiceCalendarSearch_(query){let q=String(query||"").toLowerCase().replace(/\b(the|our|my)\b/g," ").replace(/\s+/g," ").trim();let words=q.split(" ").filter(x=>x.length>2),now=Date.now()-3600000,rows=(D?.events||[]).filter(e=>new Date(e.start).getTime()>=now).filter(e=>{let s=String(e.title||"").toLowerCase();return words.length&&words.every(w=>s.includes(w))}).sort((a,b)=>new Date(a.start)-new Date(b.start));if(!rows.length)return `I don't see an upcoming calendar item matching ${query}.`;let e=rows[0],d=new Date(e.start),when=e.allDay?d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"}):d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})+" at "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});return `${e.title} is ${when}.`}
 function handleVoiceCommand_(raw){
  let n=normalizeVoiceCommand_(raw),m,handled=true;
  const done=()=>{voiceCommandDebug_(raw,n,true);return true};
@@ -3498,6 +3501,13 @@ function handleVoiceCommand_(raw){
  if(/^(?:warm white|normal lights|normal lighting|porch lights)(?: mode)?$/.test(n)){voiceLightsPreset_("warm");return done()}
  if(/open (?:the )?(?:lights|lighting|exterior lights|illumination)(?: center| division)?/.test(n)){openLightsCenter();speak_("Opening Exterior Illumination Division.");return done()}
 
+ // V9.24 context-first routing: household questions beat generic action words such as "play".
+ if(voiceSportsTeamFromText_(n)&&/(?:what time|when|who).*(?:play|game)|(?:what time|when) (?:does|do|is|are)/.test(n)){voiceSportsSpeakNext_(n);return done()}
+ if(/^(?:how many|what) chores?(?: are)?(?: still)?(?: left| remaining)?(?: today)?$|^(?:how many|what) chores? do we have left$/.test(n)){speak_(voiceChoresForDate_(new Date()));return done()}
+ if(/^(?:what is|whats|what's) (?:the )?temperature(?: outside)?$|^(?:how hot|how cold|what is it like) (?:is it )?(?:outside|out there)?$/.test(n)){speak_(voiceWeather_());return done()}
+ if(/^(?:close|exit|dismiss|done with) (?:the )?(?:music|music center)$/.test(n)){closeModal();speak_("Music Center closed.");return done()}
+ if((m=n.match(/^(?:open|find|show|search for|pull up) (?:the )?(?:recipe for )?(.+?)(?: recipe)?$/))&&!/^(?:recipes|recipe center)$/.test(m[1])){let q=m[1].trim();ensureKitchenData_(()=>{let rows=kitchenRecipeRows_(),needle=q.toLowerCase(),hit=rows.find(x=>String(x.name||"").toLowerCase()===needle)||rows.find(x=>String(x.name||"").toLowerCase().includes(needle));if(hit){openRecipes();setTimeout(()=>openKitchenRecipe_(hit._source||"library",hit.id),80);speak_(`Opening ${hit.name}.`)}else speak_(`I couldn't find a recipe matching ${q}.`)});return done()}
+ if(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/.test(n)&&!voiceSportsTeamFromText_(n)){let q=(n.match(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/)||[])[1]||"";speak_(voiceCalendarSearch_(q));return done()}
  // V9.21 Music Center voice controls.
  if(/^(?:pause|stop) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.pauseVideo()}catch(_){};speak_("Music paused.");return done()}
  if(/^(?:resume|continue|play) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.playVideo()}catch(_){};speak_("Music resumed.");return done()}
@@ -3525,6 +3535,7 @@ function handleVoiceCommand_(raw){
  if(/open (?:the )?(?:brief|morning brief)/.test(n)){openMorningBrief();speak_("Opening the morning brief.");return true}
  if(/open (?:the )?grocer/.test(n)){openGroceries();speak_("Opening groceries.");return true}
  if(/open (?:the )?recipe/.test(n)){openRecipes();speak_("Opening recipes.");return true}
+ if(/^(?:close|exit|dismiss|done with) (?:the )?(?:recipes|recipe center)$/.test(n)){closeRecipes();speak_("Recipes closed.");return done()}
  if(/open (?:the )?sports/.test(n)){openSportsCenter();speak_("Opening sports center.");return true}
  if(/open (?:the )?(?:maintenance|maintenance center|household reminders)/.test(n)){openHouseholdReminders();speak_("Opening the Maintenance Center.");return true}
  if(/go home|open (?:the )?dashboard/.test(n)){document.querySelectorAll("#dayOverlay,#groceryOverlay,#recipeOverlay,#cookOverlay").forEach(x=>x.classList.remove("open"));closeModal();updateCookMiniBar_();speak_("Back to the dashboard.");return true}
