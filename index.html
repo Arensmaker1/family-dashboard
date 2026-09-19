@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.24.0 NORAD Final Hardening build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Family Dashboard V9.24.1 NORAD Final Hardening build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -766,6 +766,11 @@ body[data-appearance="light"] .noradSituation{background:#f7fafc}
 /* V9.23.2 — NORAD Exterior Illumination Division polish */
 .modal:has(.lightsWrap){width:min(820px,94vw);max-height:90vh;padding:20px}.lightsWrap{max-width:100%;margin:auto}.lightsSectionTitle{margin:16px 0 7px;font-size:13px;letter-spacing:.06em;color:var(--theme1)}.lightsHero{border:1px solid var(--l);border-radius:14px;padding:14px;background:var(--p);margin-bottom:12px}.lightsStatus{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.lightsStatus b{font-size:18px}.lightsDot{width:12px;height:12px;border-radius:50%;display:inline-block;background:#667;margin-right:7px;box-shadow:0 0 10px #0008}.lightsDot.on{background:#fff;box-shadow:0 0 12px #fff8}.lightsControls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.lightsCard{border:1px solid var(--l);border-radius:12px;padding:12px;background:#ffffff05}.lightsCard h3{margin:0 0 9px}.lightsRange{width:100%}.lightsColorRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.lightsColorRow input[type=color]{width:64px;height:44px;padding:2px;background:#071018;border:1px solid #344657;border-radius:8px}.lightsPresetGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}.lightsPresetGrid .btn{min-height:48px}.lightsMsg{font-size:10px;color:var(--m);min-height:16px;margin-top:8px}.lightsMini{position:fixed;right:12px;bottom:70px;z-index:23;display:none;gap:6px;align-items:center;padding:7px 9px;border:1px solid var(--theme1);border-radius:12px;background:var(--p);box-shadow:0 8px 24px #0005}.lightsMini.open{display:none!important}@media(max-width:650px){.lightsControls{grid-template-columns:1fr}.lightsMini{right:8px}}
 .menuWeekVertical{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}.menuDayEdit{border:1px solid var(--l);border-radius:11px;padding:11px;background:#ffffff04}.menuDayEdit h3{margin:0 0 8px;color:var(--theme1);font-size:14px}.menuDayEdit label{display:grid;grid-template-columns:82px 1fr;gap:8px;align-items:center;margin:6px 0;font-size:10px;color:var(--m);font-weight:800}.menuDayEdit input{min-width:0;width:100%;background:#071018;color:var(--t);border:1px solid var(--l);border-radius:8px;padding:8px 9px}body[data-appearance="light"] .menuDayEdit{background:#fffdf9}body[data-appearance="light"] .menuDayEdit input{background:#fff;color:#292722;border-color:#cfc4b5}@media(max-width:650px){.menuDayEdit label{grid-template-columns:1fr;gap:3px}}
+
+/* V9.24.1 — appearance toggle matches adjacent calendar controls. */
+#appearanceToggle.appearanceToggle{box-shadow:none!important}
+body[data-appearance="light"] #appearanceToggle.appearanceToggle{background:#eee7dc!important;border-color:#c9beaf!important;color:#302d28!important}
+body[data-appearance="dark"] #appearanceToggle.appearanceToggle{background:#10202b!important;border-color:#294355!important;color:#f1f6f9!important}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -3457,7 +3462,13 @@ function lightsWarm_(){lightsPreset_("warm")}
 function lightsPreset_(name){LIGHTS.lastPreset=name;lightsCall_("setNoradLightsPreset",[name],()=>{LIGHTS.on=true})}
 function voiceLightsPreset_(name){lightsPreset_(name);let pretty=({warm:"warm white",lions:"Lions",tigers:"Tigers",redwings:"Red Wings",pistons:"Pistons",msu:"MSU",notredame:"Notre Dame",newyear:"New Year’s",valentines:"Valentine’s Day",stpatricks:"St. Patrick’s Day",easter:"Easter",memorial:"Memorial Day",july4:"Fourth of July",laborday:"Labor Day",halloween:"Halloween",thanksgiving:"Thanksgiving",christmas:"Christmas"})[name]||name;speak_(`${pretty} exterior lighting engaged.`)}
 
-function voiceCalendarSearch_(query){let q=String(query||"").toLowerCase().replace(/\b(the|our|my)\b/g," ").replace(/\s+/g," ").trim();let words=q.split(" ").filter(x=>x.length>2),now=Date.now()-3600000,rows=(D?.events||[]).filter(e=>new Date(e.start).getTime()>=now).filter(e=>{let s=String(e.title||"").toLowerCase();return words.length&&words.every(w=>s.includes(w))}).sort((a,b)=>new Date(a.start)-new Date(b.start));if(!rows.length)return `I don't see an upcoming calendar item matching ${query}.`;let e=rows[0],d=new Date(e.start),when=e.allDay?d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"}):d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})+" at "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});return `${e.title} is ${when}.`}
+function voiceClockTime_(value){
+ let d=value instanceof Date?value:new Date(value);
+ if(!Number.isFinite(d.getTime()))return "";
+ let h=d.getHours(),min=d.getMinutes(),h12=((h+11)%12)+1,ap=h>=12?"PM":"AM";
+ return min===0?`${h12} ${ap}`:`${h12}:${String(min).padStart(2,"0")} ${ap}`;
+}
+function voiceCalendarSearch_(query){let q=String(query||"").toLowerCase().replace(/\b(the|our|my)\b/g," ").replace(/\s+/g," ").trim();let words=q.split(" ").filter(x=>x.length>2),now=Date.now()-3600000,rows=(D?.events||[]).filter(e=>new Date(e.start).getTime()>=now).filter(e=>{let s=String(e.title||"").toLowerCase();return words.length&&words.every(w=>s.includes(w))}).sort((a,b)=>new Date(a.start)-new Date(b.start));if(!rows.length)return `I don't see an upcoming calendar item matching ${query}.`;let e=rows[0],d=new Date(e.start),when=e.allDay?d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"}):d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})+" at "+voiceClockTime_(d);return `${e.title} is ${when}.`}
 function handleVoiceCommand_(raw){
  let n=normalizeVoiceCommand_(raw),m,handled=true;
  const done=()=>{voiceCommandDebug_(raw,n,true);return true};
@@ -3506,6 +3517,17 @@ function handleVoiceCommand_(raw){
  if(/^(?:how many|what) chores?(?: are)?(?: still)?(?: left| remaining)?(?: today)?$|^(?:how many|what) chores? do we have left$/.test(n)){speak_(voiceChoresForDate_(new Date()));return done()}
  if(/^(?:what is|whats|what's) (?:the )?temperature(?: outside)?$|^(?:how hot|how cold|what is it like) (?:is it )?(?:outside|out there)?$/.test(n)){speak_(voiceWeather_());return done()}
  if(/^(?:close|exit|dismiss|done with) (?:the )?(?:music|music center)$/.test(n)){closeModal();speak_("Music Center closed.");return done()}
+ // V9.24.1 — known NORAD destinations outrank generic named-recipe lookup.
+ if(/^(?:open|show|go to) (?:the )?chores?$/.test(n)){openChores();speak_("Opening chores.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:groceries|grocery list)$/.test(n)){openGroceries();speak_("Opening groceries.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:music|music center)$/.test(n)){openMusicCenter();speak_("Opening Music Center.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:sports|sports center)$/.test(n)){openSportsCenter();speak_("Opening sports center.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:lights|lighting|lights center|exterior lights)$/.test(n)){openLightsCenter();speak_("Opening exterior lighting.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:menu|weekly menu)$/.test(n)){openMenu();speak_("Opening the weekly menu.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:notes|family notes)$/.test(n)){openNotes();speak_("Opening family notes.");return done()}
+ if(/^(?:open|show|go to) (?:the )?pantry$/.test(n)){openPantry();speak_("Opening pantry.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:timers?|timer center)$/.test(n)){openTimers();speak_("Opening timers.");return done()}
+ if(/^(?:open|show|go to) (?:the )?(?:calendar|calendars)$/.test(n)){showAll();speak_("Opening calendars.");return done()}
  if((m=n.match(/^(?:open|find|show|search for|pull up) (?:the )?(?:recipe for )?(.+?)(?: recipe)?$/))&&!/^(?:recipes|recipe center)$/.test(m[1])){let q=m[1].trim();ensureKitchenData_(()=>{let rows=kitchenRecipeRows_(),needle=q.toLowerCase(),hit=rows.find(x=>String(x.name||"").toLowerCase()===needle)||rows.find(x=>String(x.name||"").toLowerCase().includes(needle));if(hit){openRecipes();setTimeout(()=>openKitchenRecipe_(hit._source||"library",hit.id),80);speak_(`Opening ${hit.name}.`)}else speak_(`I couldn't find a recipe matching ${q}.`)});return done()}
  if(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/.test(n)&&!voiceSportsTeamFromText_(n)){let q=(n.match(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/)||[])[1]||"";speak_(voiceCalendarSearch_(q));return done()}
  // V9.21 Music Center voice controls.
