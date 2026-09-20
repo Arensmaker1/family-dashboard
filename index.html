@@ -1,4 +1,4 @@
-<!doctype html><!-- Family Dashboard V9.24.3 NORAD Final Hardening build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.0.0 — Desktop Control build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -771,6 +771,11 @@ body[data-appearance="light"] .noradSituation{background:#f7fafc}
 #appearanceToggle.appearanceToggle{box-shadow:none!important}
 body[data-appearance="light"] #appearanceToggle.appearanceToggle{background:#eee7dc!important;border-color:#c9beaf!important;color:#302d28!important}
 body[data-appearance="dark"] #appearanceToggle.appearanceToggle{background:#10202b!important;border-color:#294355!important;color:#f1f6f9!important}
+
+/* V10.0.0 — Kitchen NORAD desktop system control */
+.brand{user-select:none;-webkit-user-select:none}
+.noradSystemPanel{max-width:560px;margin:auto}
+.noradSystemPanel h2{margin:0 0 5px}.noradSystemWarning{border:1px solid #ff9b3d66;background:#ff9b3d10;border-radius:11px;padding:11px 12px;margin:13px 0;font-size:11px;line-height:1.45}.noradSystemActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.noradMaintenanceBtn{border-color:#ff9b3d!important;color:#ffd2a8!important;font-weight:900!important;min-height:50px}.noradConfirmBtn{border-color:#ff9b3d!important;background:#3a2412!important;color:#ffe0bd!important;font-weight:900!important}.noradSystemState{margin-top:10px;font-size:10px;color:var(--m);min-height:16px}body[data-appearance="light"] .noradSystemWarning{background:#fff4e8;border-color:#c98645;color:#5d3a19}body[data-appearance="light"] .noradConfirmBtn{background:#f3dcc4!important;color:#5d3010!important}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -4004,6 +4009,40 @@ function sendWeekGroceries(){
   let btn=document.querySelectorAll(".wgSendAction"),st=document.getElementById("wgSendStatus");btn.forEach(b=>{b.disabled=true;b.textContent="Adding…"});st.textContent=`Sending ${items.length} item${items.length===1?"":"s"} to the shared list…`;
   google.script.run.withSuccessHandler(g=>{G=g;btn.forEach(b=>{b.disabled=false;b.textContent="✓ Added to Groceries"});st.innerHTML=`${items.length} item${items.length===1?"":"s"} added. <button class="btn" onclick="closeRecipes();openGroceries()">Open Groceries →</button>`;let p=document.querySelector(".wgPanel");if(p)p.insertAdjacentHTML("afterbegin",'<div class="wgSuccess">✓ Grocery run generated. Existing grocery items were left alone.</div>')}).withFailureHandler(e=>{btn.forEach(b=>{b.disabled=false;b.textContent="🛒 Add Selected to Shared Groceries"});st.textContent="Error: "+(e.message||e)}).addGeneratedGroceries(items);
 }
+
+// V10.0.0 — hidden touchscreen System Control / Maintenance Mode
+const NORAD_COMPANION_BASE_="http://127.0.0.1:38471";
+let noradBrandHoldTimer_=null,noradBrandHoldFired_=false;
+function openNoradSystemControl_(){
+  openModal(`<div class="noradSystemPanel"><h2>🛰️ Kitchen NORAD System Control</h2><div class="note">Desktop controls for the Kitchen NORAD station.</div><div class="noradSystemWarning"><b>Maintenance Mode</b><br>Closes the Kitchen NORAD kiosk and suspends automatic recovery so Windows can be used normally. The local companion remains available.</div><div class="noradSystemActions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn noradMaintenanceBtn" onclick="confirmNoradMaintenance_()">🛠️ Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);
+}
+function confirmNoradMaintenance_(){
+  openModal(`<div class="noradSystemPanel"><h2>🛠️ Enter Maintenance Mode?</h2><div class="noradSystemWarning">Kitchen NORAD will close and return to Windows. Automatic recovery will be suspended until the station is started again.</div><div class="noradSystemActions"><button class="btn" onclick="openNoradSystemControl_()">Cancel</button><button id="noradMaintenanceConfirm" class="btn noradConfirmBtn" onclick="enterNoradMaintenance_()">Enter Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);
+}
+async function enterNoradMaintenance_(){
+  const btn=document.getElementById("noradMaintenanceConfirm"),st=document.getElementById("noradSystemState");
+  if(btn){btn.disabled=true;btn.textContent="Contacting NORAD companion…"}
+  if(st)st.textContent="Requesting maintenance handoff…";
+  try{
+    const r=await fetch(NORAD_COMPANION_BASE_+"/maintenance",{method:"POST",cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    if(st)st.textContent="Maintenance Mode armed. Returning to Windows…";
+    if(btn)btn.textContent="Maintenance Mode Armed";
+  }catch(err){
+    console.error("NORAD maintenance request failed",err);
+    if(st)st.textContent="Could not reach the local NORAD companion. Maintenance Mode was not armed.";
+    if(btn){btn.disabled=false;btn.textContent="Try Again"}
+  }
+}
+function installNoradSystemGesture_(){
+  const brand=document.getElementById("familyTitle");if(!brand)return;
+  brand.title="Kitchen NORAD";
+  const start=e=>{if(e.type==="mousedown"&&e.button!==0)return;noradBrandHoldFired_=false;clearTimeout(noradBrandHoldTimer_);noradBrandHoldTimer_=setTimeout(()=>{noradBrandHoldFired_=true;openNoradSystemControl_()},1800)};
+  const stop=()=>{clearTimeout(noradBrandHoldTimer_);noradBrandHoldTimer_=null};
+  brand.addEventListener("pointerdown",start);brand.addEventListener("pointerup",stop);brand.addEventListener("pointercancel",stop);brand.addEventListener("pointerleave",stop);
+  brand.addEventListener("click",e=>{if(noradBrandHoldFired_){e.preventDefault();e.stopPropagation();noradBrandHoldFired_=false}});
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installNoradSystemGesture_);else installNoradSystemGesture_();
 
 function activity(){
  let now=Date.now();
