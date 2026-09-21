@@ -20,7 +20,7 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": false,
-      "error": "HTTP Error 400: Bad Request",
+      "error": "<urlopen error [Errno 104] Connection reset by peer>",
       "live": null,
       "last": null,
       "next": null
@@ -75,6 +75,6 @@
     }
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
-  "message": "Lions: HTTP Error 400: Bad Request | Tigers: HTTP Error 400: Bad Request | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
-  "updatedAt": "2026-09-17T10:08:41.846851Z"
+  "message": "Lions: HTTP Error 400: Bad Request | Tigers: <urlopen error [Errno 104] Connection reset by peer> | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
+  "updatedAt": "2026-09-21T03:26:36.385745Z"
 }
