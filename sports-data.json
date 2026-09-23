@@ -20,7 +20,7 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": false,
-      "error": "HTTP Error 400: Bad Request",
+      "error": "<urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1000)>",
       "live": null,
       "last": null,
       "next": null
@@ -75,6 +75,6 @@
     }
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
-  "message": "Lions: HTTP Error 400: Bad Request | Tigers: HTTP Error 400: Bad Request | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
-  "updatedAt": "2026-09-21T03:42:35.183506Z"
+  "message": "Lions: HTTP Error 400: Bad Request | Tigers: <urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1000)> | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
+  "updatedAt": "2026-09-23T16:09:13.684196Z"
 }
