@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.0.4 — Persistent NORAD Session build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.0.5 — Persistent NORAD Session Fix build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -1035,6 +1035,25 @@ let familyDashboardAuthExpired_ = false;
       shape:"pill",
       text:"continue_with"
     });
+  }
+
+  function showAuthGate_(message){
+    let gate=document.getElementById("fdAuthGate");
+    if(!gate){
+      gate=document.createElement("div");
+      gate.id="fdAuthGate";
+      gate.style.cssText="position:fixed;inset:0;z-index:9999;background:#071018;display:grid;place-items:center;font-family:Arial,sans-serif;color:#f4f6f8";
+      gate.innerHTML='<div style="width:min(420px,90vw);text-align:center;padding:28px;border:1px solid #314152;border-radius:16px;background:#0d1822"><div style="font-size:30px;font-weight:800;margin-bottom:8px">🏠 Family Dashboard</div><div id="fdAuthMessage" style="color:#98a6b4;margin-bottom:18px">Sign in with an authorized family Google account.</div><div id="fdGoogleSignIn" style="display:flex;justify-content:center"></div></div>';
+      document.body.appendChild(gate);
+    }
+    const m=document.getElementById("fdAuthMessage");
+    if(m && message) m.textContent=message;
+    gate.style.display="grid";
+  }
+
+  function hideAuthGate_(){
+    const gate=document.getElementById("fdAuthGate");
+    if(gate) gate.style.display="none";
   }
 
   const FAMILY_DASHBOARD_SESSION_KEY_="kitchenNoradHouseholdSessionV1";
@@ -4115,7 +4134,7 @@ setInterval(minuteDashboardTick_,60000);
 setTimeout(()=>{if(dashboardVisible_()&&!document.body.classList.contains("fdRendererSafe"))maybeRareCreature()},9000);
 document.addEventListener("keydown",cryptidTestKey);
 
-const NORAD_BUILD_="V10.0.4",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
+const NORAD_BUILD_="V10.0.5",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
 function noradNightScheduled_(d=new Date()){let x=d.getHours();return x>=21||x<6}
 function noradNightClock_(){let e=document.getElementById("noradNightClock");if(e)e.textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
 function noradNightStatusText_(){let n=new Date(),s=noradNightScheduled_(n),a=Date.now()<noradNightWakeUntil_;return `${NORAD_BUILD_} • ${n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})} • Schedule 9:00 PM–6:00 AM • ${noradNightForcedTest_?"TEST ACTIVE":s?(a?"NIGHT / TEMPORARILY AWAKE":"NIGHT MODE ACTIVE"):"DAYTIME"}`}
