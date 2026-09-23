@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.0.3 — Night Mode Test build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.0.4 — Persistent NORAD Session build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -887,6 +887,14 @@ let familyDashboardAuthExpired_ = false;
     }else{
       const err = new Error(msg.error?.message || "Apps Script backend error");
       err.name = msg.error?.name || "Error";
+      const authProblem=/Kitchen NORAD session (?:expired|invalid)|Family Dashboard sign-in required/i.test(err.message||"");
+      if(authProblem && isNoradSession_(familyDashboardIdToken)){
+        clearNoradSession_();
+        familyDashboardIdToken="";
+        familyDashboardAuthExpired_=true;
+        failExpiredQueue_();
+        showAuthBanner_("Kitchen NORAD session expired — tap Reconnect when convenient.","Reconnect");
+      }
       try{
         if(job.failure) job.failure(err);
         else console.error("Family Dashboard backend error:", err);
@@ -1029,125 +1037,85 @@ let familyDashboardAuthExpired_ = false;
     });
   }
 
-  function tryExistingGoogleSession_(reason){
-    if(!window.google?.accounts?.id || familyDashboardAutoRefreshInFlight_)return false;
-    familyDashboardAutoRefreshInFlight_=true;
-    fdCrashContext_("auth-auto-attempt",reason||"existing-session");
-    try{
-      google.accounts.id.prompt(function(notification){
-        familyDashboardAutoRefreshInFlight_=false;
-        if(notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())){
-          fdCrashContext_("auth-auto-unavailable",reason||"existing-session");
-          // A skipped/not-displayed One Tap prompt does NOT mean the dashboard is
-          // disconnected. Chrome may simply suppress the prompt while the current
-          // credential is still valid. Keep NORAD quiet until the token actually
-          // expires; at startup we still expose Google's normal Continue button.
-          if(reason==="startup") renderGoogleFallbackButton_();
-          else if(reason==="expiry"){
-            familyDashboardAuthExpired_=true;
-            familyDashboardIdToken="";
-            failExpiredQueue_();
-            showAuthBanner_("Google session paused — tap Reconnect to refresh dashboard data.","Reconnect");
-          }
-        }
-      });
-      return true;
-    }catch(e){
-      familyDashboardAutoRefreshInFlight_=false;
-      fdCrashContext_("auth-auto-error",e?.message||String(e));
-      if(reason==="startup") renderGoogleFallbackButton_();
-      else if(reason==="expiry"){
-        familyDashboardAuthExpired_=true;
-        familyDashboardIdToken="";
-        failExpiredQueue_();
-        showAuthBanner_("Google session paused — tap Reconnect to refresh dashboard data.","Reconnect");
-      }
-      return false;
-    }
+  const FAMILY_DASHBOARD_SESSION_KEY_="kitchenNoradHouseholdSessionV1";
+
+  function loadNoradSession_(){
+    try{return String(localStorage.getItem(FAMILY_DASHBOARD_SESSION_KEY_)||"").trim()}catch(e){return ""}
+  }
+
+  function saveNoradSession_(token){
+    try{localStorage.setItem(FAMILY_DASHBOARD_SESSION_KEY_,String(token||""))}catch(e){console.warn("Could not persist Kitchen NORAD session",e)}
+  }
+
+  function clearNoradSession_(){
+    try{localStorage.removeItem(FAMILY_DASHBOARD_SESSION_KEY_)}catch(e){}
+  }
+
+  function isNoradSession_(token){
+    return String(token||"").startsWith("fdns1_");
   }
 
   function requestGoogleSessionRefresh_(){
+    // Google UI is user-initiated only. NORAD never calls prompt() automatically.
     if(!window.google?.accounts?.id){
       showAuthBanner_("Google sign-in is still loading. Try again in a moment.","Reconnect");
       return;
     }
     hideAuthBanner_();
-    if(!tryExistingGoogleSession_("manual-reconnect")){
-      showAuthGate_("Google needs a quick confirmation to keep the dashboard connected.");
-      renderGoogleFallbackButton_();
-    }
-  }
-
-  function expireFamilyDashboardSession_(){
-    const livePayload=decodeJwtPayload_(familyDashboardIdToken);
-    const liveExp=Number(livePayload.exp||0)*1000;
-    if(liveExp>Date.now()+5000)return;
-    if(tryExistingGoogleSession_("expiry"))return;
-    familyDashboardAuthExpired_=true;
-    fdCrashContext_("auth-expired");
-    familyDashboardIdToken="";
-    failExpiredQueue_();
-    showAuthBanner_("Google session paused — reconnect to refresh calendars, chores, recipes, and groceries.","Reconnect");
-  }
-
-  function showAuthGate_(message){
-    let gate=document.getElementById("fdAuthGate");
-    if(!gate){
-      gate=document.createElement("div");
-      gate.id="fdAuthGate";
-      gate.style.cssText="position:fixed;inset:0;z-index:9999;background:#071018;display:grid;place-items:center;font-family:Arial,sans-serif;color:#f4f6f8";
-      gate.innerHTML='<div style="width:min(420px,90vw);text-align:center;padding:28px;border:1px solid #314152;border-radius:16px;background:#0d1822"><div style="font-size:30px;font-weight:800;margin-bottom:8px">🏠 Family Dashboard</div><div id="fdAuthMessage" style="color:#98a6b4;margin-bottom:18px">Sign in with an authorized family Google account.</div><div id="fdGoogleSignIn" style="display:flex;justify-content:center"></div></div>';
-      document.body.appendChild(gate);
-    }
-    const m=document.getElementById("fdAuthMessage");
-    if(m && message) m.textContent=message;
-    gate.style.display="grid";
-  }
-
-  function hideAuthGate_(){
-    const gate=document.getElementById("fdAuthGate");
-    if(gate) gate.style.display="none";
+    showAuthGate_("Confirm an authorized family Google account to reconnect Kitchen NORAD.");
+    renderGoogleFallbackButton_();
   }
 
   function handleGoogleCredential_(response){
-    const token=String(response?.credential||"");
-    if(!token){showAuthGate_("Google sign-in did not return a credential.");return}
-    familyDashboardIdToken=token;
-    familyDashboardAutoRefreshInFlight_=false;
+    const googleToken=String(response?.credential||"");
+    if(!googleToken){showAuthGate_("Google sign-in did not return a credential.");return}
+
+    // Use the short-lived Google credential once to mint a longer-lived,
+    // revocable Kitchen NORAD household session on the Apps Script backend.
+    familyDashboardIdToken=googleToken;
     familyDashboardAuthExpired_=false;
-    fdCrashContext_("auth-restored");
-    hideAuthGate_();
-    hideAuthBanner_();
-    flush_();
+    fdCrashContext_("auth-google-confirmed");
 
-    clearTimeout(familyDashboardTokenTimer);
-    clearTimeout(familyDashboardExpiryTimer);
-
-    const payload=decodeJwtPayload_(token);
-    const expiresAt=Number(payload.exp||0)*1000;
-    if(!expiresAt)return;
-
-    // Five minutes before expiry, show a small intentional reminder instead
-    // of suddenly throwing Google's account chooser over the dashboard.
-    const warningIn=Math.max(1000,expiresAt-Date.now()-5*60000);
-    familyDashboardTokenTimer=setTimeout(function(){
-      const livePayload=decodeJwtPayload_(familyDashboardIdToken);
-      const liveExp=Number(livePayload.exp||0)*1000;
-      if(liveExp!==expiresAt && liveExp>Date.now()+5*60000)return;
-      // Prefer the same existing Chrome/Google account path that produces
-      // "Continue as Jeff". Only show a reconnect banner if Google cannot
-      // refresh through that existing browser session.
-      if(!tryExistingGoogleSession_("pre-expiry")){
-        showAuthBanner_("Google session refresh due soon. Tap Refresh whenever convenient.","Refresh Google");
+    callBackend_("createNoradSession",[],function(result){
+      const sessionToken=String(result?.sessionToken||"");
+      if(!isNoradSession_(sessionToken)){
+        familyDashboardIdToken="";
+        showAuthGate_("Kitchen NORAD could not create a household session. Please try again.");
+        renderGoogleFallbackButton_();
+        return;
       }
-    },warningIn);
-
-    // At actual expiry keep the dashboard visible, pause backend work, and
-    // request reconnection without building up bridge calls in the background.
-    familyDashboardExpiryTimer=setTimeout(expireFamilyDashboardSession_,Math.max(1000,expiresAt-Date.now()+1000));
+      familyDashboardIdToken=sessionToken;
+      saveNoradSession_(sessionToken);
+      familyDashboardAutoRefreshInFlight_=false;
+      familyDashboardAuthExpired_=false;
+      fdCrashContext_("auth-norad-session-created",result?.expiresAt||"");
+      hideAuthGate_();
+      hideAuthBanner_();
+      flush_();
+    },function(err){
+      familyDashboardIdToken="";
+      clearNoradSession_();
+      familyDashboardAuthExpired_=true;
+      fdCrashContext_("auth-session-create-failed",err?.message||String(err));
+      showAuthGate_("Google confirmation worked, but Kitchen NORAD could not create its household session. Tap Continue to retry.");
+      renderGoogleFallbackButton_();
+    });
   }
 
   function startGoogleSignIn_(){
+    const saved=loadNoradSession_();
+    if(isNoradSession_(saved)){
+      // Appliance path: reuse the backend-issued NORAD session. No Google prompt,
+      // no hourly ID-token timer, and no account chooser on ordinary startup.
+      familyDashboardIdToken=saved;
+      familyDashboardAuthExpired_=false;
+      fdCrashContext_("auth-norad-session-restored");
+      hideAuthGate_();
+      hideAuthBanner_();
+      flush_();
+      return;
+    }
+
     if(!FAMILY_DASHBOARD_GOOGLE_CLIENT_ID || FAMILY_DASHBOARD_GOOGLE_CLIENT_ID.includes("PASTE_YOUR")){
       showAuthGate_("Dashboard sign-in is not configured yet.");
       return;
@@ -1156,19 +1124,18 @@ let familyDashboardAuthExpired_ = false;
       setTimeout(startGoogleSignIn_,150);
       return;
     }
-    showAuthGate_("Checking your existing Google session…");
+
+    // First sign-in/reconnect is explicit. We render Google's button but do not
+    // invoke google.accounts.id.prompt(), so NORAD cannot summon One Tap/FedCM
+    // over the dashboard on its own.
+    showAuthGate_("Kitchen NORAD needs one Google confirmation to create a household session.");
     google.accounts.id.initialize({
       client_id:FAMILY_DASHBOARD_GOOGLE_CLIENT_ID,
       callback:handleGoogleCredential_,
-      auto_select:true,
+      auto_select:false,
       cancel_on_tap_outside:false
     });
-
-    // Preferred path: use the Google account already active in Chrome.
-    // If One Tap/FedCM cannot supply it, we reveal the normal Google button as fallback.
-    if(!tryExistingGoogleSession_("startup")){
-      renderGoogleFallbackButton_();
-    }
+    renderGoogleFallbackButton_();
   }
 
   function mountBridge_(){
@@ -4148,7 +4115,7 @@ setInterval(minuteDashboardTick_,60000);
 setTimeout(()=>{if(dashboardVisible_()&&!document.body.classList.contains("fdRendererSafe"))maybeRareCreature()},9000);
 document.addEventListener("keydown",cryptidTestKey);
 
-const NORAD_BUILD_="V10.0.3",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
+const NORAD_BUILD_="V10.0.4",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
 function noradNightScheduled_(d=new Date()){let x=d.getHours();return x>=21||x<6}
 function noradNightClock_(){let e=document.getElementById("noradNightClock");if(e)e.textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
 function noradNightStatusText_(){let n=new Date(),s=noradNightScheduled_(n),a=Date.now()<noradNightWakeUntil_;return `${NORAD_BUILD_} • ${n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})} • Schedule 9:00 PM–6:00 AM • ${noradNightForcedTest_?"TEST ACTIVE":s?(a?"NIGHT / TEMPORARILY AWAKE":"NIGHT MODE ACTIVE"):"DAYTIME"}`}
