@@ -20,7 +20,7 @@
       "emoji": "🐯",
       "league": "mlb",
       "ok": false,
-      "error": "<urlopen error _ssl.c:983: The handshake operation timed out>",
+      "error": "HTTP Error 400: Bad Request",
       "live": null,
       "last": null,
       "next": null
@@ -75,6 +75,6 @@
     }
   ],
   "source": "ESPN public scoreboard via GitHub Actions",
-  "message": "Lions: HTTP Error 400: Bad Request | Tigers: <urlopen error _ssl.c:983: The handshake operation timed out> | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
-  "updatedAt": "2026-09-24T20:09:37.448630Z"
+  "message": "Lions: HTTP Error 400: Bad Request | Tigers: HTTP Error 400: Bad Request | Pistons: HTTP Error 400: Bad Request | Red Wings: HTTP Error 400: Bad Request | Notre Dame: HTTP Error 400: Bad Request | Michigan State: HTTP Error 400: Bad Request",
+  "updatedAt": "2026-09-24T20:27:09.333173Z"
 }
