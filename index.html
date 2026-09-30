@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.0.5 — Persistent NORAD Session Fix build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.1.0 — Kitchen Cleanup build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -1177,7 +1177,7 @@ let familyDashboardAuthExpired_ = false;
 <div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
 <div id="mobileCountdowns" class="mobileCountdownStrip"></div>
 <div class="main"><section class="panel cal"><div class="week"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="grid" class="grid"></div><div id="legend" class="legend"></div></section><section class="panel detail"><div id="detail"></div></section></div>
-<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief 4.0</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="openMusicCenter()"><span class="navIcon">🎵</span>Music</button><button onclick="openLightsCenter()"><span class="navIcon">💡</span>Lights</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
+<footer><div class="nav"><button class="primaryAction" onclick="openGroceries()"><span class="navIcon">🛒</span>Groceries</button><button onclick="openChores()"><span class="navIcon">✅</span>Chores</button><button onclick="openMenu()"><span class="navIcon">🍽️</span>Menu</button><button onclick="openNotes()"><span class="navIcon">📝</span>Notes</button><button onclick="document.getElementById('modal').innerHTML='<div class=&quot;briefWrap&quot;><h2 style=&quot;margin:0 0 10px&quot;>☀️ Morning Brief</h2><div class=&quot;briefLine&quot;>Loading household intelligence…</div></div>';document.getElementById('modalbg').style.display='grid';setTimeout(function(){try{openMorningBrief()}catch(e){console.error(e)}},0)"><span class="navIcon">☀️</span>Brief</button><button onclick="openPantry()"><span class="navIcon">🥫</span>Pantry</button><button id="timersNavBtn" onclick="openTimers()"><span class="navIcon">⏱️</span><span id="timersNavLabel">Timers</span></button><button id="voiceNavBtn" class="voiceNavBtn" onclick="toggleVoiceListening_()"><span class="navIcon">🎙️</span><span id="voiceNavLabel">Tap to Listen</span></button><button onclick="openRecipes()"><span class="navIcon">🍳</span>Recipes</button><button onclick="openMusicCenter()"><span class="navIcon">🎵</span>Music</button><button onclick="openLightsCenter()"><span class="navIcon">💡</span>Lights</button><button onclick="showAll()"><span class="navIcon">📅</span>Calendars</button></div><span id="quoteMain" class="quoteMain"></span><span id="status"></span></footer></div>
 
 <div id="voiceSessionBar" class="voiceSessionBar"><span id="voiceState" class="voiceState">🎙️ Ready</span><span class="voiceV2Tag" title="Kitchen NORAD Voice 2.0">NORAD VOICE 2.4 — Situational Awareness</span><b id="voiceSessionTime"></b><span id="voiceTranscript" class="voiceTranscript"></span><button class="btn" onclick="stopVoiceSession(true)">Stop</button></div>
 <div id="dayOverlay">
@@ -1452,7 +1452,27 @@ const quotes=[
 "Today's forecast: 100% chance of figuring it out.",
 "Keep going. Future you is already bragging about it.",
 "Be yourself. Everyone else is already taken.",
-"Punch today in the face."
+"Punch today in the face.",
+"Today's objective: fewer fires than yesterday.",
+"You can do hard things. You can also complain while doing them.",
+"Get after it. The couch will still be there later.",
+"A little progress and a lot of coffee still counts.",
+"Today's problems have not yet met your questionable determination.",
+"Be productive enough to impress the version of you who made this calendar.",
+"If the plan fails, we have snacks and contingency plans.",
+"Confidence is mostly just committing before your brain files an objection.",
+"Do one useful thing. Then become dangerously overconfident.",
+"The mission is simple: survive the schedule and locate dinner.",
+"You are one completed chore away from feeling suspiciously responsible.",
+"Today's vibe: competent enough to avoid an incident report.",
+"Forward is forward, even if it looks suspiciously like stumbling.",
+"Make good choices. Or at least interesting recoverable ones.",
+"Kitchen NORAD believes in you. This is not legally binding.",
+"Execute the plan. Improvise the rest. Deny everything.",
+"Nothing builds character like a task you absolutely did not want to do.",
+"The day cannot defeat you if you confuse it first.",
+"Productivity level: let's see what happens.",
+"Remember: panic is just enthusiasm with bad management."
 ];
 const rareQuotes=["SPECIAL MESSAGE FROM MANAGEMENT: Nobody knows what they're doing. Carry on.","Plot twist: today is going to work out.","Achievement unlocked: You showed up.","You are now entering a highly caffeinated success zone.","Nobody has it all figured out. Some people just use better calendars."];
 const familyTitles=["🏠 Family Dashboard","🛰️ Family Mission Control","📋 Household Operations","🍕 Department of Snacks & Logistics","🚀 Family Command Center","🧭 Home Base","🛠️ Domestic Engineering Division","🎯 The Organized-ish Household"];
@@ -1528,8 +1548,17 @@ function summonBigfoot(force=false){
  setTimeout(()=>e.remove(),16000)
 }
 function summonUfo(){if(document.querySelector(".ufo"))return;let e=document.createElement("div");e.className="ufo";e.innerHTML=`<svg viewBox="0 0 110 58" aria-label="UFO"><defs><linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9fbff"/><stop offset="1" stop-color="#d9fbff" stop-opacity="0"/></linearGradient></defs><path class="ufoBeam" fill="url(#beam)" d="M39 34 L71 34 L91 58 L18 58Z"/><ellipse cx="55" cy="30" rx="48" ry="13" fill="#66737c"/><ellipse cx="55" cy="25" rx="25" ry="17" fill="#a9e7ef"/><ellipse cx="55" cy="33" rx="40" ry="7" fill="#27343d"/><circle cx="31" cy="35" r="3" fill="#d9fbff"/><circle cx="55" cy="37" r="3" fill="#d9fbff"/><circle cx="79" cy="35" r="3" fill="#d9fbff"/></svg>`;document.body.appendChild(e);setTimeout(()=>e.remove(),8000)}
-function maybeRareCreature(){let r=Math.random();if(r<.0015)summonUfo();else if(r<.003)summonBigfoot()}
-function cryptidTestKey(e){if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="b"){e.preventDefault();summonBigfoot(true)}if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="u"){e.preventDefault();summonUfo()}}
+function summonBigfootAbduction(){
+ if(document.querySelector(".bigfootScene")||document.querySelector(".ufo"))return;
+ summonBigfoot(true);
+ setTimeout(()=>{
+   summonUfo();
+   let motion=document.querySelector(".bigfootScene .bfMotion");
+   if(motion){motion.style.transition="transform 2.2s ease-in, opacity 2.2s ease-in";setTimeout(()=>{motion.style.transform="translateY(-420px) scale(.45)";motion.style.opacity="0"},1500)}
+ },3200);
+}
+function maybeRareCreature(){let r=Math.random();if(r<.0015)summonUfo();else if(r<.003){if(Math.random()<.05)summonBigfootAbduction();else summonBigfoot()}}
+function cryptidTestKey(e){if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="b"){e.preventDefault();summonBigfoot(true)}if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="u"){e.preventDefault();summonUfo()}if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="a"){e.preventDefault();summonBigfootAbduction()}}
 let secretSeq=[],secretTarget=["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","Enter"];
 function secretKey(e){secretSeq.push(e.key);secretSeq=secretSeq.slice(-secretTarget.length);if(secretSeq.join("|")===secretTarget.join("|")){let g=document.createElement("div");g.className="godMode";g.textContent="FAMILY DASHBOARD: GOD MODE ENABLED";document.body.appendChild(g);launchConfetti("⚡");setTimeout(()=>g.remove(),3800)}}
 function choresFor(d){return S.chores.map((x,i)=>({...x,i})).filter(x=>x.days.includes(d.getDay()))}
@@ -2517,7 +2546,7 @@ function buildMorningBriefHtml_(){
  let sports=briefSafe_("Sports",()=>morningSportsHtml_());
  let groceries=briefSafe_("Groceries",()=>morningGroceryHtml_());
  let notes=pins.length?pins.slice(0,4).map(x=>`<div class="briefInboxNote">📌 ${esc(x)}</div>`).join(""):`<div class="briefInboxEmpty">Nothing pinned.</div>`;
- return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="dismissMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief 4.0</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${briefSafe_("Situational Awareness",()=>morningSituationalHtml_(),"")}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="dismissMorningBrief_()">Done</button></div></div>`;
+ return `<div class="briefWrap"><button class="briefCloseBtn briefCloseFloat" onclick="dismissMorningBrief_()" aria-label="Close Morning Brief" title="Close">✕</button><div class="briefInboxHead"><div><div class="briefInboxKicker">KITCHEN NORAD • HOUSEHOLD INTELLIGENCE</div><h2>☀️ Morning Brief</h2><div class="briefInboxDate">${now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</div></div><div class="briefInboxMiniActions"><button class="btn briefMaintenanceBtn" onclick="openHouseholdReminders()">🔧 Maintenance</button></div></div>${intel}${briefSafe_("Situational Awareness",()=>morningSituationalHtml_(),"")}${statusStrip}${summary}<div class="briefInboxGrid"><section class="briefInboxSection"><h3><span>📅 TODAY</span></h3>${today}</section><section class="briefInboxSection attention"><h3><span>⚠️ NEEDS ATTENTION</span><span class="briefInboxBadge ${attentionCount?"":"zero"}">${attentionCount}</span></h3>${needs}</section><section class="briefInboxSection"><h3><span>➡️ COMING UP</span></h3>${coming}</section></div><div class="briefInboxSubgrid"><div class="briefCard briefSportsCard"><h3><span>🏟️ SPORTS</span><button class="btn mini" onclick="event.stopPropagation();openSportsCenter('brief')">VIEW ALL</button></h3>${sports}</div><div class="briefCard clickable" onclick="openGroceriesFromBrief_()"><h3>🛒 GROCERIES</h3>${groceries}<div class="briefInboxNotes" style="margin-top:8px">${notes}</div></div></div><div class="actions"><button class="btn" onclick="dismissMorningBrief_()">Done</button></div></div>`;
 }
 function dismissMorningBrief_(){
  try{markMorningBriefSeen_()}catch(err){console.warn("Morning Brief seen marker failed",err)}
@@ -2557,7 +2586,7 @@ function openMorningBrief(){
  fdCrashContext_("brief-open","session "+sessionId);
  try{
   let modal=document.getElementById("modal"),bg=document.getElementById("modalbg");
-  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief 4.0</h2><div class="briefLine">Loading household intelligence…</div></div>`;
+  if(modal)modal.innerHTML=`<div class="briefWrap"><h2 style="margin:0 0 10px">☀️ Morning Brief</h2><div class="briefLine">Loading household intelligence…</div></div>`;
   if(bg)bg.style.display="grid";
  }catch(_){}
  try{ensureHouseholdReminders_()}catch(err){console.warn("Morning Brief reminders prep failed",err)}
@@ -2740,7 +2769,7 @@ function closeRecipes(){document.getElementById("recipeOverlay").classList.remov
 function setRecipeTab_(tab){recipeView=tab;document.getElementById("recipeTabBtn").classList.toggle("active",tab==="recipes");document.getElementById("planTabBtn").classList.toggle("active",tab==="plans");document.getElementById("buildTabBtn").classList.toggle("active",tab==="build");document.getElementById("groceryGenTabBtn")?.classList.toggle("active",tab==="groceryGen");document.getElementById("recipeTools").style.display=tab==="recipes"?"flex":"none"}
 function showRecipeTab(){setRecipeTab_("recipes");document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading the V9 Kitchen Brain…</div>';ensureKitchenData_(()=>{buildRecipeCategories();renderRecipeLibrary()})}
 function showPlanTab(){setRecipeTab_("plans");if(!MP.loaded){document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading meal plans…</div>';google.script.run.withSuccessHandler(d=>{MP=d||{plans:[],recipes:[]};MP.loaded=!!MP.ok;if(!MP.ok){recipeDataFail(MP.message);return}currentPlanId=currentPlanId||(MP.plans[0]?.id||"");renderMealPlans()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getMealPlans()}else renderMealPlans()}
-function showBuildTab(){setRecipeTab_("build");document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading Meal Planner 2.0…</div>';ensureKitchenData_(()=>renderBuildWeek())}
+function showBuildTab(){setRecipeTab_("build");document.getElementById("recipeBody").innerHTML='<div class="rLoading">Loading Meal Planner…</div>';ensureKitchenData_(()=>renderBuildWeek())}
 function recipeDataFail(m){document.getElementById("recipeBody").innerHTML=`<div class="rError"><b>Couldn’t read the Sheet.</b><br><br>${esc(m||"Unknown error")}<br><br><span class="rMeta">Check Sheet access and Apps Script authorization.</span></div>`}
 const SIMPLE_RECIPE_CATEGORIES=["Breakfast","Mains","Salads","Soups","Sides","Apps","Sauces","Desserts","Drinks","Other"];
 function simpleRecipeCategory_(cat,name,tags){
@@ -3531,7 +3560,15 @@ function handleVoiceCommand_(raw){
  if(/^(?:close|exit|dismiss|done with) (?:the )?(?:lights|lighting|lights center|exterior lights)$/.test(n)){closeModal();speak_("Exterior lighting closed.");return done()}
  if((m=n.match(/^(?:open|find|show|search for|pull up) (?:the )?(?:recipe for )?(.+?)(?: recipe)?$/))&&!/^(?:recipes|recipe center)$/.test(m[1])){let q=m[1].trim();ensureKitchenData_(()=>{let rows=kitchenRecipeRows_(),needle=q.toLowerCase(),hit=rows.find(x=>String(x.name||"").toLowerCase()===needle)||rows.find(x=>String(x.name||"").toLowerCase().includes(needle));if(hit){openRecipes();setTimeout(()=>openKitchenRecipe_(hit._source||"library",hit.id),80);speak_(`Opening ${hit.name}.`)}else speak_(`I couldn't find a recipe matching ${q}.`)});return done()}
  if(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/.test(n)&&!voiceSportsTeamFromText_(n)){let q=(n.match(/^(?:when|what day) (?:does|do|is|are) (.+?)(?: go out| happen| scheduled| due)?$/)||[])[1]||"";speak_(voiceCalendarSearch_(q));return done()}
- // V9.21 Music Center voice controls.
+ // V10.1 Cook Mode priority: core recipe navigation outranks music/global fall-throughs.
+  if(cookRecipe&&document.getElementById("cookOverlay")?.classList.contains("open")){
+    let steps=cookRecipe.steps||[], current=()=>steps[cookStep]||"";
+    if(/^(?:start|start cooking|start recipe|start the recipe|begin|begin recipe|first step|step one|read (?:me )?(?:the )?first step|read step one|what(?:'s| is) (?:the )?first step|go to (?:the )?first step)$/.test(n)){cookJumpStep(0);speak_(`Step 1. ${steps[0]||""}`);return done()}
+    if(/^(?:read|say|tell me|give me|show me|go to|move to)?\s*(?:the )?(?:next|following)\s*(?:recipe |cooking )?(?:step|instruction|direction)(?: in| on| of)?(?: the| this)? recipe?$/.test(n)||/^(?:what is next|whats next|what next|next|next step|continue|keep going|move on|go on)$/.test(n)){if(cookStep<steps.length-1)cookNextStep();speak_(`Step ${cookStep+1}. ${current()}`);return done()}
+    if(/^(?:read|say|tell me|repeat)(?: me)?(?: this| the| current)?(?: recipe| cooking)? (?:step|instruction|direction)$/.test(n)||/^(?:repeat|again|say that again|read that again|repeat that|repeat step)$/.test(n)){speak_(`Step ${cookStep+1}. ${current()}`);return done()}
+  }
+
+  // V9.21 Music Center voice controls.
  if(/^(?:pause|stop) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.pauseVideo()}catch(_){};speak_("Music paused.");return done()}
  if(/^(?:resume|continue|play) (?:the )?music$/.test(n)){if(MUSIC.ready)try{MUSIC.player.playVideo()}catch(_){};speak_("Music resumed.");return done()}
  if(/^(?:skip|next)(?: song| track)?$|^(?:skip|next) (?:the )?(?:song|track)$/.test(n)){musicNext_();speak_("Skipping.");return done()}
@@ -3615,7 +3652,9 @@ function handleVoiceCommand_(raw){
    if((m=n.match(/^(?:what|which) (chile|chiles|chili|chilis|chilies|chillies|pepper|peppers|cheese|cheeses|onion|onions|meat|meats|spice|spices) (?:do i need|does this need|are in this|are there)$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    if((m=n.match(/(?:how much|how many) (.+?)(?: do i need| does it need| is in this| is there)?$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
    if((m=n.match(/^(?:what about|and how much|how about) (.+)$/))){speak_(cookQuantityAnswer_(m[1]));return done()}
-   // Current step: deliberately broad, because speech recognition often drops small words.
+   // First-step/start-recipe commands.
+    if(/^(?:start|start cooking|start recipe|start the recipe|begin|begin recipe|first step|step one|read (?:me )?(?:the )?first step|read step one|what(?:'s| is) (?:the )?first step|go to (?:the )?first step)$/.test(n)){cookJumpStep(0);speak_(`Step 1. ${steps[0]||""}`);return done()}
+    // Current step: deliberately broad, because speech recognition often drops small words.
    if(/^(?:read|say|tell me|repeat)(?: me)?(?: this| the| current)?(?: cooking)? (?:step|instruction|direction)$/.test(n)||
       /^(?:read|say|tell me|repeat)(?: this| that| it| the step| current step)$/.test(n)||
       /^(?:what is|whats) (?:this|the|current) (?:step|instruction|direction)$/.test(n)){
@@ -3679,7 +3718,7 @@ function dinnerPool_(cat){let a=(R.recipes||[]).filter(likelyDinner_);if(cat)a=a
 function plannerPlanOptions_(){return [{id:"__mix__",name:"Mix All Meal Plans"}].concat((MP.plans||[]).map(p=>({id:p.id,name:p.name})))}
 function plannerPool_(type,planId,current){let rows=(MP.recipes||[]).filter(r=>String(r.meal||"").toLowerCase()===type);if(planId&&planId!=="__mix__")rows=rows.filter(r=>r.planId===planId);if(current)rows=rows.filter(r=>r.id!==current);let seen=new Set();return rows.filter(r=>{let k=String(r.name||"").toLowerCase();if(!k||seen.has(k))return false;seen.add(k);return true})}
 function plannerPick_(type,planId,used){let pool=plannerPool_(type,planId).filter(r=>!used.has(String(r.name||"").toLowerCase()));if(!pool.length)pool=plannerPool_(type,planId);if(!pool.length)return null;return pool[Math.floor(Math.random()*pool.length)]}
-function renderBuildWeek(){let b=document.getElementById("recipeBody"),today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0"),plans=plannerPlanOptions_();b.innerHTML=`<div class="buildPanel"><h2 style="margin-top:0">🧩 Meal Planning 2.0</h2><div class="rMeta" style="margin-bottom:12px">Build one week from a single 30-day plan or mix the whole Kitchen Brain. Choose the meals you want, swap anything that doesn't sound good, scale the household, then send the finished week to Menu + Groceries.</div><div class="buildControls" style="flex-wrap:wrap"><div><label>START DATE</label><input id="plannerStartDate" type="date" value="${iso}"></div><div><label>RECIPE SOURCE</label><select id="plannerPlan">${plans.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></div><div><label>HOUSEHOLD SCALE</label><select id="plannerScale"><option value="0.5">½×</option><option value="1" selected>1× (2 servings)</option><option value="1.5">1½×</option><option value="2">2×</option><option value="3">3×</option></select></div><label class="plannerMealToggle plannerBreakfast"><input id="plannerBreakfast" type="checkbox" checked style="width:auto"> Breakfast</label><label class="plannerMealToggle plannerLunch"><input id="plannerLunch" type="checkbox" checked style="width:auto"> Lunch</label><label class="plannerMealToggle plannerDinner"><input id="plannerDinner" type="checkbox" checked style="width:auto"> Dinner</label><button class="btn plannerBuildBtn" onclick="generatePlannerWeek()">✨ Build 7 Days</button></div><div id="plannerPreview"></div></div>`;if(randomDinnerDraft.length&&randomDinnerDraft[0]?.plannerV91)renderPlannerPreview()}
+function renderBuildWeek(){let b=document.getElementById("recipeBody"),today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0"),plans=plannerPlanOptions_();b.innerHTML=`<div class="buildPanel"><h2 style="margin-top:0">🧩 Meal Planning</h2><div class="rMeta" style="margin-bottom:12px">Build one week from a single 30-day plan or mix the whole Kitchen Brain. Choose the meals you want, swap anything that doesn't sound good, scale the household, then send the finished week to Menu + Groceries.</div><div class="buildControls" style="flex-wrap:wrap"><div><label>START DATE</label><input id="plannerStartDate" type="date" value="${iso}"></div><div><label>RECIPE SOURCE</label><select id="plannerPlan">${plans.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></div><div><label>HOUSEHOLD SCALE</label><select id="plannerScale"><option value="0.5">½×</option><option value="1" selected>1× (2 servings)</option><option value="1.5">1½×</option><option value="2">2×</option><option value="3">3×</option></select></div><label class="plannerMealToggle plannerBreakfast"><input id="plannerBreakfast" type="checkbox" checked style="width:auto"> Breakfast</label><label class="plannerMealToggle plannerLunch"><input id="plannerLunch" type="checkbox" checked style="width:auto"> Lunch</label><label class="plannerMealToggle plannerDinner"><input id="plannerDinner" type="checkbox" checked style="width:auto"> Dinner</label><button class="btn plannerBuildBtn" onclick="generatePlannerWeek()">✨ Build 7 Days</button></div><div id="plannerPreview"></div></div>`;if(randomDinnerDraft.length&&randomDinnerDraft[0]?.plannerV91)renderPlannerPreview()}
 function generatePlannerWeek(){let iso=document.getElementById("plannerStartDate")?.value,planId=document.getElementById("plannerPlan")?.value||"__mix__",scale=Number(document.getElementById("plannerScale")?.value||1),types=[];if(document.getElementById("plannerBreakfast")?.checked)types.push("breakfast");if(document.getElementById("plannerLunch")?.checked)types.push("lunch");if(document.getElementById("plannerDinner")?.checked)types.push("dinner");if(!iso||!types.length){alert("Choose a start date and at least one meal type.");return}let used={breakfast:new Set(),lunch:new Set(),dinner:new Set()};randomDinnerDraft=[];for(let i=0;i<7;i++){let dt=localDate_(iso,i),d={plannerV91:true,date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"),planId:planId,scale:scale};types.forEach(type=>{let x=plannerPick_(type,planId,used[type]);if(x){d[type]=x.name;d[type+"Id"]=x.id;d[type+"PlanId"]=x.planId;d[type+"Source"]="plan";used[type].add(String(x.name||"").toLowerCase())}});randomDinnerDraft.push(d)}renderPlannerPreview()}
 function plannerRecipeFor_(d,type){let source=d[type+"Source"]||"plan",id=d[type+"Id"];return source==="library"?(R.recipes||[]).find(x=>String(x.id)===String(id)):(MP.recipes||[]).find(x=>String(x.id)===String(id))}
 function plannerMealHtml_(d,i,type,icon,label){if(!d[type])return "";let source=d[type+"Source"]||"plan",r=plannerRecipeFor_(d,type),meta=r?[r.calories?`${r.calories} cal`:"",r.protein?`${r.protein}g protein`:"",source==="library"?(r.category||"Family Recipe"):(r.planName||"")].filter(Boolean).join(" • "):"";return `<div class="weekMeal" style="align-items:center"><span style="flex:1"><b>${icon} ${label}:</b> ${esc(d[type])}${meta?`<div class="rMeta">${esc(meta)}</div>`:""}</span><button class="btn reroll" onclick="openPlannerRecipe_('${source}','${esc(d[type+"Id"])}')">Recipe ›</button><button class="btn reroll" onclick="openPlannerSwapMenu_(${i},'${type}')">↻ Swap</button><button class="btn reroll" title="Remove this meal" onclick="removePlannerMeal(${i},'${type}')">×</button></div>`}
@@ -3694,7 +3733,7 @@ function choosePlannerRecipe_(i,type,source,id){let d=randomDinnerDraft[i],pool=
 function openPlannerSwapMenu_(i,type){let d=randomDinnerDraft[i];if(!d)return;let label=type.charAt(0).toUpperCase()+type.slice(1);openModal(`<div class="dinnerPickerWrap" style="max-width:520px"><h2>↻ Swap ${esc(label)}</h2><div class="note">Know what you want? Pick it. Feeling dangerous? Let Kitchen NORAD roll the dice.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0"><button class="btn primaryAction" style="padding:14px" onclick="openPlannerRecipePicker_(${i},'${type}')">🎯 Pick From Recipes</button><button class="btn" style="padding:14px" onclick="randomizePlannerMeal_(${i},'${type}')">🎲 Random</button></div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button></div></div>`,{closeAction:'closeModal()'})}
 function swapPlannerMeal(i,type){openPlannerSwapMenu_(i,type)}
 function removePlannerMeal(i,type){let d=randomDinnerDraft[i];delete d[type];delete d[type+"Id"];delete d[type+"PlanId"];delete d[type+"Source"];renderPlannerPreview()}
-function loadPlannerWeek(){if(!randomDinnerDraft.length)return;S.mealPlanWeek=randomDinnerDraft.map(d=>({date:d.date,planId:d.planId,planName:d.planId==="__mix__"?"Mixed Kitchen Brain":"Meal Planner 2.0",scale:d.scale||1,breakfast:d.breakfast||"",breakfastId:d.breakfastId||"",breakfastSource:d.breakfastSource||"plan",lunch:d.lunch||"",lunchId:d.lunchId||"",lunchSource:d.lunchSource||"plan",dinner:d.dinner||"",dinnerId:d.dinnerId||"",dinnerSource:d.dinnerSource||"plan"}));S.randomDinnerWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];S.mealPlanWeek.forEach(d=>{let k=keys[localDate_(d.date,0).getDay()],parts=[];if(d.breakfast)parts.push(`🌅 ${d.breakfast}`);if(d.lunch)parts.push(`☀️ ${d.lunch}`);if(d.dinner)parts.push(`🌙 ${d.dinner}`);S.menu[k]=parts.join("  •  ")});persist(()=>{renderDetail();renderCal();renderGlance();let e=document.getElementById("plannerPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="wgSuccess">✓ Week loaded into the Family Menu. &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Generate This Week’s Groceries</button></div>')})}
+function loadPlannerWeek(){if(!randomDinnerDraft.length)return;S.mealPlanWeek=randomDinnerDraft.map(d=>({date:d.date,planId:d.planId,planName:d.planId==="__mix__"?"Mixed Kitchen Brain":"Meal Planner",scale:d.scale||1,breakfast:d.breakfast||"",breakfastId:d.breakfastId||"",breakfastSource:d.breakfastSource||"plan",lunch:d.lunch||"",lunchId:d.lunchId||"",lunchSource:d.lunchSource||"plan",dinner:d.dinner||"",dinnerId:d.dinnerId||"",dinnerSource:d.dinnerSource||"plan"}));S.randomDinnerWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];S.mealPlanWeek.forEach(d=>{let k=keys[localDate_(d.date,0).getDay()],parts=[];if(d.breakfast)parts.push(`🌅 ${d.breakfast}`);if(d.lunch)parts.push(`☀️ ${d.lunch}`);if(d.dinner)parts.push(`🌙 ${d.dinner}`);S.menu[k]=parts.join("  •  ")});persist(()=>{renderDetail();renderCal();renderGlance();let e=document.getElementById("plannerPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="wgSuccess">✓ Week loaded into the Family Menu. &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Generate This Week’s Groceries</button></div>')})}
 function showGroceryGenTab(){
   recipeView="groceryGen";
   ["recipeTabBtn","planTabBtn","buildTabBtn","groceryGenTabBtn"].forEach(id=>document.getElementById(id)?.classList.remove("active"));
@@ -3801,9 +3840,12 @@ function groceryCanonicalName_(name){
    [/\b(tomatoes|tomato)\b/,"tomato"],
    [/\b(limes|lime)\b/,"lime"],[/\b(lemons|lemon)\b/,"lemon"],
    [/\b(garlic cloves|garlic clove|garlic)\b/,"garlic"],
-   [/\b(yellow onions|yellow onion)\b/,"yellow onion"],
+   [/\b(poblano peppers|poblano pepper|poblanos|poblano)\b/,"poblano"],
+    [/\b(bell peppers|bell pepper|sweet peppers|sweet pepper)\b/,"bell pepper"],
+    [/\b(yellow onions|yellow onion)\b/,"yellow onion"],
    [/\b(red onions|red onion)\b/,"red onion"],
-   [/\b(white onions|white onion)\b/,"white onion"]
+   [/\b(white onions|white onion)\b/,"white onion"],
+    [/\b(onions|onion)\b/,"onion"]
  ];
  for(let [rx,v] of aliases)if(rx.test(n))return v;
  return n;
@@ -3827,6 +3869,9 @@ function groceryShoppingUnit_(name,rows){
  if(name==="cherry tomatoes"){let c=cups+pints*2+quarts*4+oz/8;if(c<=2)return"1 pint";if(c<=4)return"1 quart";return ct(c/4,"quart")}
  if(name==="cucumber")return ct(bare+cups/1.5,"cucumber");
  if(name==="jalapeno")return ct(Math.max(1,bare||rows.length),"jalapeño");
+  if(name==="poblano")return ct(Math.max(1,bare+cups/1.25||rows.length),"poblano","poblanos");
+  if(name==="bell pepper")return ct(Math.max(1,bare+cups/1.25||rows.length),"bell pepper","bell peppers");
+  if(name==="onion")return ct(Math.max(1,bare+cups/1.5||rows.length),"onion","onions");
  if(["red onion","yellow onion","white onion"].includes(name))return ct(Math.max(1,bare+cups/1.5),name,name+"s");
  if(name==="garlic")return ct(sum("clove")?sum("clove")/10:Math.max(1,bare||1),"bulb");
  if(name==="lime"||name==="lemon")return ct(Math.max(1,bare+sum("tbsp")/2+cups*8),name);
@@ -3938,7 +3983,7 @@ function smartCartConsolidate_(items){
    let canon=groceryCanonicalName_(x.name);
    if(!canon){out.push(x);return}
    let smartCategory=x.category||"Other";
-   if(["lime","lemon","lettuce","romaine lettuce","iceberg lettuce","lettuce/cabbage mix","poblano + onion","peppers + onions","fresh ginger"].includes(canon))smartCategory="Produce";
+   if(["lime","lemon","lettuce","romaine lettuce","iceberg lettuce","lettuce/cabbage mix","poblano","bell pepper","onion","poblano + onion","peppers + onions","fresh ginger"].includes(canon))smartCategory="Produce";
    if(["black beans","cannellini beans","chickpeas","lentils","oats","chia seeds","ground flax","high-fiber cereal","rice","ancho chiles","guajillo chiles","harissa paste","pickled jalapeños","pickled onions","pepperoncini","falafel"].includes(canon))smartCategory="Pantry";
    let key=`${canon}|${String(smartCategory).toLowerCase()}`;
    if(!groups.has(key))groups.set(key,[]);
@@ -4001,7 +4046,7 @@ function sendWeekGroceries(){
 // V10.0.0 — hidden touchscreen System Control / Maintenance Mode
 const NORAD_COMPANION_BASE_="http://127.0.0.1:38471";
 let noradBrandHoldTimer_=null,noradBrandHoldFired_=false;
-function openNoradSystemControl_(){openModal(`<div class="noradSystemPanel"><h2>🛰️ Kitchen NORAD System Control</h2><div class="note">Desktop controls for the Kitchen NORAD station.</div><div class="noradNightPanel"><b>🌙 Night Mode</b><div class="noradNightMeta">${noradNightStatusText_()}</div><div class="noradNightActions"><button class="btn" onclick="testNoradNightMode_()">🌙 Test Night Mode Now</button><button class="btn" onclick="wakeNoradNight_();closeModal()">☀️ Wake Screen</button></div></div><div class="noradSystemWarning"><b>Maintenance Mode</b><br>Closes the Kitchen NORAD kiosk and suspends automatic recovery so Windows can be used normally. The local companion remains available.</div><div class="noradSystemActions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn noradMaintenanceBtn" onclick="confirmNoradMaintenance_()">🛠️ Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);}
+function openNoradSystemControl_(){openModal(`<div class="noradSystemPanel"><h2>🛰️ Kitchen NORAD System Control</h2><div class="note">Desktop controls for the Kitchen NORAD station.</div><div class="noradNightPanel"><b>🌙 Night Mode</b><div class="noradNightMeta">${noradNightStatusText_()}</div><div class="noradNightActions"><button class="btn" onclick="testNoradNightMode_()">🌙 Test Night Mode Now</button><button class="btn" onclick="wakeNoradNight_();closeModal()">☀️ Wake Screen</button></div></div><div class="noradSystemWarning"><b>Maintenance Mode</b><br>Closes the Kitchen NORAD kiosk and suspends automatic recovery so Windows can be used normally. The local companion remains available.</div><div class="noradSystemActions"><button class="btn" onclick="closeModal()">Close</button><button class="btn" onclick="openRendererDiagnostics_()">🩺 Diagnostics</button><button class="btn noradMaintenanceBtn" onclick="confirmNoradMaintenance_()">🛠️ Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);}
 function confirmNoradMaintenance_(){
   openModal(`<div class="noradSystemPanel"><h2>🛠️ Enter Maintenance Mode?</h2><div class="noradSystemWarning">Kitchen NORAD will close and return to Windows. Automatic recovery will be suspended until the station is started again.</div><div class="noradSystemActions"><button class="btn" onclick="openNoradSystemControl_()">Cancel</button><button id="noradMaintenanceConfirm" class="btn noradConfirmBtn" onclick="enterNoradMaintenance_()">Enter Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);
 }
@@ -4134,7 +4179,7 @@ setInterval(minuteDashboardTick_,60000);
 setTimeout(()=>{if(dashboardVisible_()&&!document.body.classList.contains("fdRendererSafe"))maybeRareCreature()},9000);
 document.addEventListener("keydown",cryptidTestKey);
 
-const NORAD_BUILD_="V10.0.5",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
+const NORAD_BUILD_="V10.1.0",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
 function noradNightScheduled_(d=new Date()){let x=d.getHours();return x>=21||x<6}
 function noradNightClock_(){let e=document.getElementById("noradNightClock");if(e)e.textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
 function noradNightStatusText_(){let n=new Date(),s=noradNightScheduled_(n),a=Date.now()<noradNightWakeUntil_;return `${NORAD_BUILD_} • ${n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})} • Schedule 9:00 PM–6:00 AM • ${noradNightForcedTest_?"TEST ACTIVE":s?(a?"NIGHT / TEMPORARILY AWAKE":"NIGHT MODE ACTIVE"):"DAYTIME"}`}
@@ -4143,5 +4188,5 @@ function testNoradNightMode_(){closeModal();noradNightForcedTest_=true;let s=doc
 function updateNoradNightMode_(){let s=document.getElementById("noradNightScreen");if(!s)return;noradNightClock_();if(noradNightForcedTest_){s.classList.add("active");return}if(!noradNightScheduled_()){noradNightWakeUntil_=0;s.classList.remove("active","waking");return}if(Date.now()<noradNightWakeUntil_){s.classList.remove("active");s.classList.add("waking")}else{s.classList.remove("waking");s.classList.add("active")}}
 function initNoradNightMode_(){let s=document.getElementById("noradNightScreen");if(!s)return;s.addEventListener("pointerdown",()=>wakeNoradNight_(),{passive:true});updateNoradNightMode_();setInterval(updateNoradNightMode_,1000)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initNoradNightMode_,{once:true});else initNoradNightMode_();
-</script><button class="fdDiagBtn" onclick="openRendererDiagnostics_()" title="Renderer diagnostics" aria-label="Renderer diagnostics">🩺</button>
+</script>
 </body></html>
