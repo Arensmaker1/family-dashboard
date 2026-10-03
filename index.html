@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.1.0 — Kitchen Cleanup build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.2.0 — Family Photo Screensaver build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -777,6 +777,13 @@ body[data-appearance="dark"] #appearanceToggle.appearanceToggle{background:#1020
 .noradSystemPanel{max-width:560px;margin:auto}
 .noradSystemPanel h2{margin:0 0 5px}.noradSystemWarning{border:1px solid #ff9b3d66;background:#ff9b3d10;border-radius:11px;padding:11px 12px;margin:13px 0;font-size:11px;line-height:1.45}.noradSystemActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.noradMaintenanceBtn{border-color:#ff9b3d!important;color:#ffd2a8!important;font-weight:900!important;min-height:50px}.noradConfirmBtn{border-color:#ff9b3d!important;background:#3a2412!important;color:#ffe0bd!important;font-weight:900!important}.noradSystemState{margin-top:10px;font-size:10px;color:var(--m);min-height:16px}body[data-appearance="light"] .noradSystemWarning{background:#fff4e8;border-color:#c98645;color:#5d3a19}body[data-appearance="light"] .noradConfirmBtn{background:#f3dcc4!important;color:#5d3010!important}
 
+/* V10.2.0 FAMILY PHOTO SCREENSAVER */
+#noradPhotoScreen{position:fixed;inset:0;z-index:9999;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .8s ease,visibility 0s linear .8s;overflow:hidden;cursor:pointer;user-select:none}
+#noradPhotoScreen.active{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .8s ease,visibility 0s linear 0s}
+.noradPhotoLayer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity 1.8s ease;transform:scale(1.001);background:#000}
+.noradPhotoLayer.show{opacity:1}
+#noradPhotoHint{position:absolute;left:0;right:0;bottom:18px;text-align:center;color:rgba(255,255,255,.28);font-size:10px;letter-spacing:.04em;text-shadow:0 1px 3px #000;pointer-events:none}
+
 /* V10.0.3 NIGHT MODE */#noradNightScreen{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 8s ease,visibility 0s linear 8s;cursor:pointer;user-select:none}#noradNightScreen.active{opacity:.985;visibility:visible;pointer-events:auto;transition:opacity 8s ease,visibility 0s linear 0s}#noradNightScreen.waking{opacity:0;visibility:visible;pointer-events:none;transition:opacity 1.2s ease,visibility 0s linear 1.2s}#noradNightClock{color:rgba(210,220,228,.16);font:600 clamp(34px,5vw,64px)/1 Arial,sans-serif;font-variant-numeric:tabular-nums}.noradNightPanel{border:1px solid var(--l);border-radius:11px;padding:11px 12px;margin:13px 0;background:#ffffff05}.noradNightPanel b{color:var(--theme1)}.noradNightMeta{font-size:10px;color:var(--m);line-height:1.5;margin-top:5px}.noradNightActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.noradNightActions .btn{min-height:46px}
 </style>
 
@@ -1171,7 +1178,7 @@ let familyDashboardAuthExpired_ = false;
 })();
 </script>
 
-</head><body><div id="noradNightScreen"><div id="noradNightClock">12:00 AM</div></div><div id="themeDecor" class="themeDecor"></div>
+</head><body><div id="noradNightScreen"><div id="noradNightClock">12:00 AM</div></div><div id="noradPhotoScreen" aria-hidden="true"><img id="noradPhotoA" class="noradPhotoLayer" alt=""><img id="noradPhotoB" class="noradPhotoLayer" alt=""><div id="noradPhotoHint">Touch anywhere to return to Kitchen NORAD</div></div><div id="themeDecor" class="themeDecor"></div>
 <div id="load">Loading Family Dashboard…</div><div id="app"><header><div class="brand" id="familyTitle">🏠 Family Dashboard</div><div class="controls"><button class="btn" onclick="move(-1)">‹</button><button class="btn" onclick="today()">Today</button><button id="appearanceToggle" class="btn appearanceToggle" onclick="toggleAppearance()" title="Switch light/dark appearance" aria-label="Switch light/dark appearance">🌙</button><div id="month" class="month"></div><button class="btn" onclick="move(1)">›</button></div><div class="clock"><span id="clock"></span><small id="mainWeather">Weather loading…</small><div id="weatherReaction" class="weatherReaction"></div><div id="fridayMode" class="fridayMode"></div><div id="countdowns" class="countdownStrip"></div><small id="sync"></small></div></header>
 <div id="glanceStrip" class="glanceStrip"></div>
 <div id="calendarTimerStrip" class="calendarTimerStrip" aria-live="polite"></div>
@@ -3060,6 +3067,7 @@ function ensureVoiceListening_(){
  r.onstart=()=>setVoiceState_("🎙️ Listening");
  r.onspeechstart=()=>setVoiceState_("🎙️ Hearing you…");
  r.onresult=e=>{
+   wakeNoradPhotoScreensaver_();
    let result=e.results?.[0],alts=result?Array.from(result).map(x=>x.transcript||"").filter(Boolean):[];
    let text=alts[0]||"";
    let t=document.getElementById("voiceTranscript");if(t)t.textContent=text?`“${text}”`:"";
@@ -4046,7 +4054,7 @@ function sendWeekGroceries(){
 // V10.0.0 — hidden touchscreen System Control / Maintenance Mode
 const NORAD_COMPANION_BASE_="http://127.0.0.1:38471";
 let noradBrandHoldTimer_=null,noradBrandHoldFired_=false;
-function openNoradSystemControl_(){openModal(`<div class="noradSystemPanel"><h2>🛰️ Kitchen NORAD System Control</h2><div class="note">Desktop controls for the Kitchen NORAD station.</div><div class="noradNightPanel"><b>🌙 Night Mode</b><div class="noradNightMeta">${noradNightStatusText_()}</div><div class="noradNightActions"><button class="btn" onclick="testNoradNightMode_()">🌙 Test Night Mode Now</button><button class="btn" onclick="wakeNoradNight_();closeModal()">☀️ Wake Screen</button></div></div><div class="noradSystemWarning"><b>Maintenance Mode</b><br>Closes the Kitchen NORAD kiosk and suspends automatic recovery so Windows can be used normally. The local companion remains available.</div><div class="noradSystemActions"><button class="btn" onclick="closeModal()">Close</button><button class="btn" onclick="openRendererDiagnostics_()">🩺 Diagnostics</button><button class="btn noradMaintenanceBtn" onclick="confirmNoradMaintenance_()">🛠️ Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);}
+function openNoradSystemControl_(){openModal(`<div class="noradSystemPanel"><h2>🛰️ Kitchen NORAD System Control</h2><div class="note">Desktop controls for the Kitchen NORAD station.</div><div class="noradNightPanel"><b>🌙 Night Mode</b><div class="noradNightMeta">${noradNightStatusText_()}</div><div class="noradNightActions"><button class="btn" onclick="testNoradNightMode_()">🌙 Test Night Mode Now</button><button class="btn" onclick="wakeNoradNight_();closeModal()">☀️ Wake Screen</button></div></div><div class="noradNightPanel"><b>🖼️ Family Photo Screensaver</b><div class="noradNightMeta">Starts after 30 minutes of daytime inactivity. Night Mode always takes priority.</div><div class="noradNightActions"><button class="btn" onclick="closeModal();testNoradPhotoScreensaver_()">🖼️ Test Photos Now</button><button class="btn" onclick="refreshNoradPhotos_()">🔄 Refresh Photo List</button></div></div><div class="noradSystemWarning"><b>Maintenance Mode</b><br>Closes the Kitchen NORAD kiosk and suspends automatic recovery so Windows can be used normally. The local companion remains available.</div><div class="noradSystemActions"><button class="btn" onclick="closeModal()">Close</button><button class="btn" onclick="openRendererDiagnostics_()">🩺 Diagnostics</button><button class="btn noradMaintenanceBtn" onclick="confirmNoradMaintenance_()">🛠️ Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);}
 function confirmNoradMaintenance_(){
   openModal(`<div class="noradSystemPanel"><h2>🛠️ Enter Maintenance Mode?</h2><div class="noradSystemWarning">Kitchen NORAD will close and return to Windows. Automatic recovery will be suspended until the station is started again.</div><div class="noradSystemActions"><button class="btn" onclick="openNoradSystemControl_()">Cancel</button><button id="noradMaintenanceConfirm" class="btn noradConfirmBtn" onclick="enterNoradMaintenance_()">Enter Maintenance Mode</button></div><div id="noradSystemState" class="noradSystemState"></div></div>`);
 }
@@ -4179,13 +4187,143 @@ setInterval(minuteDashboardTick_,60000);
 setTimeout(()=>{if(dashboardVisible_()&&!document.body.classList.contains("fdRendererSafe"))maybeRareCreature()},9000);
 document.addEventListener("keydown",cryptidTestKey);
 
-const NORAD_BUILD_="V10.1.0",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
+
+/* ============================================================
+   V10.2.0 FAMILY PHOTO SCREENSAVER
+   Local photos are supplied by the Dell-only Companion service.
+   Night Mode (9 PM–6 AM) always wins.
+   ============================================================ */
+const NORAD_PHOTO_IDLE_MS_=30*60*1000;
+const NORAD_PHOTO_CHANGE_MS_=12000;
+let noradPhotoLastActivity_=Date.now();
+let noradPhotoList_=[];
+let noradPhotoOrder_=[];
+let noradPhotoOrderPos_=0;
+let noradPhotoTimer_=null;
+let noradPhotoActive_=false;
+let noradPhotoLayer_=0;
+let noradPhotoObjectUrls_=[];
+let noradPhotoWasNight_=false;
+
+function noradPhotoScreen_(){return document.getElementById("noradPhotoScreen")}
+function noradPhotoNightScheduled_(d=new Date()){let h=d.getHours();return h>=21||h<6}
+
+function noradPhotoShuffle_(){
+  noradPhotoOrder_=noradPhotoList_.slice();
+  for(let i=noradPhotoOrder_.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
+    [noradPhotoOrder_[i],noradPhotoOrder_[j]]=[noradPhotoOrder_[j],noradPhotoOrder_[i]];
+  }
+  noradPhotoOrderPos_=0;
+}
+function noradPhotoNext_(){
+  if(!noradPhotoOrder_.length||noradPhotoOrderPos_>=noradPhotoOrder_.length)noradPhotoShuffle_();
+  return noradPhotoOrder_[noradPhotoOrderPos_++]||null;
+}
+async function loadNoradPhotoList_(){
+  try{
+    const r=await fetch(NORAD_COMPANION_BASE_+"/photos",{method:"GET",cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const data=await r.json();
+    noradPhotoList_=Array.isArray(data.photos)?data.photos:[];
+    noradPhotoShuffle_();
+    return noradPhotoList_.length;
+  }catch(err){
+    console.warn("NORAD photo list unavailable",err);
+    noradPhotoList_=[];
+    noradPhotoOrder_=[];
+    return 0;
+  }
+}
+async function noradPhotoBlobUrl_(id){
+  const r=await fetch(NORAD_COMPANION_BASE_+"/photo?id="+encodeURIComponent(id),{method:"GET",cache:"force-cache"});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const blob=await r.blob();
+  return URL.createObjectURL(blob);
+}
+function noradPhotoReleaseOld_(){
+  while(noradPhotoObjectUrls_.length>4){
+    const u=noradPhotoObjectUrls_.shift();
+    try{URL.revokeObjectURL(u)}catch(_){}
+  }
+}
+async function showNextNoradPhoto_(){
+  if(!noradPhotoActive_||noradPhotoNightScheduled_())return;
+  let item=noradPhotoNext_();if(!item)return;
+  try{
+    const url=await noradPhotoBlobUrl_(item.id);
+    if(!noradPhotoActive_){try{URL.revokeObjectURL(url)}catch(_){}return}
+    noradPhotoObjectUrls_.push(url);noradPhotoReleaseOld_();
+    const next=noradPhotoLayer_?0:1;
+    const img=document.getElementById(next?"noradPhotoB":"noradPhotoA");
+    const old=document.getElementById(noradPhotoLayer_?"noradPhotoB":"noradPhotoA");
+    img.onload=()=>{if(!noradPhotoActive_)return;img.classList.add("show");old?.classList.remove("show");noradPhotoLayer_=next};
+    img.src=url;
+  }catch(err){console.warn("NORAD photo load failed",err)}
+}
+async function startNoradPhotoScreensaver_(force=false){
+  if(noradPhotoNightScheduled_())return false;
+  if(noradPhotoActive_)return true;
+  if(!force&&Date.now()-noradPhotoLastActivity_<NORAD_PHOTO_IDLE_MS_)return false;
+  if(!noradPhotoList_.length)await loadNoradPhotoList_();
+  if(!noradPhotoList_.length)return false;
+  noradPhotoActive_=true;
+  const s=noradPhotoScreen_();
+  if(s){s.classList.add("active");s.setAttribute("aria-hidden","false")}
+  await showNextNoradPhoto_();
+  clearInterval(noradPhotoTimer_);
+  noradPhotoTimer_=setInterval(showNextNoradPhoto_,NORAD_PHOTO_CHANGE_MS_);
+  return true;
+}
+function stopNoradPhotoScreensaver_(countAsActivity=true){
+  if(countAsActivity)noradPhotoLastActivity_=Date.now();
+  noradPhotoActive_=false;
+  clearInterval(noradPhotoTimer_);noradPhotoTimer_=null;
+  const s=noradPhotoScreen_();
+  if(s){s.classList.remove("active");s.setAttribute("aria-hidden","true")}
+}
+function wakeNoradPhotoScreensaver_(){if(noradPhotoActive_)stopNoradPhotoScreensaver_(true);else noradPhotoLastActivity_=Date.now()}
+function testNoradPhotoScreensaver_(){noradPhotoLastActivity_=0;startNoradPhotoScreensaver_(true)}
+async function refreshNoradPhotos_(){
+  const n=await loadNoradPhotoList_();
+  const st=document.getElementById("noradSystemState");
+  if(st)st.textContent=n?`Photo library refreshed: ${n} photo${n===1?"":"s"} ready.`:"No supported photos found, or the local Companion could not be reached.";
+}
+function noradPhotoActivity_(){
+  if(noradPhotoActive_){stopNoradPhotoScreensaver_(true);return}
+  noradPhotoLastActivity_=Date.now();
+}
+function initNoradPhotoScreensaver_(){
+  const s=noradPhotoScreen_();
+  if(!s)return;
+  ["pointerdown","touchstart"].forEach(evt=>s.addEventListener(evt,()=>stopNoradPhotoScreensaver_(true),{passive:true}));
+  ["pointerdown","keydown","click"].forEach(evt=>document.addEventListener(evt,noradPhotoActivity_,{passive:true}));
+  let lastMove=0;
+  document.addEventListener("mousemove",()=>{let n=Date.now();if(n-lastMove>1500){lastMove=n;noradPhotoActivity_()}},{passive:true});
+  loadNoradPhotoList_();
+  setInterval(()=>{
+    const night=noradPhotoNightScheduled_();
+    if(night){
+      if(noradPhotoActive_)stopNoradPhotoScreensaver_(false);
+      noradPhotoWasNight_=true;
+      return;
+    }
+    if(noradPhotoWasNight_){
+      noradPhotoWasNight_=false;
+      noradPhotoLastActivity_=Date.now(); // 6 AM starts a fresh 30-minute daytime idle window.
+    }
+    if(!noradPhotoActive_&&Date.now()-noradPhotoLastActivity_>=NORAD_PHOTO_IDLE_MS_)startNoradPhotoScreensaver_();
+  },15000);
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initNoradPhotoScreensaver_,{once:true});else initNoradPhotoScreensaver_();
+
+const NORAD_BUILD_="V10.2.0",NORAD_NIGHT_WAKE_MS_=120000;let noradNightWakeUntil_=0,noradNightForcedTest_=false;
 function noradNightScheduled_(d=new Date()){let x=d.getHours();return x>=21||x<6}
 function noradNightClock_(){let e=document.getElementById("noradNightClock");if(e)e.textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
 function noradNightStatusText_(){let n=new Date(),s=noradNightScheduled_(n),a=Date.now()<noradNightWakeUntil_;return `${NORAD_BUILD_} • ${n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})} • Schedule 9:00 PM–6:00 AM • ${noradNightForcedTest_?"TEST ACTIVE":s?(a?"NIGHT / TEMPORARILY AWAKE":"NIGHT MODE ACTIVE"):"DAYTIME"}`}
 function wakeNoradNight_(ms=NORAD_NIGHT_WAKE_MS_){noradNightForcedTest_=false;if(noradNightScheduled_())noradNightWakeUntil_=Date.now()+ms;let s=document.getElementById("noradNightScreen");if(s){s.classList.remove("active");s.classList.add("waking")}}
 function testNoradNightMode_(){closeModal();noradNightForcedTest_=true;let s=document.getElementById("noradNightScreen");if(s){s.classList.remove("waking");requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add("active")))}}
-function updateNoradNightMode_(){let s=document.getElementById("noradNightScreen");if(!s)return;noradNightClock_();if(noradNightForcedTest_){s.classList.add("active");return}if(!noradNightScheduled_()){noradNightWakeUntil_=0;s.classList.remove("active","waking");return}if(Date.now()<noradNightWakeUntil_){s.classList.remove("active");s.classList.add("waking")}else{s.classList.remove("waking");s.classList.add("active")}}
+function updateNoradNightMode_(){let s=document.getElementById("noradNightScreen");if(!s)return;noradNightClock_();if(noradNightForcedTest_){stopNoradPhotoScreensaver_(false);s.classList.add("active");return}if(!noradNightScheduled_()){noradNightWakeUntil_=0;s.classList.remove("active","waking");return}stopNoradPhotoScreensaver_(false);if(Date.now()<noradNightWakeUntil_){s.classList.remove("active");s.classList.add("waking")}else{s.classList.remove("waking");s.classList.add("active")}}
 function initNoradNightMode_(){let s=document.getElementById("noradNightScreen");if(!s)return;s.addEventListener("pointerdown",()=>wakeNoradNight_(),{passive:true});updateNoradNightMode_();setInterval(updateNoradNightMode_,1000)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initNoradNightMode_,{once:true});else initNoradNightMode_();
 </script>
