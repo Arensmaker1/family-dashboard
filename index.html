@@ -4283,7 +4283,7 @@ function stopNoradPhotoScreensaver_(countAsActivity=true){
   if(s){s.classList.remove("active");s.setAttribute("aria-hidden","true")}
 }
 function wakeNoradPhotoScreensaver_(){if(noradPhotoActive_)stopNoradPhotoScreensaver_(true);else noradPhotoLastActivity_=Date.now()}
-function testNoradPhotoScreensaver_(){noradPhotoLastActivity_=0;startNoradPhotoScreensaver_(true)}
+function testNoradPhotoScreensaver_(){noradPhotoLastActivity_=0;setTimeout(()=>startNoradPhotoScreensaver_(true),100)}
 async function refreshNoradPhotos_(){
   const n=await loadNoradPhotoList_();
   const st=document.getElementById("noradSystemState");
