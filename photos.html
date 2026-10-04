@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <meta name="theme-color" content="#0b1017">
+
+  <title>Kitchen NORAD Photos</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #172231 0, #0d131c 36%, #090d13 100%);
+      color: #f5f7fa;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    .page {
+      width: min(700px, 100%);
+      margin: 0 auto;
+      padding:
+        max(28px, env(safe-area-inset-top))
+        20px
+        max(44px, env(safe-area-inset-bottom));
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: #182231;
+      border: 1px solid #2e3d50;
+      font-size: 27px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin-bottom: 3px;
+      color: #8fa3ba;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(27px, 7vw, 36px);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 10px 0 28px;
+      color: #aeb8c5;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .pin-card,
+    .upload-card {
+      background: rgba(20, 27, 37, .88);
+      border: 1px solid #2a3748;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.22);
+    }
+
+    .pin-card {
+      margin-bottom: 18px;
+    }
+
+    .pin-title {
+      margin-bottom: 7px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .pin-help {
+      margin-bottom: 14px;
+      color: #9eabb9;
+      line-height: 1.4;
+    }
+
+    #pin {
+      width: 100%;
+      padding: 16px 17px;
+      border: 1px solid #435269;
+      border-radius: 12px;
+      outline: none;
+      background: #0d131b;
+      color: #fff;
+      font: inherit;
+      font-size: 20px;
+      letter-spacing: .08em;
+    }
+
+    #pin:focus {
+      border-color: #8399b4;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 13px;
+      color: #adb8c5;
+      font-size: 14px;
+    }
+
+    .remember input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .picker {
+      display: block;
+      padding: 34px 20px;
+      border: 2px dashed #53677f;
+      border-radius: 17px;
+      text-align: center;
+      cursor: pointer;
+      background: #101720;
+      transition:
+        transform .12s ease,
+        border-color .12s ease,
+        background .12s ease;
+    }
+
+    .picker:active {
+      transform: scale(.985);
+      background: #151e29;
+    }
+
+    .camera {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 40px;
+    }
+
+    .picker strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 22px;
+    }
+
+    .picker-copy {
+      color: #9facba;
+      line-height: 1.4;
+    }
+
+    #photos {
+      display: none;
+    }
+
+    #selectionInfo {
+      display: none;
+      margin: 18px 2px 0;
+      color: #bdc7d3;
+      font-weight: 700;
+    }
+
+    #preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .thumb {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      background: #080b10;
+      border: 1px solid #293545;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 18px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 850;
+      cursor: pointer;
+      transition:
+        opacity .15s ease,
+        transform .12s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(.985);
+    }
+
+    #send {
+      background: #edf2f7;
+      color: #0b0f14;
+    }
+
+    #send:disabled {
+      opacity: .36;
+      cursor: default;
+    }
+
+    .progress-wrap {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .progress-track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #080c11;
+      border: 1px solid #283545;
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: #dfe7ef;
+      transition: width .25s ease;
+    }
+
+    #status {
+      min-height: 28px;
+      margin-top: 15px;
+      line-height: 1.5;
+      color: #b5c0cc;
+    }
+
+    #status.success {
+      color: #8ee59b;
+      font-weight: 750;
+    }
+
+    #status.error {
+      color: #ff9696;
+      font-weight: 700;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: #647487;
+      font-size: 12px;
+    }
+
+    @media (max-width: 500px) {
+      #preview {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .page {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <div class="brand">
+    <div class="brand-icon">📡</div>
+
+    <div class="brand-text">
+      <div class="eyebrow">KITCHEN NORAD</div>
+      <h1>Photos</h1>
+    </div>
+  </div>
+
+  <div class="subtitle">
+    Send family photos straight to the kitchen display.
+  </div>
+
+  <div class="pin-card">
+    <div class="pin-title">Family Access</div>
+
+    <div class="pin-help">
+      Enter the family PIN used for Kitchen NORAD photo uploads.
+    </div>
+
+    <input
+      id="pin"
+      type="password"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="Family PIN"
+    >
+
+    <label class="remember">
+      <input id="rememberPin" type="checkbox" checked>
+      Remember this phone
+    </label>
+  </div>
+
+  <div class="upload-card">
+
+    <label class="picker">
+      <span class="camera">📷</span>
+
+      <strong>Choose Photos</strong>
+
+      <span class="picker-copy">
+        Pick one or more pictures from your phone.
+      </span>
+
+      <input
+        id="photos"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+      >
+    </label>
+
+    <div id="selectionInfo"></div>
+
+    <div id="preview"></div>
+
+    <button id="send" disabled>
+      Send to Kitchen NORAD
+    </button>
+
+    <div id="progressWrap" class="progress-wrap">
+      <div class="progress-track">
+        <div id="progressBar"></div>
+      </div>
+    </div>
+
+    <div id="status"></div>
+
+  </div>
+
+  <div class="footer">
+    Kitchen NORAD • Family Photo Uplink
+  </div>
+
+</div>
+
+<script>
+  /*
+    IMPORTANT:
+    Put ONLY the normal Apps Script /exec URL here.
+    Do not add ?action=upload, the PIN, or any secret key.
+  */
+  const UPLOAD_ENDPOINT =
+    "https://script.google.com/macros/s/AKfycbyhcQAzAKb2LU7LbxpRmrCZIPUgmlNQGBBBAZCkRA9lk-ii4jMO1RL-mlFyOUyn7_hp/exec";
+
+
+  const input =
+    document.getElementById("photos");
+
+  const preview =
+    document.getElementById("preview");
+
+  const send =
+    document.getElementById("send");
+
+  const status =
+    document.getElementById("status");
+
+  const pin =
+    document.getElementById("pin");
+
+  const rememberPin =
+    document.getElementById("rememberPin");
+
+  const selectionInfo =
+    document.getElementById("selectionInfo");
+
+  const progressWrap =
+    document.getElementById("progressWrap");
+
+  const progressBar =
+    document.getElementById("progressBar");
+
+  let selectedFiles = [];
+
+
+  // Restore the family PIN on this phone if previously saved.
+  try {
+    const savedPin =
+      localStorage.getItem("noradFamilyPin");
+
+    if (savedPin) {
+      pin.value = savedPin;
+    }
+  } catch (_) {}
+
+
+  input.addEventListener("change", function () {
+
+    selectedFiles =
+      Array.from(input.files || []);
+
+    preview.innerHTML = "";
+    status.textContent = "";
+    status.className = "";
+
+    progressWrap.style.display = "none";
+    progressBar.style.width = "0%";
+
+    if (selectedFiles.length) {
+      selectionInfo.style.display = "block";
+
+      selectionInfo.textContent =
+        selectedFiles.length +
+        " photo" +
+        (selectedFiles.length === 1 ? "" : "s") +
+        " selected";
+    } else {
+      selectionInfo.style.display = "none";
+    }
+
+    selectedFiles.forEach(function (file) {
+
+      const box =
+        document.createElement("div");
+
+      box.className = "thumb";
+
+      const img =
+        document.createElement("img");
+
+      const url =
+        URL.createObjectURL(file);
+
+      img.src = url;
+
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+      };
+
+      box.appendChild(img);
+      preview.appendChild(box);
+    });
+
+    updateSendButton();
+  });
+
+
+  pin.addEventListener("input", updateSendButton);
+
+
+  function updateSendButton() {
+    send.disabled =
+      selectedFiles.length === 0 ||
+      !pin.value.trim();
+  }
+
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+
+      const reader =
+        new FileReader();
+
+      reader.onload = function () {
+        resolve(reader.result);
+      };
+
+      reader.onerror = function () {
+        reject(
+          new Error(
+            "Could not read " + file.name
+          )
+        );
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+
+  async function uploadOne(file, familyPin) {
+
+    const data =
+      await fileToBase64(file);
+
+    const url =
+      UPLOAD_ENDPOINT +
+      "?action=upload&pin=" +
+      encodeURIComponent(familyPin);
+
+    const response =
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          name: file.name,
+          mimeType: file.type,
+          data: data
+        })
+      });
+
+    if (!response.ok) {
+      throw new Error(
+        "Upload service returned " +
+        response.status
+      );
+    }
+
+    const result =
+      await response.json();
+
+    if (!result.ok) {
+      throw new Error(
+        result.error || "Upload failed."
+      );
+    }
+
+    return result;
+  }
+
+
+  send.addEventListener("click", async function () {
+
+    if (!selectedFiles.length) {
+      return;
+    }
+
+    const familyPin =
+      pin.value.trim();
+
+    if (!familyPin) {
+      status.className = "error";
+      status.textContent =
+        "Enter the family PIN first.";
+      return;
+    }
+
+
+    if (
+      !UPLOAD_ENDPOINT ||
+      UPLOAD_ENDPOINT.includes(
+        "PASTE_YOUR_APPS_SCRIPT"
+      )
+    ) {
+      status.className = "error";
+      status.textContent =
+        "The upload service has not been configured.";
+      return;
+    }
+
+
+    try {
+      if (rememberPin.checked) {
+        localStorage.setItem(
+          "noradFamilyPin",
+          familyPin
+        );
+      } else {
+        localStorage.removeItem(
+          "noradFamilyPin"
+        );
+      }
+    } catch (_) {}
+
+
+    send.disabled = true;
+
+    progressWrap.style.display = "block";
+    progressBar.style.width = "0%";
+
+    status.className = "";
+
+    let completed = 0;
+
+    status.textContent =
+      "Sending 0 of " +
+      selectedFiles.length +
+      " photos…";
+
+
+    try {
+
+      for (const file of selectedFiles) {
+
+        await uploadOne(
+          file,
+          familyPin
+        );
+
+        completed++;
+
+        const percent =
+          Math.round(
+            (completed / selectedFiles.length) *
+            100
+          );
+
+        progressBar.style.width =
+          percent + "%";
+
+        status.textContent =
+          "Sending " +
+          completed +
+          " of " +
+          selectedFiles.length +
+          " photos…";
+      }
+
+
+      status.className = "success";
+
+      status.textContent =
+        "✓ " +
+        completed +
+        " photo" +
+        (completed === 1 ? "" : "s") +
+        " sent to Kitchen NORAD.";
+
+      selectedFiles = [];
+      input.value = "";
+      preview.innerHTML = "";
+
+      selectionInfo.style.display =
+        "none";
+
+      send.disabled = true;
+
+
+    } catch (error) {
+
+      status.className = "error";
+
+      status.textContent =
+        "Upload failed after " +
+        completed +
+        " photo" +
+        (completed === 1 ? "" : "s") +
+        ": " +
+        (error.message || error);
+
+      send.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
