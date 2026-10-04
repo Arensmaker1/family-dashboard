@@ -1,0 +1,25 @@
+{
+  "name": "Kitchen NORAD Photos",
+  "short_name": "NORAD Photos",
+  "description": "Send family photos to the Kitchen NORAD display.",
+  "start_url": "./photos.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090d13",
+  "theme_color": "#0b1017",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./norad-photos-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./norad-photos-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
