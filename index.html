@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.2.0 — Family Photo Screensaver build --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.4 — Ordered Recipe-Linked Menu --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -785,6 +785,7 @@ body[data-appearance="dark"] #appearanceToggle.appearanceToggle{background:#1020
 #noradPhotoHint{position:absolute;left:0;right:0;bottom:18px;text-align:center;color:rgba(255,255,255,.28);font-size:10px;letter-spacing:.04em;text-shadow:0 1px 3px #000;pointer-events:none}
 
 /* V10.0.3 NIGHT MODE */#noradNightScreen{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 8s ease,visibility 0s linear 8s;cursor:pointer;user-select:none}#noradNightScreen.active{opacity:.985;visibility:visible;pointer-events:auto;transition:opacity 8s ease,visibility 0s linear 0s}#noradNightScreen.waking{opacity:0;visibility:visible;pointer-events:none;transition:opacity 1.2s ease,visibility 0s linear 1.2s}#noradNightClock{color:rgba(210,220,228,.16);font:600 clamp(34px,5vw,64px)/1 Arial,sans-serif;font-variant-numeric:tabular-nums}.noradNightPanel{border:1px solid var(--l);border-radius:11px;padding:11px 12px;margin:13px 0;background:#ffffff05}.noradNightPanel b{color:var(--theme1)}.noradNightMeta{font-size:10px;color:var(--m);line-height:1.5;margin-top:5px}.noradNightActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.noradNightActions .btn{min-height:46px}
+.noradMenuLink{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}.noradMenuLink:hover{color:var(--b)}.noradMealField{display:flex;gap:5px}.noradMealField input{flex:1;min-width:0}.noradMealField button{flex:none}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1637,7 +1638,7 @@ function maintenanceDayHtml_(d,returnTo="day"){let M=remindersForDate_(d);if(!M.
 function renderDetail(){let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.completions[key(sel)+"-"+x.i]).length,p=C.length?Math.round(done/C.length*100):100;document.getElementById("detail").innerHTML=`<div class="head"><div><h1>${sel.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}</h1><div class="sub">${sel.getFullYear()}</div></div><div class="weather">${weather()}</div></div><div class="cards">
 <div class="card"><h2>📅 TODAY'S SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}</div></div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}${maintenanceDayHtml_(sel,"day")}</div>
 <div class="card"><h2>✅ TODAY'S CHORES <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div></div>
-<div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}</div>
+<div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${noradMenuHtml_()}</div>
 <div class="card"><h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2>${(S.pinnedNotes||[]).map((x,i)=>`<div class="pinNote">📌 ${esc(x)}<button onclick="dismissPinned(${i})">×</button></div>`).join("")}<div class="notesbox">${esc(S.notes)}</div><h2 style="margin-top:12px">🌤️ FORECAST</h2>${forecast()}</div>
 <div class="card quoteCard"><h2>💬 DAILY WISDOM(ISH)</h2><div class="quote">“${esc(quoteFor(sel))}”</div></div></div>`}
 function persist(cb){document.getElementById("status").textContent="Saving…";google.script.run.withSuccessHandler(()=>{document.getElementById("status").textContent="Saved ✓";setTimeout(()=>document.getElementById("status").textContent="",1500);if(cb)cb()}).saveDashboardSettings(S)}
@@ -1674,8 +1675,43 @@ function addChore(){captureChoreEdits();S.chores.push({name:"",who:"",days:[1,2,
 function delChore(i){captureChoreEdits();S.chores.splice(i,1);openChores()}
 function cancelChores(){let dirty=choresDirty();if(dirty&&!confirm("You have unsaved chore changes. Discard them?"))return;if(choreEditOriginal)S.chores=JSON.parse(JSON.stringify(choreEditOriginal));choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail()}
 function saveChores(){S.chores=choreEditorData().map(x=>({name:x.name.trim(),who:x.who.trim(),days:x.days})).filter(x=>x.name);choreEditOriginal=null;modalMode="";document.getElementById("modalbg").style.display="none";renderDetail();persist()}
+// V10.4 — ordered, clickable weekly menu (legacy text remains compatible)
+const NORAD_MENU_DAYS_=["MON","TUE","WED","THU","FRI","SAT","SUN"];
+function noradMenuRecipe_(name){
+ const norm=x=>String(x||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ const n=norm(name);if(!n)return null;
+ const rows=[...(R.recipes||[]).map(x=>({...x,_source:"library"})),...(MP.recipes||[]).map(x=>({...x,_source:"plan"}))];
+ return rows.find(x=>norm(x.name)===n)||null;
+}
+function noradMenuMealClick_(encoded){
+ const name=decodeURIComponent(encoded);const go=()=>{
+  const r=noradMenuRecipe_(name);
+  if(!r){openRecipes();alert("No exact recipe match for: "+name+". You can search the recipe library.");return;}
+  openDinnerRecipe_(r._source,r.id);
+ };
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go();
+}
+function noradMenuHtml_(){
+ return NORAD_MENU_DAYS_.map(day=>{
+  const meals=menuMeals_(S.menu?.[day]);
+  const parts=[["🌅",meals.breakfast],["☀️",meals.lunch],["🌙",meals.dinner]].filter(x=>x[1]);
+  return `<div class="menuitem"><span class="md">${day}</span>${parts.length?parts.map(([emoji,name])=>`<span class="noradMenuLink" role="button" tabindex="0" title="Open matching recipe" onclick="noradMenuMealClick_('${encodeURIComponent(name)}')" onkeydown="if(event.key==='Enter')noradMenuMealClick_('${encodeURIComponent(name)}')">${emoji} ${esc(name)}</span>`).join(' • '):'—'}</div>`;
+ }).join('');
+}
+function noradMenuChoose_(day,meal){
+ const el=document.getElementById('meal'+day+meal);if(!el)return;
+ const choose=()=>{
+  const rows=[...(R.recipes||[]),...(MP.recipes||[])].filter(x=>x.name).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const query=prompt('Search for a recipe (enter part of its name):',el.value||'');if(query===null)return;
+  const matches=rows.filter(x=>x.name.toLowerCase().includes(query.trim().toLowerCase())).slice(0,15);
+  if(!matches.length){alert('No matching recipes found. You can still type a custom meal.');return;}
+  const choice=prompt(matches.map((x,i)=>`${i+1}. ${x.name}`).join('\n')+'\n\nEnter recipe number:','1');
+  const index=Number(choice)-1;if(Number.isInteger(index)&&matches[index])el.value=matches[index].name;
+ };
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(choose);else choose();
+}
 function menuMeals_(raw){let out={breakfast:"",lunch:"",dinner:""},parts=String(raw||"").split(/\s*•\s*/).map(x=>x.trim()).filter(Boolean);parts.forEach((x,i)=>{if(/^🌅/u.test(x))out.breakfast=x.replace(/^🌅\s*/u,"");else if(/^☀️/u.test(x))out.lunch=x.replace(/^☀️\s*/u,"");else if(/^🌙/u.test(x))out.dinner=x.replace(/^🌙\s*/u,"");else if(i===0)out.breakfast=x;else if(i===1)out.lunch=x;else out.dinner=x});return out}
-function openMenu(){let order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};openModal(`<h2>Edit weekly menu</h2><div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(S.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<input id="meal${d}Breakfast" value="${esc(m.breakfast)}"></label><label>Lunch<input id="meal${d}Lunch" value="${esc(m.lunch)}"></label><label>Dinner<input id="meal${d}Dinner" value="${esc(m.dinner)}"></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`) }
+function openMenu(){let order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};openModal(`<h2>Edit weekly menu</h2><div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(S.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<span class="noradMealField"><input id="meal${d}Breakfast" value="${esc(m.breakfast)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Breakfast')" title="Choose from recipes">🔎</button></span></label><label>Lunch<span class="noradMealField"><input id="meal${d}Lunch" value="${esc(m.lunch)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Lunch')" title="Choose from recipes">🔎</button></span></label><label>Dinner<span class="noradMealField"><input id="meal${d}Dinner" value="${esc(m.dinner)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Dinner')" title="Choose from recipes">🔎</button></span></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`) }
 function saveMenu(){["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach(d=>{let b=document.getElementById("meal"+d+"Breakfast")?.value.trim()||"",l=document.getElementById("meal"+d+"Lunch")?.value.trim()||"",x=document.getElementById("meal"+d+"Dinner")?.value.trim()||"";S.menu[d]=[["🌅",b],["☀️",l],["🌙",x]].filter(z=>z[1]).map(z=>z[0]+" "+z[1]).join("  •  ")});closeModal();renderDetail();persist()}
 function openNotes(){S.pinnedNotes=S.pinnedNotes||[];openModal(`<h2>Family Notes</h2><div class="field"><label>General notes</label><textarea id="notes">${esc(S.notes)}</textarea></div><h3>📌 PINNED / IMPORTANT</h3><div class="note">These stay visible in the dashboard glance until you remove them.</div><div id="pinEditor">${S.pinnedNotes.map((x,i)=>`<div class="pinEditRow"><input id="pin${i}" value="${esc(x)}"><button class="x" onclick="removePinEditor(${i})">×</button></div>`).join("")}</div><button class="btn" onclick="addPinEditor()">+ Pin reminder</button><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveNotes()">Save</button></div>`)}
 function addPinEditor(){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.push("");openNotes()}
@@ -2759,7 +2795,7 @@ function openDay(d){
  document.getElementById("v4weather").innerHTML=weather();
  document.getElementById("v4schedule").innerHTML=`<h2>📅 SCHEDULE <span class="mini" onclick="openCalendarEventEditor(sel)">＋ ADD EVENT</span></h2>${E.length?E.map(e=>`<div class="row calendarEventRow ${eventHasConflict_(e,E)?"calConflict":""}" onclick="openCalendarEventDetails(\'${encodeURIComponent(e.id)}\',\'${encodeURIComponent(e.calendarId||"")}\')" title="Tap for event details"><div class="dot" style="background:${e.color}"></div><div class="time">${time(e)}</div><div class="title">${esc(e.title)}<div class="note">${esc(e.calendar)}${e.location?" • "+esc(e.location):""}</div>${eventHasConflict_(e,E)?'<div class="calConflictNote">⚠ Schedule overlap</div>':""}</div></div>`).join(""):"<div class='empty'>Nothing scheduled.</div>"}${maintenanceDayHtml_(sel,"day")}`;
  document.getElementById("v4chores").innerHTML=`<h2>✅ CHORES <span class="streakBadge">🔥 ${choreStreak(new Date())} day streak</span> <span class="mini" onclick="openChores()">EDIT</span></h2>${C.length?C.map(x=>`<label class="chore"><input type="checkbox" ${S.completions[key(sel)+"-"+x.i]?"checked":""} onchange="chore(${x.i},this.checked);openDay(sel)"><span class="${S.completions[key(sel)+"-"+x.i]?"done":""}">${esc(x.name)}</span><span class="who">${esc(x.who)}</span></label>`).join(""):"<div class='empty'>No chores today.</div>"}<div class="progress"><div style="width:${p}%"></div></div><div class="note">${done} / ${C.length} completed</div>`;
- document.getElementById("v4menu").innerHTML=`<h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${Object.entries(S.menu).map(([a,b])=>`<div class="menuitem"><span class="md">${a}</span>${esc(b||"—")}</div>`).join("")}`;
+ document.getElementById("v4menu").innerHTML=`<h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${noradMenuHtml_()}`;
  document.getElementById("v4notes").innerHTML=`<h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2><div class="notesbox">${esc(S.notes)}</div>`;
  document.getElementById("v4forecast").innerHTML=`<h2>🌤️ 7-DAY FORECAST</h2>${v4Forecast()}`;
  document.getElementById("v4quote").textContent="💬 “"+quoteFor(sel)+"”";
