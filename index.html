@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.4 — Ordered Recipe-Linked Menu --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.4.2 — Stable Recipe Links --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -1683,19 +1683,28 @@ function noradMenuRecipe_(name){
  const rows=[...(R.recipes||[]).map(x=>({...x,_source:"library"})),...(MP.recipes||[]).map(x=>({...x,_source:"plan"}))];
  return rows.find(x=>norm(x.name)===n)||null;
 }
-function noradMenuMealClick_(encoded){
- const name=decodeURIComponent(encoded);const go=()=>{
-  const r=noradMenuRecipe_(name);
-  if(!r){openRecipes();alert("No exact recipe match for: "+name+". You can search the recipe library.");return;}
-  openDinnerRecipe_(r._source,r.id);
+function noradMenuLinkStore_(){if(!S.menuRecipeLinks||typeof S.menuRecipeLinks!=="object"||Array.isArray(S.menuRecipeLinks))S.menuRecipeLinks={};return S.menuRecipeLinks}
+function noradMenuResolve_(day,meal,name){
+ const link=noradMenuLinkStore_()[day+":"+meal];
+ if(link&&link.name===name){const pool=link.source==="plan"?(MP.recipes||[]):(R.recipes||[]);const found=pool.find(x=>String(x.id)===String(link.id));if(found)return {source:link.source,id:found.id,recipe:found};}
+ const match=recipeMatchForDinner_({name:name});return match?{source:match.source,id:match.id,recipe:match.recipe}:null;
+}
+function noradMenuOpen_(day,meal){
+ const m=menuMeals_(S.menu?.[day]),name=m[meal.toLowerCase()];if(!name)return;
+ const go=()=>{const r=noradMenuResolve_(day,meal,name);if(r){openDinnerRecipe_(r.source,r.id);return;}
+  noradMenuChoose_(day,meal,name);
  };
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go();
+}
+function noradMenuMealClick_(encoded){
+ const name=decodeURIComponent(encoded),go=()=>{const r=recipeMatchForDinner_({name});if(r)openDinnerRecipe_(r.source,r.id);else{openRecipes();showPlanTab();alert("This meal has no linked recipe. Try the Meal Plans tab or choose a recipe from the Weekly Menu editor.")}};
  if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go();
 }
 function noradMenuHtml_(){
  return NORAD_MENU_DAYS_.map(day=>{
   const meals=menuMeals_(S.menu?.[day]);
-  const parts=[["🌅",meals.breakfast],["☀️",meals.lunch],["🌙",meals.dinner]].filter(x=>x[1]);
-  return `<div class="menuitem"><span class="md">${day}</span>${parts.length?parts.map(([emoji,name])=>`<span class="noradMenuLink" role="button" tabindex="0" title="Open matching recipe" onclick="noradMenuMealClick_('${encodeURIComponent(name)}')" onkeydown="if(event.key==='Enter')noradMenuMealClick_('${encodeURIComponent(name)}')">${emoji} ${esc(name)}</span>`).join(' • '):'—'}</div>`;
+  const parts=[["🌅","Breakfast",meals.breakfast],["☀️","Lunch",meals.lunch],["🌙","Dinner",meals.dinner]].filter(x=>x[2]);
+  return `<div class="menuitem"><span class="md">${day}</span>${parts.length?parts.map(([emoji,meal,name])=>`<button type="button" class="noradMenuLink" title="Open recipe" onclick="noradMenuOpen_('${day}','${meal}')">${emoji} ${esc(name)}</button>`).join(' • '):'—'}</div>`;
  }).join('');
 }
 function noradMenuChoose_(day,meal){
@@ -4366,17 +4375,33 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <style>
 #noradRecipePicker{position:fixed;inset:0;z-index:110;background:#000b;display:none;align-items:center;justify-content:center;padding:15px}
 #noradRecipePicker.open{display:flex}.nrpBox{background:var(--p);color:var(--t);border:1px solid var(--l);border-radius:15px;padding:18px;width:min(660px,96vw);max-height:85vh;display:flex;flex-direction:column;gap:12px}.nrpBox input{width:100%;padding:13px;border-radius:9px;background:var(--bg);border:1px solid var(--l);color:var(--t);font-size:16px}.nrpResults{overflow:auto;min-height:80px}.nrpResult{display:block;width:100%;text-align:left;background:transparent;color:var(--t);border:0;border-bottom:1px solid var(--l);padding:12px;cursor:pointer}.nrpResult:hover{background:var(--l)}.nrpTop{display:flex;justify-content:space-between;align-items:center}.noradMealOpen{white-space:nowrap}.noradMealField input{min-width:0}
+ .noradMenuLink{background:none;border:0;color:var(--b);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:2px;text-align:left;white-space:normal} .noradMenuLink:hover{color:var(--theme1)}
 </style>
 <div id="noradRecipePicker" role="dialog" aria-modal="true" aria-label="Choose recipe"><div class="nrpBox"><div class="nrpTop"><strong>Choose a recipe</strong><button class="btn" type="button" onclick="noradPickerClose_()">✕ Close</button></div><input id="nrpSearch" placeholder="Search recipes..." oninput="noradPickerRender_()"><div class="nrpResults" id="nrpResults"></div></div></div>
 <script>
 let noradPickerTarget_=null;
-function noradPickerClose_(){document.getElementById('noradRecipePicker').classList.remove('open');noradPickerTarget_=null}
+let noradPickerLinkTarget_=null;
+function noradPickerClose_(){document.getElementById('noradRecipePicker').classList.remove('open');noradPickerTarget_=null;noradPickerLinkTarget_=null}
 function noradPickerRows_(){return [...(R.recipes||[]).map(x=>({...x,_source:'library'})),...(MP.recipes||[]).map(x=>({...x,_source:'plan'}))].filter(x=>x.name).sort((a,b)=>String(a.name).localeCompare(String(b.name)))}
-function noradPickerRender_(){const q=document.getElementById('nrpSearch').value.toLowerCase().trim();const rows=noradPickerRows_().filter(x=>String(x.name).toLowerCase().includes(q)).slice(0,70);const target=document.getElementById('nrpResults');target.replaceChildren();if(!rows.length){target.textContent='No matching recipes. You can still type a custom meal.';return;}rows.forEach(r=>{const b=document.createElement('button');b.type='button';b.className='nrpResult';b.textContent=r.name;b.onclick=()=>{const el=document.getElementById(noradPickerTarget_);if(el){el.value=r.name;el.dataset.recipeId=String(r.id);el.dataset.recipeSource=r._source;}noradPickerClose_()};target.appendChild(b)})}
-function noradMenuChoose_(day,meal){const el=document.getElementById('meal'+day+meal);if(!el)return;const go=()=>{noradPickerTarget_=el.id;document.getElementById('nrpSearch').value=el.value||'';document.getElementById('noradRecipePicker').classList.add('open');noradPickerRender_();document.getElementById('nrpSearch').focus();document.getElementById('nrpSearch').select()};if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go()}
-function noradMenuOpenFromEditor_(day,meal){const el=document.getElementById('meal'+day+meal);if(!el||!el.value.trim()){alert('Choose or type a meal first.');return;}const go=()=>{let r=null;if(el.dataset.recipeId){r=noradPickerRows_().find(x=>String(x.id)===el.dataset.recipeId&&x._source===el.dataset.recipeSource)}if(!r)r=noradMenuRecipe_(el.value.trim());if(!r){alert('No matching recipe found. Use the search button to select one.');return;}closeModal();openDinnerRecipe_(r._source,r.id)};if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go()}
+function noradPickerRender_(){const q=document.getElementById('nrpSearch').value.toLowerCase().trim();const rows=noradPickerRows_().filter(x=>`${x.name} ${x.planName||''} ${x.category||''}`.toLowerCase().includes(q)).slice(0,100);const target=document.getElementById('nrpResults');target.replaceChildren();if(!rows.length){target.textContent='No matching recipes in the currently loaded libraries. You can still type a custom meal.';return;}rows.forEach(r=>{const b=document.createElement('button');b.type='button';b.className='nrpResult';const meta=r._source==='plan'?(r.planName||'Meal Plan'):'Family Recipes';b.textContent=r.name+'  ·  '+meta;b.onclick=()=>{const el=document.getElementById(noradPickerTarget_);if(el){el.value=r.name;el.dataset.recipeId=String(r.id);el.dataset.recipeSource=r._source;el.dataset.recipeName=r.name;}else if(noradPickerLinkTarget_){const {day,meal}=noradPickerLinkTarget_;const key=day+':'+meal;noradMenuLinkStore_()[key]={id:r.id,source:r._source,name:r.name};const old=menuMeals_(S.menu?.[day]);old[meal.toLowerCase()]=r.name;S.menu[day]=[['🌅',old.breakfast],['☀️',old.lunch],['🌙',old.dinner]].filter(x=>x[1]).map(x=>x[0]+' '+x[1]).join('  •  ');persist();renderDetail();renderGlance();}noradPickerClose_()};target.appendChild(b)})}
+function noradMenuChoose_(day,meal,initial){
+ const el=document.getElementById('meal'+day+meal);const go=()=>{noradPickerTarget_=el?el.id:null;noradPickerLinkTarget_=el?null:{day,meal};document.getElementById('nrpSearch').value=initial||'';document.getElementById('noradRecipePicker').classList.add('open');noradPickerRender_();document.getElementById('nrpSearch').focus();document.getElementById('nrpSearch').select()};
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go();
+}
+function noradMenuOpenFromEditor_(day,meal){
+ const el=document.getElementById('meal'+day+meal);if(!el||!el.value.trim()){alert('Choose or type a meal first.');return;}
+ const go=()=>{let r=null;if(el.dataset.recipeId&&el.dataset.recipeName===el.value.trim())r=noradPickerRows_().find(x=>String(x.id)===el.dataset.recipeId&&x._source===el.dataset.recipeSource);
+ if(!r){const match=recipeMatchForDinner_({name:el.value.trim()});if(match)r={_source:match.source,id:match.id};}
+ if(!r){noradMenuChoose_(day,meal,el.value.trim());return;}
+ // Keep the editor open so unsaved changes to other meals aren't silently discarded.
+ openDinnerRecipe_(r._source,r.id);
+ };
+ if(!R.loaded||!MP.loaded)ensureDinnerData_(go);else go();
+}
 const noradOriginalOpenMenu_=openMenu;
-openMenu=function(){noradOriginalOpenMenu_();for(const day of NORAD_MENU_DAYS_)for(const meal of ['Breakfast','Lunch','Dinner']){const el=document.getElementById('meal'+day+meal);if(!el)continue;const wrap=el.parentElement;const b=document.createElement('button');b.type='button';b.className='btn noradMealOpen';b.textContent='📖';b.title='Open this recipe';b.onclick=()=>noradMenuOpenFromEditor_(day,meal);wrap.appendChild(b)}};
+openMenu=function(){noradOriginalOpenMenu_();for(const day of NORAD_MENU_DAYS_)for(const meal of ['Breakfast','Lunch','Dinner']){const el=document.getElementById('meal'+day+meal);if(!el)continue;const saved=noradMenuLinkStore_()[day+':'+meal];if(saved&&saved.name===el.value.trim()){el.dataset.recipeId=saved.id;el.dataset.recipeSource=saved.source;el.dataset.recipeName=saved.name;}const wrap=el.parentElement;const b=document.createElement('button');b.type='button';b.className='btn noradMealOpen';b.textContent='📖';b.title='Open this recipe';b.onclick=()=>noradMenuOpenFromEditor_(day,meal);wrap.appendChild(b)}};
+const noradOriginalSaveMenu_=saveMenu;
+saveMenu=function(){for(const day of NORAD_MENU_DAYS_)for(const meal of ['Breakfast','Lunch','Dinner']){const el=document.getElementById('meal'+day+meal);if(!el)continue;const key=day+':'+meal,name=el.value.trim(),prior=noradMenuLinkStore_()[key];if(el.dataset.recipeId&&el.dataset.recipeName===name)noradMenuLinkStore_()[key]={id:el.dataset.recipeId,source:el.dataset.recipeSource,name};else if(!prior||prior.name!==name)delete noradMenuLinkStore_()[key];}noradOriginalSaveMenu_();renderGlance()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('noradRecipePicker').classList.contains('open')){e.stopPropagation();noradPickerClose_()}},true);
 </script>
 </body></html>
