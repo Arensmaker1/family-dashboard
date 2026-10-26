@@ -1,4 +1,4 @@
-<!doctype html><!-- Kitchen NORAD V10.4.2 — Stable Recipe Links --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
+<!doctype html><!-- Kitchen NORAD V10.4.3 — Two-Week Polish --><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Dashboard</title>
 <style>
 :root{--bg:#071018;--p:#0d1822;--l:#253342;--t:#f4f6f8;--m:#98a6b4;--v:#a970ff;--g:#72e26b;--o:#ff9b3d;--b:#55a8ff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--t);font-family:Arial,sans-serif;overflow:hidden}button,input,textarea{font:inherit}button{color:inherit}
@@ -233,7 +233,7 @@ body[data-appearance="light"] #cookOverlay{background:#f4f0e8}body[data-appearan
 
 /* V8.12 DINNER COMMAND CENTER THEME FIX */
 .dinnerCommand{border:1px solid var(--theme1);background:linear-gradient(135deg,#0d1c27,#102331);color:var(--t);border-radius:11px;padding:9px 11px;min-width:245px;flex:1.35}
-.dinnerCommandTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.dinnerCommand b{color:var(--theme1);font-size:10px}.dinnerName{font-size:13px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dinnerSub{font-size:9px;color:var(--m);margin-top:3px}.dinnerActions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}.dinnerActions .btn{padding:5px 8px;font-size:9px}.dinnerMissing{color:#ffcf78;font-weight:700}.dinnerReady{color:#8fe5a1;font-weight:700}
+.dinnerCommandTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.dinnerCommand b{color:var(--theme1);font-size:10px}.dinnerName{font-size:13px;font-weight:800;margin-top:3px;white-space:normal;overflow-wrap:anywhere;line-height:1.3}.dinnerSub{font-size:9px;color:var(--m);margin-top:3px}.dinnerActions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}.dinnerActions .btn{padding:5px 8px;font-size:9px}.dinnerMissing{color:#ffcf78;font-weight:700}.dinnerReady{color:#8fe5a1;font-weight:700}
 
 body[data-appearance="light"] .dinnerCommand{background:linear-gradient(145deg,#fffdf9,#f8f3ea);border-color:var(--theme1);color:var(--t);box-shadow:0 2px 8px #4c403512}
 body[data-appearance="light"] .dinnerMissing{color:#9a5b18}
@@ -1641,7 +1641,7 @@ function renderDetail(){let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.comple
 <div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${noradMenuHtml_()}</div>
 <div class="card"><h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2>${(S.pinnedNotes||[]).map((x,i)=>`<div class="pinNote">📌 ${esc(x)}<button onclick="dismissPinned(${i})">×</button></div>`).join("")}<div class="notesbox">${esc(S.notes)}</div><h2 style="margin-top:12px">🌤️ FORECAST</h2>${forecast()}</div>
 <div class="card quoteCard"><h2>💬 DAILY WISDOM(ISH)</h2><div class="quote">“${esc(quoteFor(sel))}”</div></div></div>`}
-function persist(cb){document.getElementById("status").textContent="Saving…";google.script.run.withSuccessHandler(()=>{document.getElementById("status").textContent="Saved ✓";setTimeout(()=>document.getElementById("status").textContent="",1500);if(cb)cb()}).saveDashboardSettings(S)}
+function persist(cb){noradSaveActiveWeek_();document.getElementById("status").textContent="Saving…";google.script.run.withSuccessHandler(()=>{document.getElementById("status").textContent="Saved ✓";setTimeout(()=>document.getElementById("status").textContent="",1500);if(cb)cb()}).saveDashboardSettings(S)}
 function chore(i,on){let who=(S.chores[i]&&S.chores[i].who)||"Kid";S.completions[key(sel)+"-"+i]=on;if(!on)delete S.completions[key(sel)+"-"+i];if(on)checkChoreCelebrations(who);renderDetail();persist()}
 function toggleCal(x){let n=decodeURIComponent(x),i=S.hiddenCalendars.indexOf(n);i>=0?S.hiddenCalendars.splice(i,1):S.hiddenCalendars.push(n);renderCal();renderDetail();renderGlance();renderCountdowns();persist()}
 function showAll(){S.hiddenCalendars=[];renderCal();renderDetail();persist()}
@@ -1719,6 +1719,35 @@ function noradMenuChoose_(day,meal){
  };
  if(!R.loaded||!MP.loaded)ensureDinnerData_(choose);else choose();
 }
+// V10.4.3: only the current Monday-Sunday week and the following week are retained.
+function noradWeekStart_(date){const d=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12);d.setDate(d.getDate()-(d.getDay()+6)%7);return key(d)}
+function noradWeekAllowed_(iso){const current=noradWeekStart_(new Date()),next=key(localDate_(current,7));return iso===current||iso===next}
+function noradWeekForDate_(iso){return noradWeekStart_(localDate_(iso,0))}
+function noradMenuFromRows_(rows){const menu={};(rows||[]).forEach(d=>{const day=["SUN","MON","TUE","WED","THU","FRI","SAT"][localDate_(d.date,0).getDay()];menu[day]=[["🌅",d.breakfast],["☀️",d.lunch],["🌙",d.dinner]].filter(x=>x[1]).map(x=>x[0]+" "+x[1]).join("  •  ")});return menu}
+function noradEnsureWeeks_(){
+ S.weekMenus=S.weekMenus&&typeof S.weekMenus==="object"?S.weekMenus:{};
+ const now=noradWeekStart_(new Date()),next=key(localDate_(now,7));
+ // First migration: preserve the existing active weekly menu, not a blank template.
+ if(!S.weekMenus[now])S.weekMenus[now]={menu:{...(S.menu||{})},mealPlanWeek:(S.mealPlanWeek||[]).filter(x=>noradWeekForDate_(x.date)===now),randomDinnerWeek:(S.randomDinnerWeek||[]).filter(x=>noradWeekForDate_(x.date)===now)};
+ Object.keys(S.weekMenus).forEach(k=>{if(k!==now&&k!==next)delete S.weekMenus[k]});
+ const active=S.weekMenus[now];
+ if(S.activeMenuWeek!==now){S.menu={...(active.menu||{})};S.mealPlanWeek=active.mealPlanWeek||[];S.randomDinnerWeek=active.randomDinnerWeek||[];S.activeMenuWeek=now;return true}
+ return false;
+}
+function noradSaveActiveWeek_(){noradEnsureWeeks_();S.weekMenus[S.activeMenuWeek]={menu:{...(S.menu||{})},mealPlanWeek:JSON.parse(JSON.stringify(S.mealPlanWeek||[])),randomDinnerWeek:JSON.parse(JSON.stringify(S.randomDinnerWeek||[]))}}
+function noradCommitWeek_(rows){
+ if(!rows.length)return false;
+ const start=noradWeekForDate_(rows[0].date),today=noradWeekStart_(new Date());
+ if(!noradWeekAllowed_(start)||rows.some(x=>noradWeekForDate_(x.date)!==start)){alert("Choose a date in this week or next week. NORAD schedules one full Monday-Sunday week at a time.");return false}
+ noradSaveActiveWeek_();
+ const week={menu:noradMenuFromRows_(rows),mealPlanWeek:JSON.parse(JSON.stringify(rows)),randomDinnerWeek:[]};
+ S.weekMenus[start]=week;
+ if(start===today){S.menu={...week.menu};S.mealPlanWeek=week.mealPlanWeek;S.randomDinnerWeek=[]}
+ return true;
+}
+function noradWeekPickerHtml_(id){const current=noradWeekStart_(new Date()),next=key(localDate_(current,7));return `<select id="${id}" onchange="noradWeekPickerChanged_('${id}')"><option value="${current}">This Week</option><option value="${next}">Next Week</option></select>`}
+function noradWeekPickerChanged_(id){const start=document.getElementById(id)?.value,target=id==='plannerWeekChoice'?'plannerStartDate':'planStartDate';const el=document.getElementById(target);if(el)el.value=start}
+function noradWeekLabel_(iso){const start=noradWeekForDate_(iso);return start===noradWeekStart_(new Date())?'This Week':'Next Week'}
 function menuMeals_(raw){let out={breakfast:"",lunch:"",dinner:""},parts=String(raw||"").split(/\s*•\s*/).map(x=>x.trim()).filter(Boolean);parts.forEach((x,i)=>{if(/^🌅/u.test(x))out.breakfast=x.replace(/^🌅\s*/u,"");else if(/^☀️/u.test(x))out.lunch=x.replace(/^☀️\s*/u,"");else if(/^🌙/u.test(x))out.dinner=x.replace(/^🌙\s*/u,"");else if(i===0)out.breakfast=x;else if(i===1)out.lunch=x;else out.dinner=x});return out}
 function openMenu(){let order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};openModal(`<h2>Edit weekly menu</h2><div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(S.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<span class="noradMealField"><input id="meal${d}Breakfast" value="${esc(m.breakfast)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Breakfast')" title="Choose from recipes">🔎</button></span></label><label>Lunch<span class="noradMealField"><input id="meal${d}Lunch" value="${esc(m.lunch)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Lunch')" title="Choose from recipes">🔎</button></span></label><label>Dinner<span class="noradMealField"><input id="meal${d}Dinner" value="${esc(m.dinner)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Dinner')" title="Choose from recipes">🔎</button></span></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`) }
 function saveMenu(){["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach(d=>{let b=document.getElementById("meal"+d+"Breakfast")?.value.trim()||"",l=document.getElementById("meal"+d+"Lunch")?.value.trim()||"",x=document.getElementById("meal"+d+"Dinner")?.value.trim()||"";S.menu[d]=[["🌅",b],["☀️",l],["🌙",x]].filter(z=>z[1]).map(z=>z[0]+" "+z[1]).join("  •  ")});closeModal();renderDetail();persist()}
@@ -1888,7 +1917,7 @@ function xlocale(a,b){return String(a||"").localeCompare(String(b||""),undefined
 function dinnerPickerRowsHtml_(iso,q){let needle=String(q||"").trim().toLowerCase(),rows=dinnerPickerRecipes_().filter(x=>!needle||`${x.name} ${x.category} ${x.meta}`.toLowerCase().includes(needle)).slice(0,80);if(!rows.length)return `<div class="empty">No recipe matches that search.</div>`;return rows.map(x=>`<button class="dinnerPickRow" onclick="chooseDinnerRecipe_('${esc(iso)}','${x.source}','${esc(x.id)}')"><b>${esc(x.name)}</b><span>${esc(x.category)}${x.meta?` • ${esc(x.meta)}`:""}</span></button>`).join("")}
 function filterDinnerChooser_(iso){let host=document.getElementById("dinnerPickerRows"),q=document.getElementById("dinnerPickerSearch")?.value||"";if(host)host.innerHTML=dinnerPickerRowsHtml_(iso,q)}
 function openDinnerChooser_(dateIso,returnToBrief){let d=dateIso?new Date(dateIso+"T12:00:00"):new Date(),iso=key(d);window._dinnerChooserReturnBrief=!!returnToBrief;let show=()=>{openModal(`<div class="dinnerPickerWrap"><h2>🍽️ Choose Dinner</h2><div class="note">Pick the exact recipe you want. Random swaps can stay random; this is the precision-guided option.</div><input id="dinnerPickerSearch" class="dinnerPickerSearch" placeholder="Search recipes…" oninput="filterDinnerChooser_('${esc(iso)}')"><div id="dinnerPickerRows" class="dinnerPickerRows">${dinnerPickerRowsHtml_(iso,"")}</div><div class="actions"><button class="btn" onclick="${returnToBrief?'openMorningBrief()':'closeModal()'}">Cancel</button></div></div>`,{closeAction:returnToBrief?'openMorningBrief()':'closeModal()'});setTimeout(()=>document.getElementById("dinnerPickerSearch")?.focus(),30)};if(!R.loaded||!MP.loaded)ensureDinnerData_(show);else show()}
-function chooseDinnerRecipe_(dateIso,source,id){let d=new Date(dateIso+"T12:00:00"),pool=source==="plan"?(MP.recipes||[]):(R.recipes||[]),r=pool.find(x=>String(x.id)===String(id));if(!r)return;let iso=key(d),row=(S.mealPlanWeek||[]).find(x=>x.date===iso);if(row){row.dinner=r.name;row.dinnerId=r.id;row.dinnerSource=source}else{if(!Array.isArray(S.randomDinnerWeek))S.randomDinnerWeek=[];let x=S.randomDinnerWeek.find(v=>v.date===iso);if(!x){x={date:iso};S.randomDinnerWeek.push(x)}x.dinner=r.name;x.dinnerId=r.id;x.id=r.id;x.source=source}replaceMenuDinner_(d,r.name);clearDinnerReady_(d);let back=!!window._dinnerChooserReturnBrief;window._dinnerChooserReturnBrief=false;closeModal();persist(()=>{renderDetail();renderCal();renderGlance();if(back)openMorningBrief();else if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)})}
+function chooseDinnerRecipe_(dateIso,source,id){let d=new Date(dateIso+"T12:00:00"),pool=source==="plan"?(MP.recipes||[]):(R.recipes||[]),r=pool.find(x=>String(x.id)===String(id));if(!r)return;let iso=key(d),row=(S.mealPlanWeek||[]).find(x=>x.date===iso);if(row){row.dinner=r.name;row.dinnerId=r.id;row.dinnerSource=source}else{if(!Array.isArray(S.randomDinnerWeek))S.randomDinnerWeek=[];let x=S.randomDinnerWeek.find(v=>v.date===iso);if(!x){x={date:iso};S.randomDinnerWeek.push(x)}x.dinner=r.name;x.dinnerId=r.id;x.id=r.id;x.source=source}if(noradWeekForDate_(iso)===noradWeekStart_(new Date()))replaceMenuDinner_(d,r.name);clearDinnerReady_(d);let back=!!window._dinnerChooserReturnBrief;window._dinnerChooserReturnBrief=false;closeModal();persist(()=>{renderDetail();renderCal();renderGlance();if(back)openMorningBrief();else if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)})}
 function ensureDinnerData_(cb){
  let jobs=0,done=()=>{if(--jobs<=0){renderGlance();if(cb)cb()}};
  if(!R.loaded){jobs++;google.script.run.withSuccessHandler(d=>{R=d||{recipes:[]};R.loaded=!!R.ok;done()}).withFailureHandler(done).getRecipeLibrary()}
@@ -1951,7 +1980,7 @@ function dinnerCommandMetaHtml_(d,m,need,ready){
      bits=[];
  if(mins)bits.push(`<span class="dc2MetaChip">⏱️ ${esc(formatCookEstimate_(mins))}</span>`);
  if(prep.length)bits.push(`<span class="dc2MetaChip dc2Prep">🧂 ${esc(prep[0])}</span>`);
- if(ready)bits.push(`<span class="dc2MetaChip dc2Ready">✓ kitchen ready</span>`);
+ if(ready){ /* READY status already shown in Dinner Command header. */ }
  else if(need)bits.push(need.missing
    ?`<span class="dc2MetaChip dc2Shop">🛒 ${need.missing} to check</span>`
    :`<span class="dc2MetaChip dc2Ready">✓ groceries covered</span>`);
@@ -1985,7 +2014,6 @@ function openRecipeGroceryFromDinner_(source,id){
      <h2>🛒 ${esc(x.name||"Dinner Ingredients")}</h2>
      <div class="rMeta">Ingredients • ${esc(scale===1?"1×":scale+"×")} recipe scale</div>
     </div>
-    <button class="btn" onclick="closeModal()">✕</button>
    </div>
    <div class="dcIngredientList">
     ${rows.length?rows.map(v=>`<div class="dcIngredientRow"><span>□</span><span>${esc(v)}</span></div>`).join(""):`<div class="empty">No ingredient list found.</div>`}
@@ -2236,7 +2264,7 @@ function musicCenterHtml_(msg=""){
 function openMusicCenter(){musicLoadPresets_();ensureYouTubePlayer_();openModal(musicCenterHtml_(),{closeAction:"closeModal()"});activity()}
 function musicRefreshUi_(msg=""){
  musicSyncNow_();
- let m=document.getElementById("modal");if(m?.querySelector(".musicCenterWrap"))m.innerHTML=musicCenterHtml_(msg);
+ let m=document.getElementById("modal");if(m?.querySelector(".musicCenterWrap")){m.innerHTML=musicCenterHtml_(msg);m.insertAdjacentHTML("afterbegin",`<button class="uiCloseFloat" onclick="closeModal()" aria-label="Close Music Center" title="Close Music Center">✕</button>`);}
  let mini=document.getElementById("musicMini"),t=document.getElementById("musicMiniTitle"),a=document.getElementById("musicMiniArtist");
  if(t)t.textContent=MUSIC.currentTitle||"Music";if(a)a.textContent=MUSIC.currentArtist||"YouTube";
  if(mini)mini.classList.toggle("open",!!(MUSIC.currentVideoId||MUSIC.playing));
@@ -2888,7 +2916,7 @@ function saveRecipeUI(id){let existing=id?(R.recipes||[]).find(r=>r.id===id):nul
 function planMealHtml_(icon,label,id,name){if(!String(name||"").trim())return "";let has=(MP.recipes||[]).some(r=>r.id===id);return `<div class="planMeal${has?"":" noRecipe"}"${has?` onclick="openPlanRecipe('${esc(id)}')"`:""}>${icon} <b>${label}:</b> ${esc(name)}${has?'<span class="tap">Recipe ›</span>':''}</div>`}
 function currentPlan_(){return (MP.plans||[]).find(p=>p.id===currentPlanId)||(MP.plans||[])[0]}
 function choosePlan(id){currentPlanId=id;planWeekDraft=[];renderMealPlans()}
-function renderMealPlans(){let b=document.getElementById("recipeBody"),plans=MP.plans||[];if(!plans.length){b.innerHTML='<div class="rEmpty">No meal plans found.</div>';return}let p=currentPlan_();currentPlanId=p.id;let rc=(MP.recipes||[]).filter(r=>r.planId===p.id).length,today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");let warnings=(MP.errors||[]).map(e=>`${esc(e.source)}: ${esc(e.message)}`).join('<br>');b.innerHTML=`<div class="planSelectBar"><div><label>MEAL PLAN</label><select id="mealPlanSelect" onchange="choosePlan(this.value)">${plans.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select></div><div style="display:flex;gap:7px;align-items:end"><button class="btn" onclick="manageMealPlanSourcesUI()">⚙ Manage Sheets</button><button class="btn" onclick="addMealPlanSourceUI()">＋ Add Plan Sheet</button></div></div><div class="planHeader"><h2>${esc(p.name)}</h2><div class="rMeta">${p.days.length} scheduled days • ${rc} core recipes • Tap any meal to open its recipe</div><div class="planSourceNote">Future compatible meal-plan Sheets can be added here without changing dashboard code.</div>${warnings?`<div class="planWarning">Skipped plan source(s):<br>${warnings}</div>`:""}</div><div class="planBuilder"><h3>🍽️ Load My Week</h3><div class="planControls"><div><label>START AT PLAN DAY</label><select id="planStartDay">${p.days.map(d=>`<option value="${d.day}">Day ${d.day}</option>`).join("")}</select></div><div><label>START ON CALENDAR DATE</label><input id="planStartDate" type="date" value="${iso}"></div><button class="btn" onclick="buildPlanWeek()">Preview 7 Days</button></div><div id="planWeekPreview"></div></div><div class="planDays">${p.days.map(d=>`<div class="planDay"><h3>Day ${d.day}</h3>${planMealHtml_('🌅','Breakfast',d.breakfastId,d.breakfast)}${planMealHtml_('☀️','Lunch',d.lunchId,d.lunch)}${planMealHtml_('🌙','Dinner',d.dinnerId,d.dinner)}<div class="planNutrition">${d.calories?esc(d.calories)+" cal":""}${d.protein?` • ${esc(d.protein)}g protein`:""}${d.fiber?` • ${esc(d.fiber)}g fiber`:""}${d.servings?` • ${esc(d.servings)} household servings`:""}</div></div>`).join("")}</div>`}
+function renderMealPlans(){let b=document.getElementById("recipeBody"),plans=MP.plans||[];if(!plans.length){b.innerHTML='<div class="rEmpty">No meal plans found.</div>';return}let p=currentPlan_();currentPlanId=p.id;let rc=(MP.recipes||[]).filter(r=>r.planId===p.id).length,today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");let warnings=(MP.errors||[]).map(e=>`${esc(e.source)}: ${esc(e.message)}`).join('<br>');b.innerHTML=`<div class="planSelectBar"><div><label>MEAL PLAN</label><select id="mealPlanSelect" onchange="choosePlan(this.value)">${plans.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select></div><div style="display:flex;gap:7px;align-items:end"><button class="btn" onclick="manageMealPlanSourcesUI()">⚙ Manage Sheets</button><button class="btn" onclick="addMealPlanSourceUI()">＋ Add Plan Sheet</button></div></div><div class="planHeader"><h2>${esc(p.name)}</h2><div class="rMeta">${p.days.length} scheduled days • ${rc} core recipes • Tap any meal to open its recipe</div><div class="planSourceNote">Future compatible meal-plan Sheets can be added here without changing dashboard code.</div>${warnings?`<div class="planWarning">Skipped plan source(s):<br>${warnings}</div>`:""}</div><div class="planBuilder"><h3>🍽️ Load My Week</h3><div class="planControls"><div><label>START AT PLAN DAY</label><select id="planStartDay">${p.days.map(d=>`<option value="${d.day}">Day ${d.day}</option>`).join("")}</select></div><div><label>WEEK</label>${noradWeekPickerHtml_("planWeekChoice")}<input id="planStartDate" type="date" value="${noradWeekStart_(today)}" style="display:none"></div><button class="btn" onclick="buildPlanWeek()">Preview 7 Days</button></div><div id="planWeekPreview"></div></div><div class="planDays">${p.days.map(d=>`<div class="planDay"><h3>Day ${d.day}</h3>${planMealHtml_('🌅','Breakfast',d.breakfastId,d.breakfast)}${planMealHtml_('☀️','Lunch',d.lunchId,d.lunch)}${planMealHtml_('🌙','Dinner',d.dinnerId,d.dinner)}<div class="planNutrition">${d.calories?esc(d.calories)+" cal":""}${d.protein?` • ${esc(d.protein)}g protein`:""}${d.fiber?` • ${esc(d.fiber)}g fiber`:""}${d.servings?` • ${esc(d.servings)} household servings`:""}</div></div>`).join("")}</div>`}
 function addMealPlanSourceUI(){
  if(mealPlanSourceAddInFlight_){alert("That meal-plan Sheet is already being checked.");return}
  let link=prompt("Paste the Google Sheet link for the new meal plan:");
@@ -2932,7 +2960,13 @@ function buildPlanWeek(){let p=currentPlan_();if(!p)return;let start=Number(docu
 function renderPlanWeekPreview(){let e=document.getElementById("planWeekPreview");if(!e)return;if(!planWeekDraft.length){e.innerHTML="";return}e.innerHTML=`<div class="weekPreview">${planWeekDraft.map((d,i)=>`<div class="weekCard"><h3>${localDate_(d.date,0).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})} <span class="rMeta">Plan Day ${d.day}</span></h3>${draftMeal_(i,"breakfast","🌅 Breakfast")}${draftMeal_(i,"lunch","☀️ Lunch")}${draftMeal_(i,"dinner","🌙 Dinner")}</div>`).join("")}</div><button class="btn" onclick="loadPlanWeek()">🍽️ Load This Week Into Menu</button><span class="rMeta" style="margin-left:8px">Rerolls only change the meal you choose.</span>`}
 function draftMeal_(i,type,label){let d=planWeekDraft[i];if(!String(d[type]||"").trim())return "";return `<div class="weekMeal"><span><b>${label}:</b> ${esc(d[type])}</span><button class="btn reroll" onclick="rerollMeal(${i},'${type}')">🎲 Reroll</button></div>`}
 function rerollMeal(i,type){let p=currentPlan_(),pool=(MP.recipes||[]).filter(r=>r.planId===p.id&&String(r.meal).toLowerCase()===type.toLowerCase()&&r.name!==planWeekDraft[i][type]);if(!pool.length)return;let x=pool[Math.floor(Math.random()*pool.length)];planWeekDraft[i][type]=x.name;planWeekDraft[i][type+"Id"]=x.id;renderPlanWeekPreview()}
-function loadPlanWeek(){if(!planWeekDraft.length)return;S.mealPlanWeek=JSON.parse(JSON.stringify(planWeekDraft));S.randomDinnerWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];planWeekDraft.forEach(d=>{let dt=localDate_(d.date,0),k=keys[dt.getDay()],parts=[];if(d.breakfast)parts.push(`🌅 ${d.breakfast}`);if(d.lunch)parts.push(`☀️ ${d.lunch}`);if(d.dinner)parts.push(`🌙 ${d.dinner}`);S.menu[k]=parts.join("  •  ")});persist(()=>{renderDetail();renderCal();let e=document.getElementById("planWeekPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="loadedBadge">✓ Loaded into Weekly Menu &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Build Grocery List</button></div>')})}
+function loadPlanWeek(){
+ if(!planWeekDraft.length)return;
+ const rows=JSON.parse(JSON.stringify(planWeekDraft));
+ if(!noradCommitWeek_(rows))return;
+ const week=noradWeekLabel_(rows[0].date);
+ persist(()=>{renderDetail();renderCal();renderGlance();let e=document.getElementById("planWeekPreview");if(e)e.insertAdjacentHTML("afterbegin",`<div class="loadedBadge">✓ Saved ${week} &nbsp; <button class="btn" onclick="showGroceryGenTab('${noradWeekForDate_(rows[0].date)}')">🛒 Build ${week} Grocery List</button></div>`)})
+}
 function editPlanRecipeAsHousehold_(id){
  const x=(MP.recipes||[]).find(r=>String(r.id)===String(id));
  if(!x)return;
@@ -2982,6 +3016,14 @@ function speechNormalize_(text){
     .replace(/\bv\.?\s+(?=[A-Z])/g,"versus ")
     .replace(/\bW\s*[-–]\s*(?=\d)/g,"win, ")
     .replace(/\bL\s*[-–]\s*(?=\d)/g,"loss, ");
+ // Speak clock times naturally without altering their visual display.
+ t=t.replace(/\b(1[0-2]|0?[1-9]):([0-5]\d)\s*(AM|PM|a\.m\.|p\.m\.)?\b/gi,(full,h,m,ap)=>{
+   const hour=Number(h),minute=Number(m),period=String(ap||"").replace(/\./g,"").toUpperCase();
+   const words=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+   const tens=["","","twenty","thirty","forty","fifty"];
+   const minuteWords=minute===0?"o'clock":minute<10?"oh "+words[minute]:minute<20?words[minute]:tens[Math.floor(minute/10)]+(minute%10?" "+words[minute%10]:"");
+   return words[hour]+" "+minuteWords+(period?" "+(period==="AM"?"in the morning":hour===12?"in the afternoon":hour>=5?"in the evening":"in the afternoon"):"");
+ });
  // Day/month abbreviations that can otherwise be read as letters or odd words.
  const days={Mon:"Monday",Tue:"Tuesday",Tues:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Thur:"Thursday",Thurs:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
  Object.entries(days).forEach(([k,v])=>{t=t.replace(new RegExp("\\b"+k+"\\.?\\b","g"),v)});
@@ -3263,7 +3305,7 @@ function voiceAssignDinnerRecipe_(query,d){
      if(!x){x={date:iso};S.randomDinnerWeek.push(x)}
      x.dinner=r.name;x.dinnerId=r.id;x.id=r.id;x.source=pick.source;
    }
-   replaceMenuDinner_(d,r.name);clearDinnerReady_(d);
+   if(noradWeekForDate_(iso)===noradWeekStart_(new Date()))replaceMenuDinner_(d,r.name);clearDinnerReady_(d);
    persist(()=>{
      try{renderDetail();renderCal();renderGlance();if(morningBriefOpen_)refreshMorningBrief_(morningBriefSession_)}catch(_){}
      let when=same(d,new Date())?"tonight":(()=>{let t=new Date();t.setDate(t.getDate()+1);return same(d,t)?"tomorrow":d.toLocaleDateString([],{weekday:"long"})})();
@@ -3547,6 +3589,7 @@ function voiceCalendarSearch_(query){let q=String(query||"").toLowerCase().repla
 function handleVoiceCommand_(raw){
  let n=normalizeVoiceCommand_(raw),m,handled=true;
  const done=()=>{voiceCommandDebug_(raw,n,true);return true};
+ if(/^(?:(?:what is|whats|tell me|give me|read|read me|show me|open|start) (?:the |my |our )?)?(?:morning |daily )?brief(?:ing)?(?: today)?$|^(?:what is|whats) (?:the |our )?(?:morning |daily )?brief(?:ing)?$/.test(n)){openMorningBrief();speak_("Opening the morning brief.");return done()}
 
  if(/stop listening|voice off|microphone off|stop voice|quit listening|turn off (?:the )?mic/.test(n)){stopVoiceSession(false);return done()}
 
@@ -3771,11 +3814,11 @@ function dinnerPool_(cat){let a=(R.recipes||[]).filter(likelyDinner_);if(cat)a=a
 function plannerPlanOptions_(){return [{id:"__mix__",name:"Mix All Meal Plans"}].concat((MP.plans||[]).map(p=>({id:p.id,name:p.name})))}
 function plannerPool_(type,planId,current){let rows=(MP.recipes||[]).filter(r=>String(r.meal||"").toLowerCase()===type);if(planId&&planId!=="__mix__")rows=rows.filter(r=>r.planId===planId);if(current)rows=rows.filter(r=>r.id!==current);let seen=new Set();return rows.filter(r=>{let k=String(r.name||"").toLowerCase();if(!k||seen.has(k))return false;seen.add(k);return true})}
 function plannerPick_(type,planId,used){let pool=plannerPool_(type,planId).filter(r=>!used.has(String(r.name||"").toLowerCase()));if(!pool.length)pool=plannerPool_(type,planId);if(!pool.length)return null;return pool[Math.floor(Math.random()*pool.length)]}
-function renderBuildWeek(){let b=document.getElementById("recipeBody"),today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0"),plans=plannerPlanOptions_();b.innerHTML=`<div class="buildPanel"><h2 style="margin-top:0">🧩 Meal Planning</h2><div class="rMeta" style="margin-bottom:12px">Build one week from a single 30-day plan or mix the whole Kitchen Brain. Choose the meals you want, swap anything that doesn't sound good, scale the household, then send the finished week to Menu + Groceries.</div><div class="buildControls" style="flex-wrap:wrap"><div><label>START DATE</label><input id="plannerStartDate" type="date" value="${iso}"></div><div><label>RECIPE SOURCE</label><select id="plannerPlan">${plans.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></div><div><label>HOUSEHOLD SCALE</label><select id="plannerScale"><option value="0.5">½×</option><option value="1" selected>1× (2 servings)</option><option value="1.5">1½×</option><option value="2">2×</option><option value="3">3×</option></select></div><label class="plannerMealToggle plannerBreakfast"><input id="plannerBreakfast" type="checkbox" checked style="width:auto"> Breakfast</label><label class="plannerMealToggle plannerLunch"><input id="plannerLunch" type="checkbox" checked style="width:auto"> Lunch</label><label class="plannerMealToggle plannerDinner"><input id="plannerDinner" type="checkbox" checked style="width:auto"> Dinner</label><button class="btn plannerBuildBtn" onclick="generatePlannerWeek()">✨ Build 7 Days</button></div><div id="plannerPreview"></div></div>`;if(randomDinnerDraft.length&&randomDinnerDraft[0]?.plannerV91)renderPlannerPreview()}
-function generatePlannerWeek(){let iso=document.getElementById("plannerStartDate")?.value,planId=document.getElementById("plannerPlan")?.value||"__mix__",scale=Number(document.getElementById("plannerScale")?.value||1),types=[];if(document.getElementById("plannerBreakfast")?.checked)types.push("breakfast");if(document.getElementById("plannerLunch")?.checked)types.push("lunch");if(document.getElementById("plannerDinner")?.checked)types.push("dinner");if(!iso||!types.length){alert("Choose a start date and at least one meal type.");return}let used={breakfast:new Set(),lunch:new Set(),dinner:new Set()};randomDinnerDraft=[];for(let i=0;i<7;i++){let dt=localDate_(iso,i),d={plannerV91:true,date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"),planId:planId,scale:scale};types.forEach(type=>{let x=plannerPick_(type,planId,used[type]);if(x){d[type]=x.name;d[type+"Id"]=x.id;d[type+"PlanId"]=x.planId;d[type+"Source"]="plan";used[type].add(String(x.name||"").toLowerCase())}});randomDinnerDraft.push(d)}renderPlannerPreview()}
+function renderBuildWeek(){let b=document.getElementById("recipeBody"),today=new Date(),iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0"),plans=plannerPlanOptions_();b.innerHTML=`<div class="buildPanel"><h2 style="margin-top:0">🧩 Meal Planning</h2><div class="rMeta" style="margin-bottom:12px">Build one week from a single 30-day plan or mix the whole Kitchen Brain. Choose the meals you want, swap anything that doesn't sound good, scale the household, then send the finished week to Menu + Groceries.</div><div class="buildControls" style="flex-wrap:wrap"><div><label>WEEK</label>${noradWeekPickerHtml_("plannerWeekChoice")}<input id="plannerStartDate" type="date" value="${noradWeekStart_(today)}" style="display:none"></div><div><label>RECIPE SOURCE</label><select id="plannerPlan">${plans.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></div><div><label>HOUSEHOLD SCALE</label><select id="plannerScale"><option value="0.5">½×</option><option value="1" selected>1× (2 servings)</option><option value="1.5">1½×</option><option value="2">2×</option><option value="3">3×</option></select></div><label class="plannerMealToggle plannerBreakfast"><input id="plannerBreakfast" type="checkbox" checked style="width:auto"> Breakfast</label><label class="plannerMealToggle plannerLunch"><input id="plannerLunch" type="checkbox" checked style="width:auto"> Lunch</label><label class="plannerMealToggle plannerDinner"><input id="plannerDinner" type="checkbox" checked style="width:auto"> Dinner</label><button class="btn plannerBuildBtn" onclick="generatePlannerWeek()">✨ Build 7 Days</button></div><div id="plannerPreview"></div></div>`;if(randomDinnerDraft.length&&randomDinnerDraft[0]?.plannerV91)renderPlannerPreview()}
+function generatePlannerWeek(){let iso=document.getElementById("plannerStartDate")?.value,planId=document.getElementById("plannerPlan")?.value||"__mix__",scale=Number(document.getElementById("plannerScale")?.value||1),types=[];if(document.getElementById("plannerBreakfast")?.checked)types.push("breakfast");if(document.getElementById("plannerLunch")?.checked)types.push("lunch");if(document.getElementById("plannerDinner")?.checked)types.push("dinner");if(!iso||!types.length){alert("Choose a week and at least one meal type.");return}let used={breakfast:new Set(),lunch:new Set(),dinner:new Set()};randomDinnerDraft=[];for(let i=0;i<7;i++){let dt=localDate_(iso,i),d={plannerV91:true,date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"),planId:planId,scale:scale};types.forEach(type=>{let x=plannerPick_(type,planId,used[type]);if(x){d[type]=x.name;d[type+"Id"]=x.id;d[type+"PlanId"]=x.planId;d[type+"Source"]="plan";used[type].add(String(x.name||"").toLowerCase())}});randomDinnerDraft.push(d)}renderPlannerPreview()}
 function plannerRecipeFor_(d,type){let source=d[type+"Source"]||"plan",id=d[type+"Id"];return source==="library"?(R.recipes||[]).find(x=>String(x.id)===String(id)):(MP.recipes||[]).find(x=>String(x.id)===String(id))}
 function plannerMealHtml_(d,i,type,icon,label){if(!d[type])return "";let source=d[type+"Source"]||"plan",r=plannerRecipeFor_(d,type),meta=r?[r.calories?`${r.calories} cal`:"",r.protein?`${r.protein}g protein`:"",source==="library"?(r.category||"Family Recipe"):(r.planName||"")].filter(Boolean).join(" • "):"";return `<div class="weekMeal" style="align-items:center"><span style="flex:1"><b>${icon} ${label}:</b> ${esc(d[type])}${meta?`<div class="rMeta">${esc(meta)}</div>`:""}</span><button class="btn reroll" onclick="openPlannerRecipe_('${source}','${esc(d[type+"Id"])}')">Recipe ›</button><button class="btn reroll" onclick="openPlannerSwapMenu_(${i},'${type}')">↻ Swap</button><button class="btn reroll" title="Remove this meal" onclick="removePlannerMeal(${i},'${type}')">×</button></div>`}
-function renderPlannerPreview(){let e=document.getElementById("plannerPreview");if(!e||!randomDinnerDraft.length)return;let scale=Number(randomDinnerDraft[0].scale||1);e.innerHTML=`<div class="loadedBadge" style="margin-top:12px">Kitchen Brain draft • ${scale===1?'2 household servings':`${scale}× recipe quantities`} • Swap can pick an exact recipe or roll another random meal.</div><div class="weekPreview">${randomDinnerDraft.map((d,i)=>`<div class="weekCard"><h3>${localDate_(d.date,0).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})}</h3>${plannerMealHtml_(d,i,"breakfast","🌅","Breakfast")}${plannerMealHtml_(d,i,"lunch","☀️","Lunch")}${plannerMealHtml_(d,i,"dinner","🌙","Dinner")}</div>`).join("")}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primaryAction" onclick="loadPlannerWeek()">🍽️ Load Week Into Menu</button><button class="btn" onclick="generatePlannerWeek()">🎲 Rebuild Entire Week</button><span class="rMeta">Loading replaces the current structured meal week, not your recipe library.</span></div>`}
+function renderPlannerPreview(){let e=document.getElementById("plannerPreview");if(!e||!randomDinnerDraft.length)return;let scale=Number(randomDinnerDraft[0].scale||1);e.innerHTML=`<div class="loadedBadge" style="margin-top:12px">Kitchen Brain draft • ${scale===1?'2 household servings':`${scale}× recipe quantities`} • Swap can pick an exact recipe or roll another random meal.</div><div class="weekPreview">${randomDinnerDraft.map((d,i)=>`<div class="weekCard"><h3>${localDate_(d.date,0).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})}</h3>${plannerMealHtml_(d,i,"breakfast","🌅","Breakfast")}${plannerMealHtml_(d,i,"lunch","☀️","Lunch")}${plannerMealHtml_(d,i,"dinner","🌙","Dinner")}</div>`).join("")}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primaryAction" onclick="loadPlannerWeek()">🍽️ Load Week Into Menu</button><button class="btn" onclick="generatePlannerWeek()">🎲 Rebuild Entire Week</button><span class="rMeta">Saving replaces only the selected week, not your recipe library.</span></div>`}
 function openPlannerRecipe_(source,id){recipeView="build";if(source==="library")openRecipeDetail(id);else openPlanRecipe(id,true)}
 function randomizePlannerMeal_(i,type){let d=randomDinnerDraft[i],pool=plannerPool_(type,d.planId,d[type+"Id"]);if(!pool.length){alert("No alternate recipes were found for that meal type.");return}let x=pool[Math.floor(Math.random()*pool.length)];d[type]=x.name;d[type+"Id"]=x.id;d[type+"PlanId"]=x.planId;d[type+"Source"]="plan";closeModal();renderPlannerPreview()}
 function plannerPickerRecipes_(){let all=[];(R.recipes||[]).forEach(r=>all.push({source:"library",id:r.id,name:r.name||"",category:recipeDisplayCategory_(r)||r.category||"Family Recipe",meta:r.tags||""}));(MP.recipes||[]).forEach(r=>all.push({source:"plan",id:r.id,name:r.name||"",category:r.planName||r.meal||"Meal Plan",meta:[r.cuisine,r.method].filter(Boolean).join(" • ")}));let seen=new Set();return all.filter(x=>{let n=normalizeDinnerRecipeName_(x.name);if(!n||seen.has(n))return false;seen.add(n);return true}).sort((a,b)=>xlocale(a.name,b.name))}
@@ -3786,14 +3829,21 @@ function choosePlannerRecipe_(i,type,source,id){let d=randomDinnerDraft[i],pool=
 function openPlannerSwapMenu_(i,type){let d=randomDinnerDraft[i];if(!d)return;let label=type.charAt(0).toUpperCase()+type.slice(1);openModal(`<div class="dinnerPickerWrap" style="max-width:520px"><h2>↻ Swap ${esc(label)}</h2><div class="note">Know what you want? Pick it. Feeling dangerous? Let Kitchen NORAD roll the dice.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0"><button class="btn primaryAction" style="padding:14px" onclick="openPlannerRecipePicker_(${i},'${type}')">🎯 Pick From Recipes</button><button class="btn" style="padding:14px" onclick="randomizePlannerMeal_(${i},'${type}')">🎲 Random</button></div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button></div></div>`,{closeAction:'closeModal()'})}
 function swapPlannerMeal(i,type){openPlannerSwapMenu_(i,type)}
 function removePlannerMeal(i,type){let d=randomDinnerDraft[i];delete d[type];delete d[type+"Id"];delete d[type+"PlanId"];delete d[type+"Source"];renderPlannerPreview()}
-function loadPlannerWeek(){if(!randomDinnerDraft.length)return;S.mealPlanWeek=randomDinnerDraft.map(d=>({date:d.date,planId:d.planId,planName:d.planId==="__mix__"?"Mixed Kitchen Brain":"Meal Planner",scale:d.scale||1,breakfast:d.breakfast||"",breakfastId:d.breakfastId||"",breakfastSource:d.breakfastSource||"plan",lunch:d.lunch||"",lunchId:d.lunchId||"",lunchSource:d.lunchSource||"plan",dinner:d.dinner||"",dinnerId:d.dinnerId||"",dinnerSource:d.dinnerSource||"plan"}));S.randomDinnerWeek=[];const keys=["SUN","MON","TUE","WED","THU","FRI","SAT"];S.mealPlanWeek.forEach(d=>{let k=keys[localDate_(d.date,0).getDay()],parts=[];if(d.breakfast)parts.push(`🌅 ${d.breakfast}`);if(d.lunch)parts.push(`☀️ ${d.lunch}`);if(d.dinner)parts.push(`🌙 ${d.dinner}`);S.menu[k]=parts.join("  •  ")});persist(()=>{renderDetail();renderCal();renderGlance();let e=document.getElementById("plannerPreview");if(e)e.insertAdjacentHTML("afterbegin",'<div class="wgSuccess">✓ Week loaded into the Family Menu. &nbsp; <button class="btn" onclick="showGroceryGenTab()">🛒 Generate This Week’s Groceries</button></div>')})}
-function showGroceryGenTab(){
+function loadPlannerWeek(){
+ if(!randomDinnerDraft.length)return;
+ const rows=randomDinnerDraft.map(d=>({date:d.date,planId:d.planId,planName:d.planId==="__mix__"?"Mixed Kitchen Brain":"Meal Planner",scale:d.scale||1,breakfast:d.breakfast||"",breakfastId:d.breakfastId||"",breakfastSource:d.breakfastSource||"plan",lunch:d.lunch||"",lunchId:d.lunchId||"",lunchSource:d.lunchSource||"plan",dinner:d.dinner||"",dinnerId:d.dinnerId||"",dinnerSource:d.dinnerSource||"plan"}));
+ if(!noradCommitWeek_(rows))return;
+ const week=noradWeekLabel_(rows[0].date);
+ persist(()=>{renderDetail();renderCal();renderGlance();let e=document.getElementById("plannerPreview");if(e)e.insertAdjacentHTML("afterbegin",`<div class="wgSuccess">✓ Saved ${week}. Current Dinner Command is unchanged when planning ahead. <button class="btn" onclick="showGroceryGenTab('${noradWeekForDate_(rows[0].date)}')">🛒 Generate Groceries for ${week}</button></div>`)})
+}
+function showGroceryGenTab(weekStart){
+  weekStart=weekStart||noradWeekStart_(new Date());
   recipeView="groceryGen";
   ["recipeTabBtn","planTabBtn","buildTabBtn","groceryGenTabBtn"].forEach(id=>document.getElementById(id)?.classList.remove("active"));
   document.getElementById("groceryGenTabBtn")?.classList.add("active");
   document.getElementById("recipeTools").style.display="none";
   document.getElementById("recipeBody").innerHTML='<div class="rLoading">Turning this week into a shopping attack plan…</div>';
-  google.script.run.withSuccessHandler(d=>{WG=d||{items:[],recipes:[]};WG.loaded=!!WG.ok;renderWeekGroceries()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getWeekGroceryPreview();
+  google.script.run.withSuccessHandler(d=>{WG=d||{items:[],recipes:[]};WG.loaded=!!WG.ok;renderWeekGroceries()}).withFailureHandler(e=>recipeDataFail(e.message||e)).getWeekGroceryPreview(weekStart);
 }
 function renderWeekGroceries(){
  if(WG&&Array.isArray(WG.items)&&!WG._smartCartApplied){applySmartCart_();WG._smartCartApplied=true}
@@ -4160,6 +4210,7 @@ function loadWeather(){
   .withFailureHandler(()=>{weatherLoadInFlight_=false;setTimeout(maybeAutoOpenMorningBrief_,600)})
   .getWeather();
 }
+function noradCalendarWarning_(msg){let el=document.getElementById("noradCalendarWarning");if(!el){el=document.createElement("div");el.id="noradCalendarWarning";el.setAttribute("role","status");el.style.cssText="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:95;background:#3b2025;color:#fff;border:1px solid #f0a5a5;border-radius:9px;padding:9px 35px 9px 12px;font:12px Arial;max-width:85vw;box-shadow:0 4px 20px #0009";document.body.appendChild(el)}el.textContent=msg?"⚠️ "+msg:"";el.style.display=msg?"block":"none"}
 function load(force=false){
  if(coreLoadInFlight_)return;
  if(!force&&!dashboardVisible_())return;
@@ -4170,6 +4221,8 @@ function load(force=false){
    lastCoreRefreshAt_=Date.now();
    let newSig=calendarSignature_(x),calendarChanged=(newSig!==lastCalendarSignature_);
    D=x;S=x.settings;
+   if(noradEnsureWeeks_())persist();
+   noradCalendarWarning_(x.calendarError||"");
    S.dailyCelebrations=S.dailyCelebrations||{};
    S.streakRewards=S.streakRewards||{};
    S.pinnedNotes=S.pinnedNotes||[];
@@ -4199,6 +4252,7 @@ function minuteDashboardTick_(){
  let now=Date.now();
  if(now-lastMinuteUiAt_<45000)return;
  lastMinuteUiAt_=now;
+ if(S.activeMenuWeek&&S.activeMenuWeek!==noradWeekStart_(new Date())){if(noradEnsureWeeks_()){persist(()=>{renderCal();renderDetail();renderGlance()})}}
  let fm=document.getElementById("fridayMode");if(fm)fm.textContent=fridayModeText();
  renderCountdowns();
  if(!modalOrOverlayOpen_())renderGlance();
