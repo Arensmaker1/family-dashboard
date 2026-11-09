@@ -1774,8 +1774,36 @@ function noradWeekPickerHtml_(id){const current=noradWeekStart_(new Date()),next
 function noradWeekPickerChanged_(id){const start=document.getElementById(id)?.value,target=id==='plannerWeekChoice'?'plannerStartDate':'planStartDate';const el=document.getElementById(target);if(el)el.value=start}
 function noradWeekLabel_(iso){const start=noradWeekForDate_(iso);return start===noradWeekStart_(new Date())?'This Week':'Next Week'}
 function menuMeals_(raw){let out={breakfast:"",lunch:"",dinner:""},parts=String(raw||"").split(/\s*•\s*/).map(x=>x.trim()).filter(Boolean);parts.forEach((x,i)=>{if(/^🌅/u.test(x))out.breakfast=x.replace(/^🌅\s*/u,"");else if(/^☀️/u.test(x))out.lunch=x.replace(/^☀️\s*/u,"");else if(/^🌙/u.test(x))out.dinner=x.replace(/^🌙\s*/u,"");else if(i===0)out.breakfast=x;else if(i===1)out.lunch=x;else out.dinner=x});return out}
-function openMenu(){let order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};openModal(`<h2>Edit weekly menu</h2><div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(S.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<span class="noradMealField"><input id="meal${d}Breakfast" value="${esc(m.breakfast)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Breakfast')" title="Choose from recipes">🔎</button></span></label><label>Lunch<span class="noradMealField"><input id="meal${d}Lunch" value="${esc(m.lunch)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Lunch')" title="Choose from recipes">🔎</button></span></label><label>Dinner<span class="noradMealField"><input id="meal${d}Dinner" value="${esc(m.dinner)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Dinner')" title="Choose from recipes">🔎</button></span></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`) }
-function saveMenu(){["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach(d=>{let b=document.getElementById("meal"+d+"Breakfast")?.value.trim()||"",l=document.getElementById("meal"+d+"Lunch")?.value.trim()||"",x=document.getElementById("meal"+d+"Dinner")?.value.trim()||"";S.menu[d]=[["🌅",b],["☀️",l],["🌙",x]].filter(z=>z[1]).map(z=>z[0]+" "+z[1]).join("  •  ")});closeModal();renderDetail();persist()}
+// Menu editor selection is display-only until Save is clicked.
+let noradMenuEditorWeek_=null;
+function noradMenuEditorWeekData_(week){
+ const current=noradWeekStart_(new Date());
+ if(week===current)return {menu:{...(S.menu||{})}};
+ return S.weekMenus?.[week]||{menu:{}};
+}
+function noradMenuEditorSwitch_(week){
+ const current=noradWeekStart_(new Date()),next=key(localDate_(current,7));
+ if(week!==current&&week!==next)return;
+ noradMenuEditorWeek_=week;
+ openMenu();
+}
+function openMenu(){
+ const current=noradWeekStart_(new Date()),next=key(localDate_(current,7));
+ if(noradMenuEditorWeek_!==current&&noradMenuEditorWeek_!==next)noradMenuEditorWeek_=current;
+ const week=noradMenuEditorWeek_,data=noradMenuEditorWeekData_(week);
+ const order=["MON","TUE","WED","THU","FRI","SAT","SUN"],names={MON:"Monday",TUE:"Tuesday",WED:"Wednesday",THU:"Thursday",FRI:"Friday",SAT:"Saturday",SUN:"Sunday"};
+ const selector=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" class="btn ${week===current?'primaryAction':''}" onclick="noradMenuEditorSwitch_('${current}')">This Week</button><button type="button" class="btn ${week===next?'primaryAction':''}" onclick="noradMenuEditorSwitch_('${next}')">Next Week</button></div><div class="rMeta" style="margin-bottom:10px">Week of ${esc(week)} · Switching weeks does not save or change your meals.</div>`;
+ openModal(`<h2>Edit weekly menu</h2>${selector}<div class="menuWeekVertical">${order.map(d=>{let m=menuMeals_(data.menu?.[d]);return `<section class="menuDayEdit"><h3>${names[d]}</h3><label>Breakfast<span class="noradMealField"><input id="meal${d}Breakfast" value="${esc(m.breakfast)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Breakfast')" title="Choose from recipes">🔎</button></span></label><label>Lunch<span class="noradMealField"><input id="meal${d}Lunch" value="${esc(m.lunch)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Lunch')" title="Choose from recipes">🔎</button></span></label><label>Dinner<span class="noradMealField"><input id="meal${d}Dinner" value="${esc(m.dinner)}"><button type="button" class="btn" onclick="noradMenuChoose_('${d}','Dinner')" title="Choose from recipes">🔎</button></span></label></section>`}).join("")}</div><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveMenu()">Save</button></div>`);
+}
+function saveMenu(){
+ const current=noradWeekStart_(new Date()),next=key(localDate_(current,7)),week=noradMenuEditorWeek_;
+ if(week!==current&&week!==next){alert('The selected menu week changed. Reopen Menu and try again.');return;}
+ const menu={};
+ ["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach(d=>{let b=document.getElementById("meal"+d+"Breakfast")?.value.trim()||"",l=document.getElementById("meal"+d+"Lunch")?.value.trim()||"",x=document.getElementById("meal"+d+"Dinner")?.value.trim()||"";menu[d]=[["🌅",b],["☀️",l],["🌙",x]].filter(z=>z[1]).map(z=>z[0]+" "+z[1]).join("  •  ")});
+ if(week===current){S.menu=menu;}
+ else {S.weekMenus=S.weekMenus||{};S.weekMenus[week]={...(S.weekMenus[week]||{}),menu};}
+ closeModal();renderDetail();persist();
+}
 function openNotes(){S.pinnedNotes=S.pinnedNotes||[];openModal(`<h2>Family Notes</h2><div class="field"><label>General notes</label><textarea id="notes">${esc(S.notes)}</textarea></div><h3>📌 PINNED / IMPORTANT</h3><div class="note">These stay visible in the dashboard glance until you remove them.</div><div id="pinEditor">${S.pinnedNotes.map((x,i)=>`<div class="pinEditRow"><input id="pin${i}" value="${esc(x)}"><button class="x" onclick="removePinEditor(${i})">×</button></div>`).join("")}</div><button class="btn" onclick="addPinEditor()">+ Pin reminder</button><div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveNotes()">Save</button></div>`)}
 function addPinEditor(){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.push("");openNotes()}
 function removePinEditor(i){S.pinnedNotes=S.pinnedNotes||[];S.pinnedNotes.splice(i,1);openNotes()}
