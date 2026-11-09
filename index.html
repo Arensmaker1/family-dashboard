@@ -1641,7 +1641,32 @@ function renderDetail(){let E=ev(sel),C=choresFor(sel),done=C.filter(x=>S.comple
 <div class="card"><h2>🍽️ WEEKLY MENU <span class="mini" onclick="openMenu()">EDIT</span></h2>${noradMenuHtml_()}</div>
 <div class="card"><h2>📝 FAMILY NOTES <span class="mini" onclick="openNotes()">EDIT</span></h2>${(S.pinnedNotes||[]).map((x,i)=>`<div class="pinNote">📌 ${esc(x)}<button onclick="dismissPinned(${i})">×</button></div>`).join("")}<div class="notesbox">${esc(S.notes)}</div><h2 style="margin-top:12px">🌤️ FORECAST</h2>${forecast()}</div>
 <div class="card quoteCard"><h2>💬 DAILY WISDOM(ISH)</h2><div class="quote">“${esc(quoteFor(sel))}”</div></div></div>`}
-function persist(cb){noradSaveActiveWeek_();document.getElementById("status").textContent="Saving…";google.script.run.withSuccessHandler(()=>{document.getElementById("status").textContent="Saved ✓";setTimeout(()=>document.getElementById("status").textContent="",1500);if(cb)cb()}).saveDashboardSettings(S)}
+let noradSaveBusy_=false;
+let noradSavePending_=false;
+let noradSaveCallbacks_=[];
+let noradSaveBlocked_=false;
+function persist(cb){
+ if(noradSaveBlocked_){alert("NORAD saves are paused after an error. Reload to retrieve current settings before editing.");return;}
+ if(typeof cb==="function")noradSaveCallbacks_.push(cb);
+ if(noradSaveBusy_){noradSavePending_=true;return;}
+ if(!S||!S._noradRevision){alert("Settings have not loaded safely. Save blocked.");return;}
+ noradSaveActiveWeek_();
+ const payload=JSON.parse(JSON.stringify(S));
+ noradSaveBusy_=true;
+ const status=document.getElementById("status");if(status)status.textContent="Saving…";
+ google.script.run.withSuccessHandler(result=>{
+   noradSaveBusy_=false;
+   if(!result||!result.ok||!result.revision){noradSaveBlocked_=true;alert("NORAD could not confirm the save. Please stop editing and check Apps Script.");return;}
+   S._noradRevision=result.revision;
+   if(noradSavePending_){noradSavePending_=false;persist();return;}
+   if(status)status.textContent="Saved ✓";
+   const callbacks=noradSaveCallbacks_.splice(0);callbacks.forEach(fn=>fn());
+ }).withFailureHandler(err=>{
+   noradSaveBusy_=false;noradSaveBlocked_=true;
+   if(status)status.textContent="SAVE FAILED — data not saved";
+   alert("NORAD protected your data by blocking this save: "+(err?.message||String(err))+"\n\nStop editing this page. Reload to retrieve the latest settings.");
+ }).saveDashboardSettings(payload);
+}
 function chore(i,on){let who=(S.chores[i]&&S.chores[i].who)||"Kid";S.completions[key(sel)+"-"+i]=on;if(!on)delete S.completions[key(sel)+"-"+i];if(on)checkChoreCelebrations(who);renderDetail();persist()}
 function toggleCal(x){let n=decodeURIComponent(x),i=S.hiddenCalendars.indexOf(n);i>=0?S.hiddenCalendars.splice(i,1):S.hiddenCalendars.push(n);renderCal();renderDetail();renderGlance();renderCountdowns();persist()}
 function showAll(){S.hiddenCalendars=[];renderCal();renderDetail();persist()}
@@ -4212,6 +4237,7 @@ function loadWeather(){
 }
 function noradCalendarWarning_(msg){let el=document.getElementById("noradCalendarWarning");if(!el){el=document.createElement("div");el.id="noradCalendarWarning";el.setAttribute("role","status");el.style.cssText="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:95;background:#3b2025;color:#fff;border:1px solid #f0a5a5;border-radius:9px;padding:9px 35px 9px 12px;font:12px Arial;max-width:85vw;box-shadow:0 4px 20px #0009";document.body.appendChild(el)}el.textContent=msg?"⚠️ "+msg:"";el.style.display=msg?"block":"none"}
 function load(force=false){
+ if(noradSaveBusy_||noradSavePending_||noradSaveBlocked_)return;
  if(coreLoadInFlight_)return;
  if(!force&&!dashboardVisible_())return;
  coreLoadInFlight_=true;
@@ -4221,7 +4247,7 @@ function load(force=false){
    lastCoreRefreshAt_=Date.now();
    let newSig=calendarSignature_(x),calendarChanged=(newSig!==lastCalendarSignature_);
    D=x;S=x.settings;
-   if(noradEnsureWeeks_())persist();
+   noradEnsureWeeks_();
    noradCalendarWarning_(x.calendarError||"");
    S.dailyCelebrations=S.dailyCelebrations||{};
    S.streakRewards=S.streakRewards||{};
